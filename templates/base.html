@@ -9,7 +9,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
-<body class="bg-light">
+<body class="bg-light d-flex flex-column min-vh-100">
 
     <!-- Navbar Principal -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
@@ -19,13 +19,17 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center">
                     {% if user.is_authenticated %}
                         <li class="nav-item me-3">
                             <span class="nav-link text-light">Hola, <strong>{{ user.username }}</strong></span>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-outline-danger btn-sm mt-1" href="{% url 'logout' %}">Cerrar Sesión</a>
+                            <!-- Logout seguro por POST -->
+                            <form action="{% url 'logout' %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Cerrar Sesión</button>
+                            </form>
                         </li>
                     {% else %}
                         <li class="nav-item">
@@ -38,7 +42,17 @@
     </nav>
 
     <!-- Contenido Dinámico de cada Pantalla -->
-    <main class="container">
+    <main class="container flex-grow-1 mb-4">
+        <!-- Bloque para mostrar mensajes del sistema (éxito, error, etc.) -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
         {% block content %}
         {% endblock %}
     </main>
