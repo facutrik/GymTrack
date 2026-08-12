@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Empleado | GymTrack{% endblock %}
+
+{% block content %}
+<!-- Encabezado -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0">Panel de Recepción / Operaciones 📋</h2>
+        <p class="text-muted mb-0">Bienvenido/a, {{ user.username }}. Control operativo del turno.</p>
+    </div>
+</div>
+
+<!-- Tarjetas de Métricas Operativas -->
+<div class="row g-3 mb-4">
+    <!-- Asistencias -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold">ASISTENCIAS HOY</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ asistencias_hoy|default:"--" }}</h3>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-3">
+                        <i class="bi bi-check2-square fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                <a href="#" class="btn btn-sm btn-light text-primary w-100 fw-semibold">
+                    Registrar Ingreso <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Búsqueda de Socio -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold">SOCIOS</span>
+                        <h3 class="fw-bold mb-0 mt-1"><i class="bi bi-search fs-5 text-muted"></i></h3>
+                    </div>
+                    <div class="bg-info bg-opacity-10 text-info p-3 rounded-3">
+                        <i class="bi bi-person-lines-fill fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                <a href="#" class="btn btn-sm btn-light text-info w-100 fw-semibold">
+                    Buscar Socio <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cobros del Día -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold">COBROS DEL TURNO</span>
+                        <h3 class="fw-bold mb-0 mt-1">${{ cobros_turno|default:"--" }}</h3>
+                    </div>
+                    <div class="bg-success bg-opacity-10 text-success p-3 rounded-3">
+                        <i class="bi bi-wallet2 fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                <a href="#" class="btn btn-sm btn-light text-success w-100 fw-semibold">
+                    Cobrar Cuota <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservas -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold">TURNO / CLASES</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ reservas_hoy|default:"--" }}</h3>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-3">
+                        <i class="bi bi-calendar-event fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                <a href="#" class="btn btn-sm btn-light text-warning w-100 fw-semibold">
+                    Ver Reservas <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones Rápidas del Día -->
+<div class="row g-3">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3"><i class="bi bi-lightning-charge-fill text-primary me-2"></i>Acciones Frecuentes</h5>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="#" class="btn btn-primary btn-sm"><i class="bi bi-person-check me-1"></i> Marcar Asistencia</a>
+                    <a href="#" class="btn btn-success btn-sm"><i class="bi bi-currency-dollar me-1"></i> Registrar Pago de Socio</a>
+                    <a href="#" class="btn btn-outline-dark btn-sm"><i class="bi bi-person-plus me-1"></i> Alta de Socio</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm border-start border-4 border-info">
+            <div class="card-body">
+                <h6 class="fw-bold mb-2"><i class="bi bi-info-circle text-info me-1"></i> Recordatorio</h6>
+                <p class="text-muted small mb-0">Recordá verificar siempre que la cuota esté al día antes de registrar el ingreso del socio.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

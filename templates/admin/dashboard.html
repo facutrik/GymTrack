@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Admin | GymTrack{% endblock %}
+
+{% block content %}
+<!-- Encabezado -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0">Panel de Administración 🛡️</h2>
+        <p class="text-muted mb-0">Bienvenido/a, {{ user.username }}. Control general del gimnasio.</p>
+    </div>
+</div>
+
+<!-- Tarjetas de Métricas Principales -->
+<div class="row g-3 mb-4">
+    <!-- Socios -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold">SOCIOS</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ total_socios|default:"--" }}</h3>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-3">
+                        <i class="bi bi-people-fill fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                <a href="#" class="btn btn-sm btn-light text-primary w-100 fw-semibold">
+                    Ver Socios <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empleados -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold">EMPLEADOS</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ total_empleados|default:"--" }}</h3>
+                    </div>
+                    <div class="bg-info bg-opacity-10 text-info p-3 rounded-3">
+                        <i class="bi bi-person-badge-fill fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                <a href="#" class="btn btn-sm btn-light text-info w-100 fw-semibold">
+                    Ver Empleados <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagos del Mes -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold">PAGOS (MES)</span>
+                        <h3 class="fw-bold mb-0 mt-1">${{ ingresos_mes|default:"--" }}</h3>
+                    </div>
+                    <div class="bg-success bg-opacity-10 text-success p-3 rounded-3">
+                        <i class="bi bi-cash-stack fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                <a href="#" class="btn btn-sm btn-light text-success w-100 fw-semibold">
+                    Ver Registro <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actividades / Clases -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold">ACTIVIDADES</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ total_actividades|default:"--" }}</h3>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-3">
+                        <i class="bi bi-activity fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                <a href="#" class="btn btn-sm btn-light text-warning w-100 fw-semibold">
+                    Ver Clases <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accesos Rápidos adicionales -->
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3"><i class="bi bi-card-checklist me-2 text-primary"></i>Gestión de Membresías</h5>
+                <p class="text-muted small">Configurá los planes, precios y duración de los pases del gimnasio.</p>
+                <a href="#" class="btn btn-outline-primary btn-sm">Administrar Membresías</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3"><i class="bi bi-gear-fill me-2 text-secondary"></i>Acciones Rápidas</h5>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="#" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i> Nuevo Socio</a>
+                    <a href="#" class="btn btn-success btn-sm"><i class="bi bi-currency-dollar me-1"></i> Registrar Pago</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
