@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Socio - GymTrack{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <h1 class="h3 fw-bold">Bienvenido, {{ user.username }} 👋</h1>
+        <p class="text-muted">Este es tu panel principal como socio del gimnasio.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Tarjeta: Mi Rutina -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-body text-center p-4">
+                <i class="bi bi-journal-check display-4 text-primary mb-3"></i>
+                <h5 class="card-title fw-bold">Mi Rutina</h5>
+                <p class="card-text text-muted">Consultá los ejercicios asignados para tu entrenamiento diario.</p>
+                <a href="#" class="btn btn-outline-primary btn-sm">Ver rutina</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjeta: Mis Reservas -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-body text-center p-4">
+                <i class="bi bi-calendar-event display-4 text-success mb-3"></i>
+                <h5 class="card-title fw-bold">Mis Reservas</h5>
+                <p class="card-text text-muted">Reservá tu lugar en las clases y actividades disponibles.</p>
+                <a href="#" class="btn btn-outline-success btn-sm">Reservar clase</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjeta: Mis Pagos -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-body text-center p-4">
+                <i class="bi bi-credit-card display-4 text-warning mb-3"></i>
+                <h5 class="card-title fw-bold">Estado de Cuenta</h5>
+                <p class="card-text text-muted">Revisá el estado de tu membresía y vencimientos.</p>
+                <a href="#" class="btn btn-outline-warning btn-sm">Ver pagos</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

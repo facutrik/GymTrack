@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymTrack - Tu Centro de Entrenamiento</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+        
+        .carousel-slide {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .carousel-slide.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
+
+    <!-- NAVBAR FIXED -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 text-white transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-600/30">
+                        🏋️‍♂️
+                    </div>
+                    <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+                        GymTrack
+                    </span>
+                </div>
+
+                <!-- Navigation Links & Login -->
+                <div class="flex items-center gap-6">
+                    <a href="#actividades" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Actividades</a>
+                    <a href="#membresias" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Membresías</a>
+                    <a href="#ubicacion" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Sedes</a>
+                    <button onclick="openLoginModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-600/30 hover:shadow-blue-500/50 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket text-xs"></i>
+                        Iniciar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- SECCIÓN 1: HERO CON CARRUSEL DE FONDO -->
+    <section class="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden bg-slate-950">
+        <!-- Carrusel Img Backgrounds -->
+        <div class="absolute inset-0 z-0">
+            <!-- Slide 1 -->
+            <div class="carousel-slide active absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1920&auto=format&fit=crop');">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/40"></div>
+            </div>
+            <!-- Slide 2 -->
+            <div class="carousel-slide absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1920&auto=format&fit=crop');">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/40"></div>
+            </div>
+            <!-- Slide 3 -->
+            <div class="carousel-slide absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=1920&auto=format&fit=crop');">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/40"></div>
+            </div>
+        </div>
+
+        <!-- Overlaid Content (Nombre y Frase) -->
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
+            <div class="max-w-2xl">
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-6 backdrop-blur-md">
+                    <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                    Tu mejor versión empieza hoy
+                </div>
+                
+                <!-- Nombre del Gimnasio -->
+                <h1 class="text-5xl sm:text-7xl font-extrabold text-white tracking-tight mb-6 leading-none">
+                    Gym<span class="text-blue-500">Track</span>
+                </h1>
+
+                <!-- Frase Corta -->
+                <p class="text-xl sm:text-2xl text-slate-300 font-light leading-relaxed mb-8 border-l-4 border-blue-600 pl-4 bg-slate-900/40 py-2 rounded-r-lg backdrop-blur-sm">
+                    El espacio ideal para entrenar, superar tus límites y transformar tu rutina diaria.
+                </p>
+
+                <!-- Botones CTA -->
+                <div class="flex flex-wrap gap-4">
+                    <a href="#actividades" class="px-7 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 transition duration-200 flex items-center gap-2">
+                        Ver Actividades
+                        <i class="fa-solid fa-arrow-down text-sm"></i>
+                    </a>
+                    <a href="#ubicacion" class="px-7 py-3.5 bg-slate-800/80 hover:bg-slate-700/80 text-white font-semibold rounded-xl border border-slate-700 backdrop-blur-md transition duration-200 flex items-center gap-2">
+                        Conocer Sede
+                        <i class="fa-solid fa-location-dot text-sm text-blue-400"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carousel Indicators -->
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+            <button onclick="setSlide(0)" class="carousel-dot w-8 h-2 rounded-full bg-white transition-all duration-300"></button>
+            <button onclick="setSlide(1)" class="carousel-dot w-2 h-2 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300"></button>
+            <button onclick="setSlide(2)" class="carousel-dot w-2 h-2 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300"></button>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 2: TRES PANTALLAS EN FILA (ACTIVIDADES - MEMBRESÍAS - HORARIOS/CONTACTO) -->
+    <section class="py-20 bg-slate-100 border-y border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-14">
+                <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Todo lo que necesitas en un solo lugar</h2>
+                <p class="text-slate-600 mt-2 text-lg">Información rápida sobre nuestras clases, planes y canales de atención.</p>
+            </div>
+
+            <!-- Grid de 3 Columnas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+                
+                <!-- CARD 1: ACTIVIDADES -->
+                <div id="actividades" class="bg-white rounded-2xl p-7 shadow-sm border border-slate-200 hover:shadow-md transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                            <div class="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-xl font-bold">
+                                🏋️‍♂️
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-900">Actividades</h3>
+                                <p class="text-xs text-slate-500 font-medium">Variedad de disciplinas</p>
+                            </div>
+                        </div>
+
+                        <ul class="space-y-4">
+                            <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                <span class="text-2xl">🏋️‍♂️</span>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-sm">Musculación</h4>
+                                    <p class="text-xs text-slate-600 mt-0.5">Acceso libre por llegada. Equipamiento completo de última generación.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                <span class="text-2xl">🧘‍♀️</span>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-sm">Pilates / Funcional</h4>
+                                    <p class="text-xs text-slate-600 mt-0.5">Clases grupales con reserva previa desde la app.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                <span class="text-2xl">🚴‍♂️</span>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-sm">Spinning & Cardio</h4>
+                                    <p class="text-xs text-slate-600 mt-0.5">Entrenamiento de alta intensidad guiado por instructores.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-100 text-center">
+                        <span class="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-full inline-block">
+                            + Consultá grilla horaria actualizada
+                        </span>
+                    </div>
+                </div>
+
+                <!-- CARD 2: MEMBRESÍAS Y PRECIOS -->
+                <div id="membresias" class="bg-white rounded-2xl p-7 shadow-sm border border-slate-200 hover:shadow-md transition duration-300 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold tracking-wider px-3 py-1 rounded-bl-lg uppercase">
+                        Popular
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                            <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">
+                                💳
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-900">Membresías y Precios</h3>
+                                <p class="text-xs text-slate-500 font-medium">Planes a tu medida</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/50 border border-blue-200/60">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h4 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                                        💳 Pase Libre Mensual
+                                    </h4>
+                                    <span class="text-xs font-extrabold text-blue-600">Recomendado</span>
+                                </div>
+                                <p class="text-xs text-slate-600">Acceso ilimitado a salón de musculación, cardio y clases funcionales.</p>
+                            </div>
+
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                                <h4 class="font-bold text-slate-900 text-sm mb-1">
+                                    ⭐ Pase Trimestral / Semestral
+                                </h4>
+                                <p class="text-xs text-slate-600">Bonificación especial pagando en efectivo o débito automático.</p>
+                            </div>
+
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                                <h4 class="font-bold text-slate-900 text-sm mb-1">
+                                    🎟️ Pase Pase Diario / Pase 8 Clases
+                                </h4>
+                                <p class="text-xs text-slate-600">Ideal si tenés horarios rotativos o visitas esporádicas.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-100 text-center">
+                        <button onclick="openLoginModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl transition">
+                            Inscribirse o Consultar Precios
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CARD 3: HORARIOS Y CONTACTO -->
+                <div class="bg-white rounded-2xl p-7 shadow-sm border border-slate-200 hover:shadow-md transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold">
+                                ⏱️
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-900">Horarios y Contacto</h3>
+                                <p class="text-xs text-slate-500 font-medium">Estamos para ayudarte</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <!-- Horarios -->
+                            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+                                <div class="flex items-center justify-between text-xs font-semibold text-slate-800">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fa-regular fa-clock text-blue-600"></i> Lunes a Viernes
+                                    </span>
+                                    <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md text-[11px]">07:00 a 22:00 hs</span>
+                                </div>
+                                <div class="flex items-center justify-between text-xs font-semibold text-slate-800 pt-1 border-t border-slate-200/60">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fa-regular fa-clock text-blue-600"></i> Sábados
+                                    </span>
+                                    <span class="bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md text-[11px]">09:00 a 18:00 hs</span>
+                                </div>
+                            </div>
+
+                            <!-- Contacto WhatsApp -->
+                            <a href="https://wa.me/543411234567" target="_blank" class="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100/80 transition group">
+                                <div class="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-lg">
+                                    <i class="fa-brands fa-whatsapp"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-emerald-950 text-xs group-hover:text-emerald-700 transition">Consultas WhatsApp</h4>
+                                    <p class="text-xs text-emerald-700 font-semibold">+54 341 1234567</p>
+                                </div>
+                            </a>
+
+                            <!-- Instagram / Email -->
+                            <div class="flex gap-2">
+                                <div class="flex-1 p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                                    <i class="fa-brands fa-instagram text-pink-600 text-base mb-1"></i>
+                                    <p class="text-[11px] font-bold text-slate-800">@gymtrack.arg</p>
+                                </div>
+                                <div class="flex-1 p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                                    <i class="fa-regular fa-envelope text-blue-600 text-base mb-1"></i>
+                                    <p class="text-[11px] font-bold text-slate-800">info@gymtrack.com</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-100">
+                        <p class="text-[11px] text-center text-slate-500">Respondes de Lunes a Sábados en horario comercial.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 3: UBICACIÓN Y SEDES (MAPA A LA IZQ Y SEDES A LA DERECHA) -->
+    <section id="ubicacion" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-10">
+                <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Encuéntranos</span>
+                <h2 class="text-3xl font-bold text-slate-900 tracking-tight mt-1">Ubicación y Nuestras Sedes</h2>
+            </div>
+
+            <!-- Grid de 2 Columnas principales -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- COLUMNA IZQUIERDA: MAPA INTERACTIVO (7 Cols) -->
+                <div class="lg:col-span-7 bg-slate-50 rounded-2xl p-4 border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-3 px-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot text-blue-600"></i>
+                            <h3 class="font-bold text-slate-900 text-base">Ubicación en Rosario</h3>
+                        </div>
+                        <a href="https://maps.google.com" target="_blank" class="text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                            Abrir en Google Maps
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+
+                    <!-- Embed de Google Maps Real en Rosario -->
+                    <div class="w-full h-[380px] rounded-xl overflow-hidden border border-slate-200 shadow-inner relative">
+                        <iframe 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3348.16338421884!2d-60.655209!3d-32.94668!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95b7ab114389dd31%3A0x6b8232a5df971b4d!2sAv.%20Pellegrini%2C%20Rosario%2C%20Santa%20Fe!5e0!3m2!1ses!2sar!4v1710000000000!5m2!1ses!2sar" 
+                            width="100%" 
+                            height="100%" 
+                            style="border:0;" 
+                            allowfullscreen="" 
+                            loading="lazy" 
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA: NUESTRAS SEDES (5 Cols) -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-bold">
+                                📍
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-900">Nuestras Sedes</h3>
+                                <p class="text-xs text-slate-500">Puntos de entrenamiento disponibles</p>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Sedes -->
+                        <div class="space-y-4">
+                            <!-- Sede Central -->
+                            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h4 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                                        📍 Sede Central
+                                    </h4>
+                                    <span class="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">Principal</span>
+                                </div>
+                                <p class="text-xs text-slate-600 font-medium">Av. Pellegrini 1234, Rosario</p>
+                                <div class="mt-2 flex items-center gap-3 text-[11px] text-slate-500">
+                                    <span><i class="fa-solid fa-square-parking text-slate-400"></i> Estacionamiento</span>
+                                    <span><i class="fa-solid fa-shower text-slate-400"></i> Vestuarios</span>
+                                </div>
+                            </div>
+
+                            <!-- Sede Norte -->
+                            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+                                <h4 class="font-bold text-slate-900 text-sm mb-1">
+                                    📍 Sede Norte
+                                </h4>
+                                <p class="text-xs text-slate-600 font-medium">Bv. Rondeau 567, Rosario</p>
+                                <div class="mt-2 flex items-center gap-3 text-[11px] text-slate-500">
+                                    <span><i class="fa-solid fa-wifi text-slate-400"></i> Zona Wi-Fi</span>
+                                    <span><i class="fa-solid fa-bottle-water text-slate-400"></i> Dispensador</span>
+                                </div>
+                            </div>
+
+                            <!-- Sede Pichincha -->
+                            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
+                                <h4 class="font-bold text-slate-900 text-sm mb-1">
+                                    📍 Sede Pichincha
+                                </h4>
+                                <p class="text-xs text-slate-600 font-medium">Jujuy 2100, Rosario</p>
+                                <div class="mt-2 flex items-center gap-3 text-[11px] text-slate-500">
+                                    <span><i class="fa-solid fa-dumbbell text-slate-400"></i> Zona Crossfit</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Informativa Adicional -->
+                    <div class="bg-blue-600 text-white rounded-2xl p-6 shadow-md relative overflow-hidden">
+                        <div class="relative z-10">
+                            <h4 class="font-bold text-lg mb-1">¿Cuentas con Pase Libre?</h4>
+                            <p class="text-xs text-blue-100 leading-relaxed mb-4">Con tu membresía mensual activa tenés acceso liberado a cualquiera de nuestras 3 sedes sin costos adicionales.</p>
+                            <button onclick="openLoginModal()" class="px-4 py-2 bg-white text-blue-600 font-bold text-xs rounded-lg hover:bg-blue-50 transition shadow">
+                                Iniciar Sesión para Reservar
+                            </button>
+                        </div>
+                        <i class="fa-solid fa-id-card absolute -bottom-4 -right-4 text-7xl text-blue-500/30"></i>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 py-10 border-t border-slate-800 text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="text-lg">🏋️‍♂️</span>
+                <span class="font-bold text-white text-sm">GymTrack</span>
+                <span>— Sistema Integral de Gestión de Gimnasios</span>
+            </div>
+            <p>© 2026 GymTrack. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL INICIAR SESIÓN (MOCK) -->
+    <div id="loginModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in duration-200">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-2xl mx-auto mb-3">
+                    🏋️‍♂️
+                </div>
+                <h3 class="text-xl font-bold text-slate-900">Bienvenido a GymTrack</h3>
+                <p class="text-xs text-slate-500 mt-1">Ingresá con tu usuario de socio o staff</p>
+            </div>
+
+            <form onsubmit="event.preventDefault(); alert('Iniciar sesión simulado exitosamente'); closeLoginModal();" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Email / Usuario</label>
+                    <input type="text" placeholder="socio@gymtrack.com" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Contraseña</label>
+                    <input type="password" placeholder="••••••••" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition">
+                    Ingresar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT CARRUSEL & MODAL -->
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-slide');
+        const dots = document.querySelectorAll('.carousel-dot');
+
+        function setSlide(index) {
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('w-8', 'bg-white');
+            dots[currentSlide].classList.add('w-2', 'bg-white/40');
+
+            currentSlide = index;
+
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.remove('w-2', 'bg-white/40');
+            dots[currentSlide].classList.add('w-8', 'bg-white');
+        }
+
+        // Auto slide cada 4 segundos
+        setInterval(() => {
+            let next = (currentSlide + 1) % slides.length;
+            setSlide(next);
+        }, 4000);
+
+        // Modal Functions
+        function openLoginModal() {
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
