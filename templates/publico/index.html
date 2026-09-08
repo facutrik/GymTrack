@@ -141,27 +141,37 @@
                         </div>
 
                         <ul class="space-y-4">
-                            <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                <span class="text-2xl">🏋️‍♂️</span>
-                                <div>
-                                    <h4 class="font-bold text-slate-900 text-sm">Musculación</h4>
-                                    <p class="text-xs text-slate-600 mt-0.5">Acceso libre por llegada. Equipamiento completo de última generación.</p>
-                                </div>
-                            </li>
-                            <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                <span class="text-2xl">🧘‍♀️</span>
-                                <div>
-                                    <h4 class="font-bold text-slate-900 text-sm">Pilates / Funcional</h4>
-                                    <p class="text-xs text-slate-600 mt-0.5">Clases grupales con reserva previa desde la app.</p>
-                                </div>
-                            </li>
-                            <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                <span class="text-2xl">🚴‍♂️</span>
-                                <div>
-                                    <h4 class="font-bold text-slate-900 text-sm">Spinning & Cardio</h4>
-                                    <p class="text-xs text-slate-600 mt-0.5">Entrenamiento de alta intensidad guiado por instructores.</p>
-                                </div>
-                            </li>
+                            {% for act in actividades %}
+                                <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                    <span class="text-2xl">🏋️‍♂️</span>
+                                    <div>
+                                        <h4 class="font-bold text-slate-900 text-sm">{{ act.nombre }}</h4>
+                                        <p class="text-xs text-slate-600 mt-0.5">{{ act.descripcion }}</p>
+                                    </div>
+                                </li>
+                            {% empty %}
+                                <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                    <span class="text-2xl">🏋️‍♂️</span>
+                                    <div>
+                                        <h4 class="font-bold text-slate-900 text-sm">Musculación</h4>
+                                        <p class="text-xs text-slate-600 mt-0.5">Acceso libre por llegada. Equipamiento completo de última generación.</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                    <span class="text-2xl">🧘‍♀️</span>
+                                    <div>
+                                        <h4 class="font-bold text-slate-900 text-sm">Pilates / Funcional</h4>
+                                        <p class="text-xs text-slate-600 mt-0.5">Clases grupales con reserva previa desde la app.</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                    <span class="text-2xl">🚴‍♂️</span>
+                                    <div>
+                                        <h4 class="font-bold text-slate-900 text-sm">Spinning & Cardio</h4>
+                                        <p class="text-xs text-slate-600 mt-0.5">Entrenamiento de alta intensidad guiado por instructores.</p>
+                                    </div>
+                                </li>
+                            {% endfor %}
                         </ul>
                     </div>
 
@@ -189,29 +199,41 @@
                         </div>
 
                         <div class="space-y-4">
-                            <div class="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/50 border border-blue-200/60">
-                                <div class="flex items-center justify-between mb-1">
-                                    <h4 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                                        💳 Pase Libre Mensual
-                                    </h4>
-                                    <span class="text-xs font-extrabold text-blue-600">Recomendado</span>
+                            {% for mem in membresias %}
+                                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <h4 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                                            💳 {{ mem.nombre }}
+                                        </h4>
+                                        <span class="text-xs font-extrabold text-blue-600">${{ mem.precio }}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-600">Duración: {{ mem.duracion_dias }} días.</p>
                                 </div>
-                                <p class="text-xs text-slate-600">Acceso ilimitado a salón de musculación, cardio y clases funcionales.</p>
-                            </div>
+                            {% empty %}
+                                <div class="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/50 border border-blue-200/60">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <h4 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                                            💳 Pase Libre Mensual
+                                        </h4>
+                                        <span class="text-xs font-extrabold text-blue-600">Recomendado</span>
+                                    </div>
+                                    <p class="text-xs text-slate-600">Acceso ilimitado a salón de musculación, cardio y clases funcionales.</p>
+                                </div>
 
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                <h4 class="font-bold text-slate-900 text-sm mb-1">
-                                    ⭐ Pase Trimestral / Semestral
-                                </h4>
-                                <p class="text-xs text-slate-600">Bonificación especial pagando en efectivo o débito automático.</p>
-                            </div>
+                                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                                    <h4 class="font-bold text-slate-900 text-sm mb-1">
+                                        ⭐ Pase Trimestral / Semestral
+                                    </h4>
+                                    <p class="text-xs text-slate-600">Bonificación especial pagando en efectivo o débito automático.</p>
+                                </div>
 
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                <h4 class="font-bold text-slate-900 text-sm mb-1">
-                                    🎟️ Pase Pase Diario / Pase 8 Clases
-                                </h4>
-                                <p class="text-xs text-slate-600">Ideal si tenés horarios rotativos o visitas esporádicas.</p>
-                            </div>
+                                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                                    <h4 class="font-bold text-slate-900 text-sm mb-1">
+                                        🎟️ Pase Diario / Pase 8 Clases
+                                    </h4>
+                                    <p class="text-xs text-slate-600">Ideal si tenés horarios rotativos o visitas esporádicas.</p>
+                                </div>
+                            {% endfor %}
                         </div>
                     </div>
 
@@ -408,7 +430,7 @@
         </div>
     </footer>
 
-    <!-- MODAL INICIAR SESIÓN (MOCK) -->
+    <!-- MODAL INICIAR SESIÓN (CONECTADO A DJANGO) -->
     <div id="loginModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in duration-200">
             <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
@@ -422,14 +444,16 @@
                 <p class="text-xs text-slate-500 mt-1">Ingresá con tu usuario de socio o staff</p>
             </div>
 
-            <form onsubmit="event.preventDefault(); alert('Iniciar sesión simulado exitosamente'); closeLoginModal();" class="space-y-4">
+            <!-- FORMULARIO REAL CONECTADO AL LOGIN DE DJANGO -->
+            <form method="POST" action="{% url 'login' %}" class="space-y-4">
+                {% csrf_token %}
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Email / Usuario</label>
-                    <input type="text" placeholder="socio@gymtrack.com" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Usuario / DNI</label>
+                    <input type="text" name="username" required placeholder="admin o empleado1" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Contraseña</label>
-                    <input type="password" placeholder="••••••••" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                    <input type="password" name="password" required placeholder="••••••••" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
                 <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition">
                     Ingresar
@@ -462,7 +486,7 @@
             setSlide(next);
         }, 4000);
 
-        // Modal Functions
+        // Funciones del Modal de Login
         function openLoginModal() {
             document.getElementById('loginModal').classList.remove('hidden');
         }
