@@ -1,34 +1,146 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | GymTrack</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b1120; /* Slate 950 */
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between antialiased selection:bg-blue-600 selection:text-white">
 
-{% block title %}Iniciar Sesión | GymTrack{% endblock %}
-
-{% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-                <h3 class="text-center mb-4 fw-bold text-primary">GymTrack</h3>
-                
-                {% if form.errors %}
-                    <div class="alert alert-danger" role="alert">
-                        Usuario o contraseña incorrectos.
-                    </div>
-                {% endif %}
-
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="id_username" class="form-label">Usuario</label>
-                        <input type="text" name="username" class="form-control" id="id_username" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="id_password" class="form-label">Contraseña</label>
-                        <input type="password" name="password" class="form-control" id="id_password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 mt-2">Ingresar</button>
-                </form>
-            </div>
+    <!-- NAVBAR SIMPLE -->
+    <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="{% url 'inicio' %}" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-600/30 group-hover:scale-105 transition">
+                    🏋️‍♂️
+                </div>
+                <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+                    GymTrack
+                </span>
+            </a>
+            <a href="{% url 'inicio' %}" class="text-xs font-semibold text-slate-400 hover:text-white transition flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-left"></i> Volver al inicio
+            </a>
         </div>
-    </div>
-</div>
-{% endblock %}
+    </nav>
+
+    <!-- TARJETA DE LOGIN CENTRADA -->
+    <main class="flex-1 flex items-center justify-center px-4 py-12">
+        <div class="w-full max-w-md bg-slate-900/70 border border-slate-800 rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
+            
+            <!-- Encabezado del Formulario -->
+            <div class="text-center mb-7">
+                <div class="w-14 h-14 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3 shadow-inner">
+                    🏋️‍♂️
+                </div>
+                <h1 class="text-2xl font-black text-white tracking-tight">Acceso a GymTrack</h1>
+                <p class="text-xs text-slate-400 mt-1">Ingresá tus credenciales para continuar</p>
+            </div>
+
+            <!-- Cartel de Error (si usuario o contraseña son incorrectos) -->
+            {% if form.errors %}
+                <div class="mb-5 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-2.5">
+                    <i class="fa-solid fa-circle-exclamation text-red-400 text-sm"></i>
+                    <span>Usuario o contraseña incorrectos. Verificá los datos e intentá de nuevo.</span>
+                </div>
+            {% endif %}
+
+            <!-- Formulario de Autenticación -->
+            <form method="POST" action="{% url 'login' %}" class="space-y-4">
+                {% csrf_token %}
+                
+                <!-- Campo Usuario / DNI -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                        Usuario o DNI
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500 text-xs">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                        <input type="text" name="username" required autofocus placeholder="Ingresá tu usuario" 
+                               value="{{ form.username.value|default:'' }}"
+                               class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
+                    </div>
+                </div>
+
+                <!-- Campo Contraseña con botón de Ver/Ocultar -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                            Contraseña
+                        </label>
+                        <!-- Enlace ¿Olvidaste tu contraseña? -->
+                        <a href="https://wa.me/543411234567?text=Hola,%20olvidé%20mi%20contraseña%20en%20GymTrack" target="_blank" class="text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500 text-xs">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input type="password" id="passwordInput" name="password" required placeholder="••••••••" 
+                               class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-10 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
+                        
+                        <!-- Botón Ojo -->
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-500 hover:text-slate-300 transition">
+                            <i id="toggleIcon" class="fa-solid fa-eye text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Botón de Ingreso -->
+                <button type="submit" class="w-full py-2.5 mt-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 hover:shadow-blue-500/40 transition active:scale-[0.99]">
+                    Ingresar
+                </button>
+            </form>
+
+            <!-- Ayuda adicional -->
+            <div class="mt-6 pt-5 border-t border-slate-800/80 text-center text-xs text-slate-400">
+                ¿Aún no sos socio? 
+                <a href="{% url 'inicio' %}#membresias" class="font-bold text-blue-400 hover:underline ml-1">
+                    Conocé los planes
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 border-t border-slate-800 text-slate-500 py-4 text-xs text-center">
+        <p>© 2026 GymTrack — Acceso seguro al sistema.</p>
+    </footer>
+
+    <!-- SCRIPT PARA EL OJO DE LA CONTRASEÑA -->
+    <script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('passwordInput');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -202,9 +202,7 @@
                             {% for mem in membresias %}
                                 <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
                                     <div class="flex items-center justify-between mb-1">
-                                        <h4 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                                            💳 {{ mem.nombre }}
-                                        </h4>
+                                        <h4 class="font-bold text-slate-900 text-sm">💳 {{ mem.nombre }}</h4>
                                         <span class="text-xs font-extrabold text-blue-600">${{ mem.precio }}</span>
                                     </div>
                                     <p class="text-xs text-slate-600">Duración: {{ mem.duracion_dias }} días.</p>
@@ -300,7 +298,7 @@
                     </div>
 
                     <div class="mt-6 pt-4 border-t border-slate-100">
-                        <p class="text-[11px] text-center text-slate-500">Respondes de Lunes a Sábados en horario comercial.</p>
+                        <p class="text-[11px] text-center text-slate-500">Respondemos de Lunes a Sábados en horario comercial.</p>
                     </div>
                 </div>
 
@@ -430,15 +428,15 @@
         </div>
     </footer>
 
-    <!-- MODAL INICIAR SESIÓN (CONECTADO A DJANGO) -->
+    <!-- MODAL INICIAR SESIÓN CONECTADO A DJANGO -->
     <div id="loginModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in duration-200">
-            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
             <div class="text-center mb-6">
                 <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-2xl mx-auto mb-3">
-                    🏋️‍♂️
+                    🏋️️‍♂️
                 </div>
                 <h3 class="text-xl font-bold text-slate-900">Bienvenido a GymTrack</h3>
                 <p class="text-xs text-slate-500 mt-1">Ingresá con tu usuario de socio o staff</p>
@@ -449,12 +447,26 @@
                 {% csrf_token %}
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Usuario / DNI</label>
-                    <input type="text" name="username" required placeholder="admin o empleado1" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                    <input type="text" name="username" required placeholder="socio / empleado1 / admin" 
+                           class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none text-slate-900">
                 </div>
+
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Contraseña</label>
-                    <input type="password" name="password" required placeholder="••••••••" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-semibold text-slate-700">Contraseña</label>
+                        <a href="https://wa.me/543411234567?text=Hola,%20olvidé%20mi%20contraseña%20en%20GymTrack" target="_blank" class="text-[11px] font-semibold text-blue-600 hover:underline">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+                    <div class="relative">
+                        <input type="password" id="modalPasswordInput" name="password" required placeholder="••••••••" 
+                               class="w-full px-3 py-2 pr-10 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none text-slate-900">
+                        <button type="button" onclick="toggleModalPassword()" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 transition">
+                            <i id="modalToggleIcon" class="fa-solid fa-eye text-xs"></i>
+                        </button>
+                    </div>
                 </div>
+
                 <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition">
                     Ingresar
                 </button>
@@ -492,6 +504,21 @@
         }
         function closeLoginModal() {
             document.getElementById('loginModal').classList.add('hidden');
+        }
+
+        // Mostrar / Ocultar Contraseña
+        function toggleModalPassword() {
+            const input = document.getElementById('modalPasswordInput');
+            const icon = document.getElementById('modalToggleIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
         }
     </script>
 </body>

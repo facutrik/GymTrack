@@ -1,15 +1,12 @@
-# usuarios/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from actividades.models import Actividad
 from membresias.models import Plan
 
 def inicio_publico(request):
-    # Si ya inició sesión, no ve la landing; va directo a su panel
     if request.user.is_authenticated:
         return redirect('dashboard')
     
-    # Datos dinámicos para la landing pública
     actividades = Actividad.objects.all()
     planes = Plan.objects.all()
     
@@ -34,4 +31,8 @@ def dashboard(request):
     
     # 3. Socio (por defecto)
     else:
-        return render(request, 'socio/dashboard.html')
+        actividades = Actividad.objects.all()
+        context = {
+            'actividades': actividades,
+        }
+        return render(request, 'socio/dashboard.html', context)
