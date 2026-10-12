@@ -84,7 +84,7 @@
 
         <!-- TARJETAS DE MÉTRICAS GLOBALES -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <!-- Socios Totales -->
+            <!-- Socios Totales (Conectado a admin_socios) -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -95,7 +95,7 @@
                         <i class="fa-solid fa-users"></i>
                     </div>
                 </div>
-                <a href="#" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
+                <a href="{% url 'admin_socios' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
                     Ver Socios <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
             </div>
@@ -111,23 +111,24 @@
                         <i class="fa-solid fa-id-card-clip"></i>
                     </div>
                 </div>
-                <a href="#" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
+                <a href="{% url 'admin_empleados' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
                     Ver Empleados <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
             </div>
 
-            <!-- Pagos del Mes -->
+            <!-- En la tarjeta de Pagos del Mes -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Ingresos (Mes)</span>
-                        <h3 class="text-2xl font-black text-white mt-1">${{ ingresos_mes|default:"--" }}</h3>
+                        <h3 class="text-2xl font-black text-white mt-1">${{ ingresos_mes|default:"0" }}</h3>
                     </div>
                     <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl">
                         <i class="fa-solid fa-sack-dollar"></i>
                     </div>
                 </div>
-                <a href="#" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
+                <!-- 📌 Conectado a admin_pagos -->
+                <a href="{% url 'admin_pagos' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
                     Ver Registro <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
             </div>
@@ -175,7 +176,8 @@
                     </p>
                 </div>
                 <div class="flex flex-wrap gap-3">
-                    <a href="#" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">
+                    <!-- Botón para abrir el formulario modal de alta de socio -->
+                    <a href="{% url 'admin_socios' %}?nuevo=1" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">
                         <i class="fa-solid fa-user-plus"></i> Nuevo Socio
                     </a>
                     <a href="#" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">

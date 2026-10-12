@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymTrack - Gestión de Socios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b1120;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+
+    <!-- NAVBAR ADMIN -->
+    <nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <a href="{% url 'dashboard' %}" class="flex items-center gap-3 group">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-600/30 group-hover:scale-105 transition">
+                            🏋️‍♂️
+                        </div>
+                        <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+                            GymTrack
+                        </span>
+                    </a>
+                    <span class="text-[11px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2.5 py-0.5 rounded-full ml-2">
+                        Padrón de Socios
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <a href="{% url 'dashboard' %}" class="text-xs font-semibold text-slate-400 hover:text-white transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-left"></i> Volver al Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+        
+        <!-- ALERTAS DJANGO -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="p-4 rounded-xl text-xs font-semibold flex items-center justify-between border {% if message.tags == 'error' %}bg-red-500/10 border-red-500/30 text-red-300{% else %}bg-emerald-500/10 border-emerald-500/30 text-emerald-300{% endif %}">
+                    <span>{{ message }}</span>
+                    <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- ENCABEZADO -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-white tracking-tight">Padrón de Socios 👥</h1>
+                <p class="text-slate-400 text-xs mt-0.5">Control de cuentas, búsqueda por DNI, bajas automáticas y manuales.</p>
+            </div>
+            
+            <button onclick="openModalAlta()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 w-fit">
+                <i class="fa-solid fa-user-plus"></i> Dar de Alta Nuevo Socio
+            </button>
+        </div>
+
+        <!-- BARRA DE BÚSQUEDA Y FILTROS -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <!-- Formulario de búsqueda por DNI / Nombre -->
+            <form method="GET" action="{% url 'admin_socios' %}" class="w-full md:w-auto flex-1 flex flex-wrap gap-2">
+                <div class="relative flex-1 min-w-[240px]">
+                    <input type="text" name="q" value="{{ query }}" placeholder="Buscar por DNI, nombre o apellido..." 
+                           class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
+                </div>
+
+                <!-- Filtro de estado Activos / Dados de baja -->
+                <select name="estado" onchange="this.form.submit()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    <option value="todos" {% if filtro_estado == 'todos' %}selected{% endif %}>Todos los socios</option>
+                    <option value="activos" {% if filtro_estado == 'activos' %}selected{% endif %}>Solo Activos</option>
+                    <option value="inactivos" {% if filtro_estado == 'inactivos' %}selected{% endif %}>Dados de Baja</option>
+                </select>
+
+                <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition">
+                    Buscar
+                </button>
+                
+                {% if query %}
+                    <a href="{% url 'admin_socios' %}" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs rounded-xl transition flex items-center" title="Limpiar filtro">
+                        <i class="fa-solid fa-xmark"></i>
+                    </a>
+                {% endif %}
+            </form>
+
+            <div class="text-xs text-slate-400 flex items-center gap-2">
+                <span>Resultados:</span>
+                <span class="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold">{{ total_socios }}</span>
+            </div>
+        </div>
+
+        <!-- TABLA DE SOCIOS -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
+                        <tr>
+                            <th class="py-3.5 px-4 font-semibold">Socio / Nombre</th>
+                            <th class="py-3.5 px-4 font-semibold">DNI (Usuario)</th>
+                            <th class="py-3.5 px-4 font-semibold">Contacto</th>
+                            <th class="py-3.5 px-4 font-semibold">Estado Cuenta</th>
+                            <th class="py-3.5 px-4 font-semibold">Condición</th>
+                            <th class="py-3.5 px-4 font-semibold text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/80 text-slate-300">
+                        {% for item in socios %}
+                            <tr class="hover:bg-slate-800/40 transition {% if not item.usuario.is_active %}opacity-60 bg-red-950/10{% endif %}">
+                                <!-- Nombre y Avatar -->
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full {% if item.usuario.is_active %}bg-gradient-to-tr from-blue-600 to-indigo-500{% else %}bg-slate-700{% endif %} flex items-center justify-center text-xs font-bold text-white shadow">
+                                            {{ item.usuario.username|slice:":1"|upper }}
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-white text-xs">{{ item.usuario.get_full_name|default:item.usuario.username }}</p>
+                                            <p class="text-[10px] text-slate-500">Alta: {{ item.usuario.date_joined|date:"d/m/Y" }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- DNI -->
+                                <td class="py-3 px-4 font-mono font-semibold text-slate-200">
+                                    {{ item.usuario.username }}
+                                </td>
+
+                                <!-- Contacto -->
+                                <td class="py-3 px-4 text-[11px]">
+                                    <p class="text-slate-300">{{ item.usuario.email|default:"Sin email" }}</p>
+                                </td>
+
+                                <!-- Semáforo Verde / Rojo -->
+                                <td class="py-3 px-4">
+                                    {% if item.estado_cuota == 'VERDE' %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Al Día
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-500/10 border border-rose-500/20 text-rose-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Vencido
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Condición (Activo / Dado de baja) -->
+                                <td class="py-3 px-4">
+                                    {% if item.usuario.is_active %}
+                                        <span class="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                                            Activo
+                                        </span>
+                                    {% else %}
+                                        <span class="text-[10px] font-bold text-red-400 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">
+                                            Dado de Baja
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Acciones (Baja Manual o Reactivación) -->
+                                <td class="py-3 px-4 text-right">
+                                    <form method="POST" action="{% url 'admin_socios' %}" class="inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="accion" value="toggle_baja">
+                                        <input type="hidden" name="socio_id" value="{{ item.usuario.id }}">
+                                        
+                                        {% if item.usuario.is_active %}
+                                            <button type="submit" onclick="return confirm('¿Confirmas dar de baja a este socio?')" 
+                                                    class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-red-400 hover:bg-red-500/10 border border-red-500/20 transition" title="Dar de baja">
+                                                <i class="fa-solid fa-user-slash"></i> Dar de Baja
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" onclick="return confirm('¿Deseas reactivar a este socio?')" 
+                                                    class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition" title="Reactivar">
+                                                <i class="fa-solid fa-user-check"></i> Reactivar
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="py-8 text-center text-slate-500 text-xs">
+                                    <i class="fa-solid fa-users-slash text-2xl mb-2 block text-slate-600"></i>
+                                    No se encontraron socios registrados con ese DNI o filtro.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL PARA DAR DE ALTA UN SOCIO -->
+    <div id="modalAltaSocio" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeModalAlta()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-200 transition">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-white">Alta de Nuevo Socio</h3>
+                    <p class="text-xs text-slate-400">Creá el legajo digital y usuario del socio.</p>
+                </div>
+            </div>
+
+            <form method="POST" action="{% url 'admin_socios' %}" class="space-y-3.5 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="alta">
+                
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">DNI (Usuario de acceso) *</label>
+                    <input type="text" name="dni" required placeholder="Ej: 42123456" 
+                           class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-300 mb-1">Nombre *</label>
+                        <input type="text" name="nombre" required placeholder="Ej: Juan" 
+                               class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-300 mb-1">Apellido *</label>
+                        <input type="text" name="apellido" required placeholder="Ej: Gómez" 
+                               class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-300 mb-1">Email</label>
+                        <input type="email" name="email" placeholder="socio@email.com" 
+                               class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-300 mb-1">Teléfono</label>
+                        <input type="text" name="telefono" placeholder="+54 341..." 
+                               class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Contraseña inicial (opcional, por defecto: 123)</label>
+                    <input type="password" name="password" placeholder="123" 
+                           class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeModalAlta()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-md transition">
+                        Guardar Socio
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModalAlta() {
+            document.getElementById('modalAltaSocio').classList.remove('hidden');
+        }
+        function closeModalAlta() {
+            document.getElementById('modalAltaSocio').classList.add('hidden');
+        }
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('nuevo') === '1') {
+            openModalAlta();
+        }
+    </script>
+</body>
+</html>
