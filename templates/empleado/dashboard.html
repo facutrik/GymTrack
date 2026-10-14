@@ -15,40 +15,46 @@
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #0b1120; /* Slate 950 */
+            background-color: #0b1120; /* Tono idéntico al Administrador */
         }
     </style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-    <!-- NAVBAR DEL STAFF -->
-    <nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
+    <!-- NAVBAR UNIFICADA -->
+    <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo -->
+                <!-- Navbar Privado (Cuando user.is_authenticated) -->
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-600/30">
+                    <!-- Icono / Logo -->
+                    <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white text-lg shadow-md shadow-blue-600/30">
                         🏋️‍♂️
                     </div>
-                    <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
-                        GymTrack
-                    </span>
-                    <span class="hidden sm:inline-block text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-0.5 rounded-full ml-2">
-                        Recepción / Turno
-                    </span>
+                    
+                    <!-- Marca Compartida: GymTrack x Bodynamic -->
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-xl font-extrabold tracking-tight text-white">
+                            GymTrack
+                        </span>
+                        <span class="text-xs font-light text-slate-500">×</span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                            Bodynamic
+                        </span>
+                    </div>
                 </div>
 
-                <!-- Usuario y Salir -->
+                <!-- Usuario con acceso a su Perfil/Fichaje y Botón de Salir -->
                 <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-sm font-bold shadow-md">
+                    <a href="{% url 'mi_perfil_empleado' %}" class="flex items-center gap-3 hover:opacity-80 transition group" title="Ver mi perfil y fichaje de horas">
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-sm font-bold shadow-md">
                             {{ user.username|slice:":1"|upper }}
                         </div>
                         <div class="hidden sm:block text-left leading-tight">
-                            <p class="text-xs font-bold text-white">{{ user.username }}</p>
-                            <p class="text-[10px] text-amber-400 font-semibold">Staff Activo</p>
+                            <p class="text-xs font-bold text-white group-hover:text-blue-400 transition">{{ user.username }}</p>
+                            <p class="text-[10px] text-blue-400 font-semibold">Mi Perfil / Fichaje</p>
                         </div>
-                    </div>
+                    </a>
 
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
@@ -64,130 +70,339 @@
     <!-- CONTENEDOR PRINCIPAL -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
         
-        <!-- ENCABEZADO -->
+        <!-- ENCABEZADO CON BADGE Y ACCESO RÁPIDO -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold mb-2">
-                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                    Turno en curso
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                    Recepción & Mostrador
                 </div>
-                <h1 class="text-3xl font-extrabold text-white tracking-tight">Panel de Operaciones 📋</h1>
-                <p class="text-slate-400 text-sm mt-1">Bienvenido/a, {{ user.username }}. Control operativo y recepción de socios.</p>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">Panel de Recepción / Operaciones 📋</h1>
+                <p class="text-slate-400 text-sm mt-1">Bienvenido/a, {{ user.username }}. Control de acceso, verificación de cuota por DNI y gestión de socios.</p>
             </div>
 
-            <!-- Búsqueda rápida en mostrador -->
-            <div class="w-full md:w-72">
-                <div class="relative">
-                    <input type="text" placeholder="Buscar socio por DNI..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
-                </div>
+            <!-- Accesos rápidos de cabecera -->
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="openAsistenciaModal()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-id-card"></i> Control de Acceso (DNI)
+                </button>
+                <a href="{% url 'padron_socios_empleado' %}" class="px-4 py-2.5 bg-slate-900 border border-slate-700 hover:border-slate-600 text-slate-200 font-bold text-xs rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-users text-slate-400"></i> Padrón de Socios
+                </a>
             </div>
         </div>
 
         <!-- TARJETAS DE MÉTRICAS OPERATIVAS -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <!-- Asistencias -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            
+            <!-- Tarjeta 1: Asistencias Hoy -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Asistencias Hoy</span>
-                        <h3 class="text-2xl font-black text-white mt-1">{{ asistencias_hoy|default:"--" }}</h3>
+                        <h3 class="text-2xl font-black text-white mt-1">{{ asistencias_hoy|default:"0" }}</h3>
                     </div>
                     <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl">
                         <i class="fa-solid fa-clipboard-check"></i>
                     </div>
                 </div>
-                <a href="#" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
+                <button type="button" onclick="openAsistenciaModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5 cursor-pointer">
                     Registrar Ingreso <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                </a>
+                </button>
             </div>
 
-            <!-- Socios Registrados -->
+            <!-- Tarjeta 2: Padrón de Socios -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Padrón Socios</span>
-                        <h3 class="text-2xl font-black text-white mt-1"><i class="fa-solid fa-address-book text-xl text-cyan-400"></i></h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Padrón de Socios</span>
+                        <h3 class="text-2xl font-black text-white mt-1"><i class="fa-solid fa-address-book text-slate-500 text-xl"></i></h3>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xl">
                         <i class="fa-solid fa-users"></i>
                     </div>
                 </div>
-                <a href="#" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
-                    Buscar Socio <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                <a href="{% url 'padron_socios_empleado' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
+                    Ver Socios <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
             </div>
 
-            <!-- Cobros Turno -->
+            <!-- Tarjeta 3: Actividades / Clases Especiales -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Cobros del Turno</span>
-                        <h3 class="text-2xl font-black text-white mt-1">${{ cobros_turno|default:"--" }}</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-wallet"></i>
-                    </div>
-                </div>
-                <a href="#" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
-                    Cobrar Cuota <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                </a>
-            </div>
-
-            <!-- Reservas Clases -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Turno / Clases</span>
-                        <h3 class="text-2xl font-black text-white mt-1">{{ reservas_hoy|default:"--" }}</h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Actividades / Clases</span>
+                        <h3 class="text-2xl font-black text-white mt-1"><i class="fa-solid fa-dumbbell text-slate-500 text-xl"></i></h3>
                     </div>
                     <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl">
                         <i class="fa-solid fa-calendar-day"></i>
                     </div>
                 </div>
-                <a href="#" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
-                    Ver Reservas <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                <a href="{% url 'actividades_empleado' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
+                    Ver Inscriptos <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
             </div>
+
         </div>
 
-        <!-- ACCIONES RÁPIDAS Y AVISOS -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <div class="lg:col-span-8 bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
-                <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-bolt text-blue-500"></i> Acciones Frecuentes de Mostrador
-                </h3>
-                <p class="text-xs text-slate-400 mb-5">Atajos para los procedimientos habituales en la entrada del gimnasio.</p>
-                
-                <div class="flex flex-wrap gap-3">
-                    <a href="#" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">
-                        <i class="fa-solid fa-user-check"></i> Marcar Asistencia
-                    </a>
-                    <a href="#" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">
-                        <i class="fa-solid fa-money-bill-wave"></i> Registrar Pago de Socio
-                    </a>
-                    <a href="#" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-2">
-                        <i class="fa-solid fa-user-plus text-blue-400"></i> Alta de Nuevo Socio
-                    </a>
+        <!-- TABLA: REGISTRO DE INGRESOS DE HOY -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="font-bold text-white text-base flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-blue-400"></i> Registro de Ingresos de Hoy
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Accesos validados y computados en mostrador</p>
                 </div>
+                <span class="text-xs font-bold px-3 py-1 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    Total: {{ asistencias_hoy|default:0 }}
+                </span>
             </div>
-
-            <div class="lg:col-span-4 bg-slate-900/60 border border-slate-800 border-l-4 border-l-cyan-500 rounded-2xl p-6">
-                <h4 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-info text-cyan-400"></i> Protocolo de Ingreso
-                </h4>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    Recordá verificar que la cuota del socio esté en estado <span class="text-emerald-400 font-semibold">Al Día</span> antes de autorizar el ingreso al salón o a las salas de clases.
-                </p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
+                        <tr>
+                            <th class="pb-3 px-3">Hora</th>
+                            <th class="pb-3 px-3">Socio</th>
+                            <th class="pb-3 px-3">DNI</th>
+                            <th class="pb-3 px-3 text-right">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                        {% for item in ultimas_asistencias %}
+                            <tr class="hover:bg-slate-800/30 transition">
+                                <td class="py-3 px-3 font-bold text-blue-400">{{ item.fecha_hora|date:"H:i" }} hs</td>
+                                <td class="py-3 px-3 text-white font-medium">
+                                    {{ item.socio.usuario.first_name }} {{ item.socio.usuario.last_name }}
+                                </td>
+                                <td class="py-3 px-3 font-mono text-slate-400">{{ item.socio.usuario.username }}</td>
+                                <td class="py-3 px-3 text-right">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        Presente
+                                    </span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="py-8 text-center text-slate-500 text-xs">
+                                    Aún no hay asistencias registradas en el día de hoy.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
 
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-slate-900 border-t border-slate-800 text-slate-500 py-6 text-xs text-center">
-        <p>© 2026 GymTrack — Panel Operativo de Recepción.</p>
+    <footer class="bg-slate-900 border-t border-slate-800 text-slate-500 py-6 text-xs text-center mt-auto">
+        <p>© 2026 GymTrack — Panel Operativo de Mostrador & Recepción.</p>
     </footer>
 
+    <!-- =============================================================== -->
+    <!-- 🎟️ MODAL SUPERPUESTO (CONTROL DE ASISTENCIA Y SEMÁFORO)         -->
+    <!-- =============================================================== -->
+    <div id="modalAsistencia" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 {% if not estado_acceso %}hidden{% endif %} transition-all">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative">
+            
+            <!-- Botón Cerrar (X) -->
+            <button type="button" onclick="closeAsistenciaModal()" class="absolute top-5 right-5 w-9 h-9 rounded-xl bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+
+            <!-- Cabecera del modal -->
+            <div class="flex items-center gap-3.5 mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-id-card-clip"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-extrabold text-white tracking-tight">Control de Asistencia</h3>
+                    <p class="text-xs text-slate-400 font-medium">Marcación rápida de ingreso por DNI</p>
+                </div>
+            </div>
+
+            <!-- Formulario DNI -->
+            <form method="POST" action="{% url 'registrar_asistencia' %}" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="inputDniAsistencia" class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                        DNI del Socio
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500 text-sm">
+                            <i class="fa-solid fa-fingerprint"></i>
+                        </span>
+                        <input type="text" id="inputDniAsistencia" name="dni" required placeholder="Ej: 46132052" autofocus
+                               class="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-700/80 rounded-2xl text-base text-white font-medium placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner">
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-1">
+                    <button type="button" onclick="closeAsistenciaModal()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
+                        Cerrar
+                    </button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-check"></i> Marcar Ingreso
+                    </button>
+                </div>
+            </form>
+
+            <!-- FICHA COMPLETA DEL SOCIO Y MODO SEMÁFORO -->
+            {% if estado_acceso %}
+                <div class="mt-6 pt-5 border-t border-slate-800">
+                    
+                    {% if estado_acceso == 'verde' %}
+                        <!-- 🟢 ESTADO VERDE: AL DÍA -->
+                        <div class="bg-slate-950/70 border-2 border-emerald-500/40 rounded-2xl p-5 space-y-4 shadow-xl shadow-emerald-950/20">
+                            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                                <div class="flex items-center gap-3.5">
+                                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl font-black">
+                                        {{ usuario_socio.first_name|slice:":1"|upper }}{{ usuario_socio.last_name|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h4 class="text-base font-extrabold text-white">{{ usuario_socio.first_name }} {{ usuario_socio.last_name }}</h4>
+                                            <span class="text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">Al Día</span>
+                                        </div>
+                                        <p class="text-xs text-slate-400 font-mono mt-0.5">DNI: {{ usuario_socio.username }}</p>
+                                    </div>
+                                </div>
+                                <span class="text-3xl animate-pulse">🟢</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2.5 text-xs">
+                                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800/80">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Ingreso Marcado</span>
+                                    <span class="text-white font-bold text-sm">{{ asistencia_creada.fecha_hora|date:"H:i:s" }} hs</span>
+                                </div>
+                                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800/80">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Plan / Cuota</span>
+                                    <span class="text-emerald-400 font-bold text-sm">Habilitado</span>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800/80">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Actividades Habilitadas</span>
+                                <div class="flex flex-wrap gap-1.5">
+                                    {% for act in actividades_socio %}
+                                        <span class="px-2.5 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-[11px] font-semibold flex items-center gap-1.5">
+                                            <i class="fa-solid fa-dumbbell text-[10px]"></i> {{ act.nombre }}
+                                        </span>
+                                    {% empty %}
+                                        <span class="px-2.5 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-[11px] font-semibold">
+                                            🏋️‍♂️ Musculación Libre / Cardio
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                    {% elif estado_acceso == 'bloqueado_hoy' %}
+                        <!-- 🟡 ESTADO AMARILLO: YA INGRESÓ HOY -->
+                        <div class="bg-slate-950/70 border-2 border-amber-500/50 rounded-2xl p-5 space-y-4 shadow-xl">
+                            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                                <div class="flex items-center gap-3.5">
+                                    <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xl font-black">
+                                        {{ usuario_socio.first_name|slice:":1"|upper }}{{ usuario_socio.last_name|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h4 class="text-base font-extrabold text-white">{{ usuario_socio.first_name }} {{ usuario_socio.last_name }}</h4>
+                                            <span class="text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full">Límite Diario</span>
+                                        </div>
+                                        <p class="text-xs text-slate-400 font-mono mt-0.5">DNI: {{ usuario_socio.username }}</p>
+                                    </div>
+                                </div>
+                                <span class="text-3xl animate-pulse">🟡</span>
+                            </div>
+
+                            <div class="p-3.5 bg-amber-950/30 border border-amber-500/30 rounded-xl space-y-1">
+                                <div class="flex items-center gap-2 text-amber-300 font-bold text-xs">
+                                    <i class="fa-solid fa-clock-rotate-left"></i> Ingreso ya registrado hoy
+                                </div>
+                                <p class="text-[11px] text-slate-300">
+                                    El socio ya marcó asistencia hoy a las <strong class="text-white">{{ asistencia_creada.fecha_hora|date:"H:i" }} hs</strong>. Se permite 1 ingreso por día.
+                                </p>
+                            </div>
+                        </div>
+
+                    {% elif estado_acceso == 'fuera_de_horario' %}
+                        <!-- ⛔ FUERA DE HORARIO OPERATIVO -->
+                        <div class="p-4 bg-slate-950 border border-amber-500/40 rounded-2xl space-y-2">
+                            <div class="flex items-center gap-3 text-amber-400 font-bold text-xs">
+                                <i class="fa-solid fa-store-slash text-base"></i> Gimnasio Fuera de Horario
+                            </div>
+                            <p class="text-[11px] text-slate-300 leading-relaxed">{{ mensaje_error }}</p>
+                        </div>
+
+                    {% elif estado_acceso == 'rojo' %}
+                        <!-- 🔴 ESTADO ROJO: CUOTA VENCIDA -->
+                        <div class="bg-slate-950/70 border-2 border-rose-500/40 rounded-2xl p-5 space-y-4 shadow-xl">
+                            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                                <div class="flex items-center gap-3.5">
+                                    <div class="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center text-xl font-black">
+                                        {{ usuario_socio.first_name|slice:":1"|upper }}{{ usuario_socio.last_name|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h4 class="text-base font-extrabold text-white">{{ usuario_socio.first_name }} {{ usuario_socio.last_name }}</h4>
+                                            <span class="text-[10px] font-black uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded-full">Vencido</span>
+                                        </div>
+                                        <p class="text-xs text-slate-400 font-mono mt-0.5">DNI: {{ usuario_socio.username }}</p>
+                                    </div>
+                                </div>
+                                <span class="text-3xl animate-pulse">🔴</span>
+                            </div>
+
+                            <div class="p-3 bg-rose-950/30 border border-rose-500/20 rounded-xl flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold text-rose-300 block">Acceso Denegado por Falta de Pago</span>
+                                    <span class="text-[11px] text-slate-400">Regularice su cuota mensual en mostrador.</span>
+                                </div>
+                                <a href="{% url 'padron_socios_empleado' %}?q={{ usuario_socio.username }}" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow transition">
+                                    Ir a Cobrar
+                                </a>
+                            </div>
+                        </div>
+
+                    {% elif estado_acceso == 'no_encontrado' %}
+                        <!-- ⚠️ NO ENCONTRADO -->
+                        <div class="p-4 bg-amber-950/40 border border-amber-500/30 rounded-2xl flex items-center gap-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-amber-300">Socio no encontrado</h4>
+                                <p class="text-[11px] text-slate-400">No se localizó ningún miembro con ese DNI.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- SCRIPT DE APERTURA Y CONTROL DEL MODAL -->
+    <script>
+        function openAsistenciaModal() {
+            document.getElementById('modalAsistencia').classList.remove('hidden');
+            setTimeout(() => {
+                const input = document.getElementById('inputDniAsistencia');
+                if (input) input.focus();
+            }, 100);
+        }
+
+        function closeAsistenciaModal() {
+            document.getElementById('modalAsistencia').classList.add('hidden');
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === "Escape") closeAsistenciaModal();
+        });
+    </script>
 </body>
 </html>
