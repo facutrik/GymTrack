@@ -15,12 +15,10 @@ try:
     from rutinas.models import Rutina
 except ImportError:
     Rutina = None
-
 try:
     from reservas.models import Reserva
 except ImportError:
     Reserva = None
-
 try:
     from pagos.models import Pago
 except ImportError:
@@ -291,22 +289,28 @@ def dashboard(request):
 
 
 # ==========================================================
-# 👥 3. ADMINISTRACIÓN DE EMPLEADOS (ADMIN)
+# 👥 1. EMPLEADOS CON HORAS DEL MES E HISTORIAL (ADMIN)
 # ==========================================================
+# usuarios/views.py
+
 @login_required
 def admin_empleados(request):
     user = request.user
     if not (user.is_superuser or getattr(user, 'rol', None) == 'admin'):
         return redirect('dashboard')
 
+    hoy = timezone.localdate()
+    inicio_mes = timezone.make_aware(datetime(hoy.year, hoy.month, 1, 0, 0, 0))
+
     if request.method == 'POST':
         accion = request.POST.get('accion')
 
+        # Acción: Dar de baja o reactivar
         if accion == 'toggle_baja':
             emp_id = request.POST.get('empleado_id')
             empleado = get_object_or_404(Usuario, id=emp_id)
             if empleado == user:
-                messages.error(request, 'No podés darte de baja a vos mismo.')
+                messages.error(request, 'No podés dar de baja a vos mismo.')
             else:
                 empleado.is_active = not empleado.is_active
                 empleado.save()
@@ -314,16 +318,17 @@ def admin_empleados(request):
                 messages.success(request, f'El empleado {empleado.username} ahora está {estado}.')
             return redirect('admin_empleados')
 
+        # Acción: Alta de empleado
         elif accion == 'alta':
             username = request.POST.get('username', '').strip()
             nombre = request.POST.get('nombre', '').strip()
             apellido = request.POST.get('apellido', '').strip()
             email = request.POST.get('email', '').strip()
-            rol = request.POST.get('rol', 'recepcion').strip()
+            rol = request.POST.get('rol', 'entrenador').strip()
             password = request.POST.get('password', '').strip() or '123'
 
             if Usuario.objects.filter(username=username).exists():
-                messages.error(request, f'El usuario {username} ya existe.')
+                messages.error(request, f'El usuario o DNI {username} ya existe.')
             else:
                 nuevo_emp = Usuario.objects.create_user(
                     username=username,
@@ -335,16 +340,35 @@ def admin_empleados(request):
                 nuevo_emp.rol = rol
                 nuevo_emp.is_staff = True
                 nuevo_emp.save()
-                messages.success(request, f'Empleado {nombre} {apellido} creado con éxito.')
+                messages.success(request, f'Empleado {nombre} {apellido} registrado con éxito.')
             return redirect('admin_empleados')
 
+        # 📌 Acción: EDITAR EMPLEADO
+        elif accion == 'editar':
+            emp_id = request.POST.get('empleado_id')
+            empleado = get_object_or_404(Usuario, id=emp_id)
+
+            empleado.first_name = request.POST.get('nombre', '').strip()
+            empleado.last_name = request.POST.get('apellido', '').strip()
+            empleado.email = request.POST.get('email', '').strip()
+            empleado.rol = request.POST.get('rol', empleado.rol).strip()
+
+            nueva_clave = request.POST.get('password', '').strip()
+            if nueva_clave:
+                empleado.set_password(nueva_clave)
+
+            empleado.save()
+            messages.success(request, f'Datos de {empleado.first_name} {empleado.last_name} actualizados correctamente.')
+            return redirect('admin_empleados')
+
+    # Búsqueda y armado de lista
     query = request.GET.get('q', '').strip()
     filtro_rol = request.GET.get('rol', 'todos')
 
-    empleados = Usuario.objects.filter(rol__in=['recepcion', 'entrenador', 'admin', 'empleado']).order_by('-date_joined')
+    empleados_qs = Usuario.objects.filter(rol__in=['recepcion', 'entrenador', 'admin', 'empleado']).order_by('-date_joined')
 
     if query:
-        empleados = empleados.filter(
+        empleados_qs = empleados_qs.filter(
             Q(username__icontains=query) |
             Q(first_name__icontains=query) |
             Q(last_name__icontains=query) |
@@ -352,19 +376,151 @@ def admin_empleados(request):
         )
 
     if filtro_rol != 'todos':
-        empleados = empleados.filter(rol=filtro_rol)
+        empleados_qs = empleados_qs.filter(rol=filtro_rol)
+
+    empleados_lista = []
+    for emp in empleados_qs:
+        turnos_mes = AsistenciaEmpleado.objects.filter(
+            empleado=emp,
+            hora_entrada__gte=inicio_mes
+        ).order_by('-hora_entrada')
+
+        minutos_mes = 0
+        for t in turnos_mes:
+            if t.hora_salida:
+                duracion = t.hora_salida - t.hora_entrada
+                minutos_mes += int(duracion.total_seconds() // 60)
+
+        horas_mes_str = f"{minutos_mes // 60}h {minutos_mes % 60}m"
+
+        empleados_lista.append({
+            'usuario': emp,
+            'horas_mes': horas_mes_str,
+            'total_turnos_mes': turnos_mes.count(),
+            'historial_turnos': turnos_mes[:20],
+        })
 
     context = {
-        'empleados': empleados,
+        'empleados': empleados_lista,
         'query': query,
         'filtro_rol': filtro_rol,
-        'total_empleados': empleados.count(),
+        'total_empleados': len(empleados_lista),
     }
     return render(request, 'admin/empleados.html', context)
 
+# ==========================================================
+# 🏋️‍♂️ 2. GESTIÓN Y VISOR DE ACTIVIDADES (ADMIN)
+# ==========================================================
+@login_required
+def admin_actividades(request):
+    user = request.user
+    if not (user.is_superuser or getattr(user, 'rol', None) == 'admin'):
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        accion = request.POST.get('accion')
+        
+        if accion == 'crear':
+            nombre = request.POST.get('nombre', '').strip()
+            desc = request.POST.get('descripcion', '').strip()
+            req_reserva = request.POST.get('requiere_reserva') == 'on'
+            
+            act = Actividad.objects.create(nombre=nombre, descripcion=desc)
+            if hasattr(act, 'requiere_reserva'):
+                act.requiere_reserva = req_reserva
+                act.save()
+            messages.success(request, f"Actividad '{nombre}' creada correctamente.")
+            return redirect('admin_actividades')
+
+        elif accion == 'editar':
+            act_id = request.POST.get('actividad_id')
+            act = get_object_or_404(Actividad, id=act_id)
+            act.nombre = request.POST.get('nombre', '').strip()
+            act.descripcion = request.POST.get('descripcion', '').strip()
+            if hasattr(act, 'requiere_reserva'):
+                act.requiere_reserva = request.POST.get('requiere_reserva') == 'on'
+            act.save()
+            messages.success(request, f"Actividad '{act.nombre}' actualizada.")
+            return redirect('admin_actividades')
+
+        elif accion == 'eliminar':
+            act_id = request.POST.get('actividad_id')
+            act = get_object_or_404(Actividad, id=act_id)
+            nombre_act = act.nombre
+            act.delete()
+            messages.success(request, f"Actividad '{nombre_act}' eliminada del sistema.")
+            return redirect('admin_actividades')
+
+    actividades = Actividad.objects.all().order_by('nombre')
+    context = {
+        'actividades': actividades,
+        'total_actividades': actividades.count(),
+    }
+    return render(request, 'admin/actividades.html', context)
 
 # ==========================================================
-# ⏱️ 4. PERFIL DEL EMPLEADO Y FICHAJE LABORAL
+# 💳 3. GESTIÓN COMPLETA DE MEMBRESÍAS / CRUD (ADMIN)
+# ==========================================================
+@login_required
+def admin_membresias(request):
+    user = request.user
+    if not (user.is_superuser or getattr(user, 'rol', None) == 'admin'):
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        accion = request.POST.get('accion')
+
+        # Crear Plan
+        if accion == 'crear':
+            nombre = request.POST.get('nombre', '').strip()
+            precio = request.POST.get('precio', '0').strip()
+            duracion = request.POST.get('duracion_dias', '30').strip()
+            desc = request.POST.get('descripcion', '').strip()
+
+            nuevo_plan = Plan(nombre=nombre, precio=precio)
+            if hasattr(nuevo_plan, 'duracion_dias'):
+                nuevo_plan.duracion_dias = int(duracion) if duracion.isdigit() else 30
+            if hasattr(nuevo_plan, 'descripcion'):
+                nuevo_plan.descripcion = desc
+            nuevo_plan.save()
+            messages.success(request, f"Membresía '{nombre}' creada exitosamente.")
+            return redirect('admin_membresias')
+
+        # Editar Plan
+        elif accion == 'editar':
+            plan_id = request.POST.get('plan_id')
+            plan = get_object_or_404(Plan, id=plan_id)
+            plan.nombre = request.POST.get('nombre', '').strip()
+            plan.precio = request.POST.get('precio', '0').strip()
+            
+            duracion = request.POST.get('duracion_dias', '30').strip()
+            if hasattr(plan, 'duracion_dias'):
+                plan.duracion_dias = int(duracion) if duracion.isdigit() else 30
+            if hasattr(plan, 'descripcion'):
+                plan.descripcion = request.POST.get('descripcion', '').strip()
+                
+            plan.save()
+            messages.success(request, f"Membresía '{plan.nombre}' actualizada.")
+            return redirect('admin_membresias')
+
+        # Eliminar Plan
+        elif accion == 'eliminar':
+            plan_id = request.POST.get('plan_id')
+            plan = get_object_or_404(Plan, id=plan_id)
+            nombre_p = plan.nombre
+            plan.delete()
+            messages.success(request, f"Membresía '{nombre_p}' eliminada.")
+            return redirect('admin_membresias')
+
+    planes = Plan.objects.all().order_by('precio')
+    context = {
+        'planes': planes,
+        'total_planes': planes.count(),
+    }
+    return render(request, 'admin/membresias.html', context)
+
+# ==========================================================
+# ⏱️ PERFIL DEL EMPLEADO Y FICHAJE LABORAL
 # ==========================================================
 @login_required
 def mi_perfil_empleado(request):
