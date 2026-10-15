@@ -214,8 +214,8 @@ def dashboard(request):
             'profesores_cards': profesores_cards,
         }
         return render(request, 'empleado/dashboard.html', context)
-
-    # 3. Socio (Portal con 3 Botones Principales)
+    
+# 3. Socio (Portal con 3 Botones Principales)
     else:
         if hasattr(user, 'perfil_socio') and user.perfil_socio:
             socio_obj = user.perfil_socio
@@ -226,11 +226,58 @@ def dashboard(request):
 
         estado_cuenta = getattr(socio_obj, 'estado_cuenta', getattr(user, 'estado_cuenta', 'VERDE')).upper()
 
-        # Acciones POST en "Mi Perfil" (Datos y Contraseña)
+        # Importamos los modelos de rutinas
+        from rutinas.models import Rutina, DiaEntrenamiento, Ejercicio
+
+        # Obtener o crear la rutina personalizada del socio
+        rutina_custom = Rutina.objects.filter(socio=user, tipo='personalizada').first()
+        if not rutina_custom:
+            rutina_custom = Rutina.objects.create(socio=user, tipo='personalizada', nombre='Mi Rutina Semanal')
+
+        # Acciones POST: Perfil, Clave, o Gestión de Rutinas
         if request.method == 'POST':
             accion = request.POST.get('accion')
 
-            if accion == 'actualizar_perfil':
+            # --- GESTIÓN DE RUTINA EN BASE DE DATOS ---
+            if accion == 'agregar_ejercicio_custom':
+                nombre_dia = request.POST.get('dia', 'lunes').lower()
+                nombre_ejercicio = request.POST.get('nombre_ejercicio', '').strip()
+                series_reps = request.POST.get('repeticiones', '').strip()
+
+                if nombre_ejercicio:
+                    # Mapeo de número de día
+                    dias_map = {
+                        'lunes': 1, 'martes': 2, 'miercoles': 3, 'jueves': 4,
+                        'viernes': 5, 'sabado': 6, 'domingo': 7
+                    }
+                    num_dia = dias_map.get(nombre_dia, 1)
+
+                    dia_obj, _ = DiaEntrenamiento.objects.get_or_create(
+                        rutina=rutina_custom,
+                        nombre_dia=nombre_dia,
+                        defaults={'numero_dia': num_dia, 'enfoque': 'Entrenamiento'}
+                    )
+
+                    Ejercicio.objects.create(
+                        dia=dia_obj,
+                        nombre=nombre_ejercicio,
+                        repeticiones=series_reps or '4 series x 10-12 reps'
+                    )
+                    messages.success(request, f'Ejercicio agregado al día {nombre_dia.capitalize()}.')
+                return redirect('dashboard')
+
+            elif accion == 'eliminar_ejercicio_custom':
+                ejercicio_id = request.POST.get('ejercicio_id')
+                # Verificamos que el ejercicio pertenezca a la rutina de este socio antes de borrar
+                Ejercicio.objects.filter(
+                    id=ejercicio_id,
+                    dia__rutina__socio=user
+                ).delete()
+                messages.success(request, 'Ejercicio eliminado de tu rutina.')
+                return redirect('dashboard')
+
+            # --- ACTUALIZACIÓN DE PERFIL ---
+            elif accion == 'actualizar_perfil':
                 user.first_name = request.POST.get('first_name', '').strip()
                 user.last_name = request.POST.get('last_name', '').strip()
                 user.email = request.POST.get('email', '').strip()
@@ -240,6 +287,7 @@ def dashboard(request):
                 messages.success(request, 'Tus datos fueron actualizados correctamente.')
                 return redirect('dashboard')
 
+            # --- CAMBIO DE CONTRASEÑA ---
             elif accion == 'cambiar_password':
                 pass_actual = request.POST.get('pass_actual')
                 pass_nueva = request.POST.get('pass_nueva')
@@ -258,7 +306,7 @@ def dashboard(request):
                     messages.success(request, '¡Tu contraseña ha sido cambiada con éxito!')
                 return redirect('dashboard')
 
-        # Clasificación de Actividades (Anotadas vs Disponibles)
+        # Clasificación de Actividades
         todas_actividades = Actividad.objects.all()
         actividades_anotadas = []
         actividades_disponibles = []
@@ -280,16 +328,26 @@ def dashboard(request):
         if Pago:
             pagos = Pago.objects.filter(socio=socio_obj).order_by('-fecha_pago')
 
+        # Agrupamos los ejercicios de la base de datos por día de la semana
+        rutina_semanal = {
+            'lunes': [], 'martes': [], 'miercoles': [], 'jueves': [],
+            'viernes': [], 'sabado': [], 'domingo': []
+        }
+        for dia in rutina_custom.dias.prefetch_related('ejercicios').all():
+            clave_dia = dia.nombre_dia.lower()
+            if clave_dia in rutina_semanal:
+                rutina_semanal[clave_dia] = dia.ejercicios.all()
+
         context = {
             'socio': socio_obj,
             'estado_cuenta': estado_cuenta,
             'actividades_anotadas': actividades_anotadas,
             'actividades_disponibles': actividades_disponibles,
             'pagos': pagos,
+            'rutina_semanal': rutina_semanal,
         }
         return render(request, 'socio/dashboard.html', context)
-
-
+    
 # ==========================================================
 # 👥 3. ADMINISTRACIÓN DE EMPLEADOS (ADMIN)
 # ==========================================================

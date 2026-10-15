@@ -124,7 +124,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             <!-- 1er Botón: Mi Rutina -->
-            <button onclick="mostrarSeccion('rutina')" id="btn-rutina" class="main-btn active p-6 rounded-3xl bg-slate-900/60 border-2 border-slate-800 text-left transition-all duration-200 hover:border-slate-700 group cursor-pointer">
+            <button onclick="switchTab('rutina')" id="tab-rutina" class="main-btn active p-6 rounded-3xl bg-slate-900/60 border-2 border-blue-500 transition text-left w-full cursor-pointer">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-14 h-14 rounded-2xl bg-blue-600/10 text-blue-400 flex items-center justify-center text-2xl group-hover:scale-110 transition">
                         <i class="fa-solid fa-dumbbell"></i>
@@ -140,7 +140,7 @@
             </button>
 
             <!-- 2do Botón: Actividades -->
-            <button onclick="mostrarSeccion('actividades')" id="btn-actividades" class="main-btn p-6 rounded-3xl bg-slate-900/60 border-2 border-slate-800 text-left transition-all duration-200 hover:border-slate-700 group cursor-pointer">
+            <button onclick="switchTab('actividades')" id="tab-actividades" class="main-btn p-6 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition text-left w-full cursor-pointer">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-14 h-14 rounded-2xl bg-emerald-600/10 text-emerald-400 flex items-center justify-center text-2xl group-hover:scale-110 transition">
                         <i class="fa-solid fa-heart-pulse"></i>
@@ -156,7 +156,7 @@
             </button>
 
             <!-- 3er Botón: Mi Perfil -->
-            <button onclick="mostrarSeccion('perfil')" id="btn-perfil" class="main-btn p-6 rounded-3xl bg-slate-900/60 border-2 border-slate-800 text-left transition-all duration-200 hover:border-slate-700 group cursor-pointer">
+            <button onclick="switchTab('perfil')" id="tab-perfil" class="main-btn p-6 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition text-left w-full cursor-pointer">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-14 h-14 rounded-2xl bg-indigo-600/10 text-indigo-400 flex items-center justify-center text-2xl group-hover:scale-110 transition">
                         <i class="fa-solid fa-user-gear"></i>
@@ -173,177 +173,640 @@
 
         </div>
 
-        <!-- ========================================================= -->
-        <!-- 📋 SECCIÓN 1: MI RUTINA                                  -->
-        <!-- ========================================================= -->
-        <section id="seccion-rutina" class="seccion-bloque block space-y-6">
-            
-            <!-- Barra de Selección: Preestablecida vs Personalizada -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <!-- ============================================================== -->
+        <!-- SECCIÓN PRINCIPAL: MI RUTINA (Contenedor con id="seccion-rutina") -->
+        <!-- ============================================================== -->
+        <div id="seccion-rutina" class="seccion-contenido mt-8 space-y-6">
+
+            <!-- 1. BARRA SUPERIOR CON SUB-PESTAÑAS -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
                 <div>
-                    <h2 class="text-xl font-extrabold text-white">Planes de Entrenamiento</h2>
-                    <p class="text-xs text-slate-400">Alterná entre la rutina del gimnasio o armá una propia a tu medida.</p>
+                    <h3 class="text-xl font-extrabold text-white">Planes de Entrenamiento</h3>
+                    <p class="text-xs text-slate-400 mt-1">Consultá las 4 rutinas institucionales del gimnasio o armá tu semana personalizada día por día.</p>
                 </div>
-                <div class="inline-flex p-1 bg-slate-950 border border-slate-800 rounded-2xl">
-                    <button onclick="verSubRutina('preestablecida')" id="btn-sub-pre" class="px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl shadow transition">
-                        Rutinas del Gimnasio
-                    </button>
-                    <button onclick="verSubRutina('propia')" id="btn-sub-propia" class="px-4 py-2 text-slate-400 hover:text-white font-bold text-xs rounded-xl transition">
-                        + Personalizar Propia
+
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Selector entre las 2 sub-pestañas -->
+                    <div class="bg-slate-900/90 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
+                        <button type="button" onclick="cambiarSubTabRutina('gym')" id="subtab-btn-gym" 
+                                class="px-4 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow">
+                            Rutinas del Gimnasio
+                        </button>
+                        <button type="button" onclick="cambiarSubTabRutina('custom')" id="subtab-btn-custom" 
+                                class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
+                            + Mi Rutina Propia (7 Días)
+                        </button>
+                    </div>
+
+                    <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700/80 rounded-xl text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-2 transition">
+                        <i class="fa-regular fa-file-pdf text-blue-400"></i> Descargar Rutina (PDF)
                     </button>
                 </div>
             </div>
 
-            <!-- 1.A: Rutina Preestablecida -->
-            <div id="sub-preestablecida" class="space-y-6">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold text-slate-400">Objetivo: Hipertrofia & Fuerza • Coach Asignado</span>
-                    <button onclick="window.print()" class="px-4 py-2 bg-slate-900 border border-slate-700 hover:border-slate-600 text-slate-200 text-xs font-bold rounded-xl transition flex items-center gap-2">
-                        <i class="fa-solid fa-file-pdf text-blue-400"></i> Descargar Rutina (PDF)
+            <!-- ======================================================= -->
+            <!-- SUB-PESTAÑA 1: 4 RUTINAS BÁSICAS INSTITUCIONALES        -->
+            <!-- ======================================================= -->
+            <div id="subpanel-gym" class="space-y-6">
+                
+                <!-- Botones de las 4 Categorías -->
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="seleccionarRutinaGym('hipertrofia')" id="btn-cat-hip" 
+                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 transition">
+                        💪 Hipertrofia
+                    </button>
+                    <button onclick="seleccionarRutinaGym('fuerza')" id="btn-cat-fue" 
+                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition">
+                        🏋️ Fuerza
+                    </button>
+                    <button onclick="seleccionarRutinaGym('spinning')" id="btn-cat-spi" 
+                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition">
+                        🚴 Spinning
+                    </button>
+                    <button onclick="seleccionarRutinaGym('profe')" id="btn-cat-pro" 
+                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition">
+                        📋 Profesor Personalizado
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Día 1 -->
+                <!-- 1.1 Hipertrofia -->
+                <div id="rutina-hipertrofia" class="panel-rutina-gym grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold uppercase tracking-wider text-blue-400">Día 1</span>
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <span class="text-xs font-bold text-blue-400 uppercase">DÍA 1</span>
                             <h4 class="font-bold text-sm text-white">Pecho & Tríceps</h4>
                         </div>
-                        <ul class="space-y-3 text-xs">
-                            <li class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 flex justify-between items-center">
+                        <div class="space-y-2.5 text-xs">
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
                                 <div>
                                     <p class="font-bold text-white">Press de Banca Plano</p>
                                     <p class="text-[11px] text-slate-400">4 series × 8-10 reps</p>
                                 </div>
-                                <span class="text-[10px] font-semibold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">60-90s</span>
-                            </li>
-                            <li class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 flex justify-between items-center">
+                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60-90s</span>
+                            </div>
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
                                 <div>
-                                    <p class="font-bold text-white">Press Inclinado con Mancuernas</p>
+                                    <p class="font-bold text-white">Press Inclinado c/ Mancuernas</p>
                                     <p class="text-[11px] text-slate-400">4 series × 10 reps</p>
                                 </div>
-                                <span class="text-[10px] font-semibold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">60s</span>
-                            </li>
-                            <li class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 flex justify-between items-center">
+                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60s</span>
+                            </div>
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
                                 <div>
                                     <p class="font-bold text-white">Fondos en Paralelas</p>
                                     <p class="text-[11px] text-slate-400">3 series al fallo</p>
                                 </div>
-                                <span class="text-[10px] font-semibold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">60s</span>
-                            </li>
-                        </ul>
+                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60s</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Día 2 -->
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Día 2</span>
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <span class="text-xs font-bold text-blue-400 uppercase">DÍA 2</span>
                             <h4 class="font-bold text-sm text-white">Espalda & Bíceps</h4>
                         </div>
-                        <ul class="space-y-3 text-xs">
-                            <li class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 flex justify-between items-center">
+                        <div class="space-y-2.5 text-xs">
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
                                 <div>
                                     <p class="font-bold text-white">Dominadas Pronas</p>
                                     <p class="text-[11px] text-slate-400">4 series × 6-8 reps</p>
                                 </div>
-                                <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">90s</span>
-                            </li>
-                            <li class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 flex justify-between items-center">
+                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">90s</span>
+                            </div>
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
                                 <div>
                                     <p class="font-bold text-white">Remo con Barra</p>
                                     <p class="text-[11px] text-slate-400">4 series × 10 reps</p>
                                 </div>
-                                <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">60s</span>
-                            </li>
-                            <li class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 flex justify-between items-center">
+                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60s</span>
+                            </div>
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
                                 <div>
                                     <p class="font-bold text-white">Curl en Banco Scott</p>
                                     <p class="text-[11px] text-slate-400">3 series × 12 reps</p>
                                 </div>
-                                <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">60s</span>
-                            </li>
-                        </ul>
+                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60s</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Día 3 -->
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold uppercase tracking-wider text-purple-400">Día 3</span>
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <span class="text-xs font-bold text-blue-400 uppercase">DÍA 3</span>
                             <h4 class="font-bold text-sm text-white">Pierna & Hombro</h4>
                         </div>
-                        <ul class="space-y-3 text-xs">
-                            <li class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 flex justify-between items-center">
+                        <div class="space-y-2.5 text-xs">
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
                                 <div>
                                     <p class="font-bold text-white">Sentadilla Libre</p>
-                                    <p class="text-[11px] text-slate-400">4 series × 8 reps</p>
+                                    <p class="text-[11px] text-slate-400">4 series × 8-10 reps</p>
                                 </div>
-                                <span class="text-[10px] font-semibold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded">120s</span>
-                            </li>
-                            <li class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 flex justify-between items-center">
+                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">120s</span>
+                            </div>
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
                                 <div>
                                     <p class="font-bold text-white">Prensa 45°</p>
                                     <p class="text-[11px] text-slate-400">4 series × 12 reps</p>
                                 </div>
-                                <span class="text-[10px] font-semibold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded">60s</span>
-                            </li>
-                            <li class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 flex justify-between items-center">
+                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60s</span>
+                            </div>
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
                                 <div>
                                     <p class="font-bold text-white">Press Militar</p>
                                     <p class="text-[11px] text-slate-400">4 series × 10 reps</p>
                                 </div>
-                                <span class="text-[10px] font-semibold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded">60s</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 1.B: Personalización de Rutina Propia -->
-            <div id="sub-propia" class="hidden space-y-6">
-                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
-                    <h3 class="text-base font-bold text-white mb-2">Crear Ejercicio para tu Rutina</h3>
-                    <p class="text-xs text-slate-400 mb-6">Añadí los ejercicios que quieras realizar en tus días libres o complementarios.</p>
-                    
-                    <form onsubmit="event.preventDefault(); agregarEjercicioCustom();" class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
-                        <div>
-                            <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre Ejercicio</label>
-                            <input type="text" id="custom-nombre" required placeholder="Ej: Hip Thrust" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
-                        </div>
-                        <div>
-                            <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Día / Grupo</label>
-                            <select id="custom-grupo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
-                                <option>Día 1 - Pierna</option>
-                                <option>Día 2 - Torso</option>
-                                <option>Día 3 - Fullbody</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Series y Repeticiones</label>
-                            <input type="text" id="custom-series" required placeholder="Ej: 4x12" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
-                        </div>
-                        <div class="flex items-end">
-                            <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition">
-                                + Agregar
-                            </button>
-                        </div>
-                    </form>
-
-                    <div class="mt-8 border-t border-slate-800 pt-6">
-                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Ejercicios en tu plan personalizado</h4>
-                        <div id="lista-custom" class="space-y-2 text-xs">
-                            <div class="p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
-                                <div>
-                                    <span class="font-bold text-white">Elevaciones Laterales</span>
-                                    <span class="text-slate-400 ml-2">• 4 series × 15 reps (Día 3)</span>
-                                </div>
-                                <span class="text-xs text-blue-400 font-bold">Personalizado</span>
+                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60s</span>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- 1.2 Fuerza -->
+                <div id="rutina-fuerza" class="panel-rutina-gym grid grid-cols-1 md:grid-cols-3 gap-5 hidden">
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <span class="text-xs font-bold text-amber-400 uppercase">DÍA 1</span>
+                            <h4 class="font-bold text-sm text-white">Sentadilla Pesada</h4>
+                        </div>
+                        <div class="space-y-2.5 text-xs">
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-white">Sentadilla Trasera Barra</p>
+                                <p class="text-slate-400 text-[11px]">5 series × 5 reps (85% 1RM) • Descanso 180s</p>
+                            </div>
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-white">Sentadilla Búlgara</p>
+                                <p class="text-slate-400 text-[11px]">3 series × 6 reps c/ pierna • Descanso 90s</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <span class="text-xs font-bold text-amber-400 uppercase">DÍA 2</span>
+                            <h4 class="font-bold text-sm text-white">Press de Banca Pesado</h4>
+                        </div>
+                        <div class="space-y-2.5 text-xs">
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-white">Press de Banca Plano</p>
+                                <p class="text-slate-400 text-[11px]">5 series × 3-5 reps • Descanso 180s</p>
+                            </div>
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-white">Press Militar de Pie</p>
+                                <p class="text-slate-400 text-[11px]">4 series × 6 reps • Descanso 120s</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <span class="text-xs font-bold text-amber-400 uppercase">DÍA 3</span>
+                            <h4 class="font-bold text-sm text-white">Peso Muerto</h4>
+                        </div>
+                        <div class="space-y-2.5 text-xs">
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-white">Peso Muerto Convencional</p>
+                                <p class="text-slate-400 text-[11px]">4 series × 3 reps pesadas • Descanso 180s</p>
+                            </div>
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-white">Paseo de Granjero</p>
+                                <p class="text-slate-400 text-[11px]">4 rondas × 40 metros • Descanso 90s</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1.3 Spinning -->
+                <div id="rutina-spinning" class="panel-rutina-gym grid grid-cols-1 md:grid-cols-3 gap-5 hidden">
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <span class="text-xs font-bold text-emerald-400 uppercase">SESIÓN 1</span>
+                            <h4 class="font-bold text-sm text-white">Intervalos HIIT</h4>
+                        </div>
+                        <div class="space-y-2.5 text-xs text-slate-300">
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-white">Calentamiento</p>
+                                <p class="text-slate-400 text-[11px]">8 min pedaleo cadencia 85 RPM</p>
+                            </div>
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-emerald-400">8 Sprints Máximos</p>
+                                <p class="text-slate-400 text-[11px]">30s a máxima carga + 45s pedaleo ágil suave</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <span class="text-xs font-bold text-emerald-400 uppercase">SESIÓN 2</span>
+                            <h4 class="font-bold text-sm text-white">Subida de Montaña</h4>
+                        </div>
+                        <div class="space-y-2.5 text-xs text-slate-300">
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-white">Escalada con Resistencia</p>
+                                <p class="text-slate-400 text-[11px]">4 bloques de 5 min aumentando fricción de pie</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <span class="text-xs font-bold text-emerald-400 uppercase">SESIÓN 3</span>
+                            <h4 class="font-bold text-sm text-white">Resistencia Aeróbica</h4>
+                        </div>
+                        <div class="space-y-2.5 text-xs text-slate-300">
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-white">Cadencia Continua</p>
+                                <p class="text-slate-400 text-[11px]">35 min sostenidos a 80-90 RPM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1.4 Profesor Personalizado -->
+                <div id="rutina-profe" class="panel-rutina-gym grid grid-cols-1 md:grid-cols-2 gap-5 hidden">
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <span class="text-xs font-bold text-purple-400 uppercase">BLOQUE A</span>
+                            <h4 class="font-bold text-sm text-white">Torso & Fuerza Funcional</h4>
+                        </div>
+                        <div class="space-y-2.5 text-xs text-slate-300">
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-white">Jalón al Pecho + Press Plano</p>
+                                <p class="text-slate-400 text-[11px]">Superserie de 4 series × 10 reps</p>
+                            </div>
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-white">Planchas Abdominales</p>
+                                <p class="text-slate-400 text-[11px]">3 rondas de 45 segundos</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <span class="text-xs font-bold text-purple-400 uppercase">BLOQUE B</span>
+                            <h4 class="font-bold text-sm text-white">Tren Inferior & Postura</h4>
+                        </div>
+                        <div class="space-y-2.5 text-xs text-slate-300">
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-white">Peso Muerto Rumano</p>
+                                <p class="text-slate-400 text-[11px]">4 series × 12 reps controladas</p>
+                            </div>
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+                                <p class="font-bold text-white">Puente de Glúteos con Barra</p>
+                                <p class="text-slate-400 text-[11px]">3 series × 15 reps</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
-        </section>
+
+            <!-- ======================================================= -->
+            <!-- SUB-PESTAÑA 2: MI RUTINA PROPIA (PERSISTIDA EN BD)      -->
+            <!-- ======================================================= -->
+            <div id="subpanel-custom" class="space-y-6 hidden">
+                
+                <!-- Formulario que guarda en MySQL -->
+                <div class="bg-slate-900/80 border border-blue-500/30 rounded-2xl p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-dumbbell text-blue-400"></i> Agregar Ejercicio a tu Semana
+                        </h4>
+                        <span class="text-[11px] text-slate-400">Se guarda directamente en tu cuenta</span>
+                    </div>
+
+                    <form method="POST" action="{% url 'dashboard' %}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+                        {% csrf_token %}
+                        <input type="hidden" name="accion" value="agregar_ejercicio_custom">
+
+                        <!-- Nombre del Ejercicio -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre del Ejercicio</label>
+                            <input type="text" name="nombre_ejercicio" required placeholder="Ej: Press de Banca" 
+                                class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                        </div>
+
+                        <!-- Series y Repeticiones -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Series y Repeticiones</label>
+                            <input type="text" name="repeticiones" required placeholder="Ej: 4 series x 10 reps" 
+                                class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                        </div>
+
+                        <!-- Acomodar en los 7 días -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Día de la Semana</label>
+                            <select name="dia" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
+                                <option value="lunes">Lunes (Día 1)</option>
+                                <option value="martes">Martes (Día 2)</option>
+                                <option value="miercoles">Miércoles (Día 3)</option>
+                                <option value="jueves">Jueves (Día 4)</option>
+                                <option value="viernes">Viernes (Día 5)</option>
+                                <option value="sabado">Sábado (Día 6)</option>
+                                <option value="domingo">Domingo (Día 7)</option>
+                            </select>
+                        </div>
+
+                        <!-- Botón de Guardado -->
+                        <div>
+                            <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-plus text-xs"></i> Guardar Ejercicio
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Grilla de los 7 Días -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    
+                    <!-- Lunes -->
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
+                                <span class="text-xs font-bold text-blue-400 uppercase">Lunes</span>
+                                <span class="text-[10px] text-slate-400">Día 1</span>
+                            </div>
+                            <div class="space-y-2">
+                                {% for ej in rutina_semanal.lunes %}
+                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
+                                        <div>
+                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
+                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
+                                        </div>
+                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
+                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Martes -->
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
+                                <span class="text-xs font-bold text-blue-400 uppercase">Martes</span>
+                                <span class="text-[10px] text-slate-400">Día 2</span>
+                            </div>
+                            <div class="space-y-2">
+                                {% for ej in rutina_semanal.martes %}
+                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
+                                        <div>
+                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
+                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
+                                        </div>
+                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
+                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Miércoles -->
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
+                                <span class="text-xs font-bold text-blue-400 uppercase">Miércoles</span>
+                                <span class="text-[10px] text-slate-400">Día 3</span>
+                            </div>
+                            <div class="space-y-2">
+                                {% for ej in rutina_semanal.miercoles %}
+                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
+                                        <div>
+                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
+                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
+                                        </div>
+                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
+                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Jueves -->
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
+                                <span class="text-xs font-bold text-emerald-400 uppercase">Jueves</span>
+                                <span class="text-[10px] text-slate-400">Día 4</span>
+                            </div>
+                            <div class="space-y-2">
+                                {% for ej in rutina_semanal.jueves %}
+                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
+                                        <div>
+                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
+                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
+                                        </div>
+                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
+                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Viernes -->
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
+                                <span class="text-xs font-bold text-blue-400 uppercase">Viernes</span>
+                                <span class="text-[10px] text-slate-400">Día 5</span>
+                            </div>
+                            <div class="space-y-2">
+                                {% for ej in rutina_semanal.viernes %}
+                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
+                                        <div>
+                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
+                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
+                                        </div>
+                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
+                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sábado -->
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
+                                <span class="text-xs font-bold text-amber-400 uppercase">Sábado</span>
+                                <span class="text-[10px] text-slate-400">Día 6</span>
+                            </div>
+                            <div class="space-y-2">
+                                {% for ej in rutina_semanal.sabado %}
+                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
+                                        <div>
+                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
+                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
+                                        </div>
+                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
+                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Domingo -->
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
+                                <span class="text-xs font-bold text-purple-400 uppercase">Domingo</span>
+                                <span class="text-[10px] text-slate-400">Día 7</span>
+                            </div>
+                            <div class="space-y-2">
+                                {% for ej in rutina_semanal.domingo %}
+                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
+                                        <div>
+                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
+                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
+                                        </div>
+                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
+                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- SCRIPTS DE NAVEGACIÓN TOTAL (Pestañas Superiores y Sub-Pestañas) -->
+        <!-- ============================================================== -->
+        <script>
+            // 1. Navegación entre las 3 TARJETAS PRINCIPALES (Mi Rutina, Actividades, Mi Perfil)
+            function switchTab(tabId) {
+                const secRutina = document.getElementById('seccion-rutina');
+                const secActividades = document.getElementById('seccion-actividades');
+                const secPerfil = document.getElementById('seccion-perfil');
+
+                // 1. Ocultar todos los paneles sin depender de clases CSS
+                if (secRutina) secRutina.style.display = 'none';
+                if (secActividades) secActividades.style.display = 'none';
+                if (secPerfil) secPerfil.style.display = 'none';
+
+                // 2. Resetear estilos de las 3 tarjetas de arriba
+                const tabRutina = document.getElementById('tab-rutina');
+                const tabActividades = document.getElementById('tab-actividades');
+                const tabPerfil = document.getElementById('tab-perfil');
+
+                const inactivo = "bg-slate-900/60 border border-slate-800 rounded-2xl p-5 cursor-pointer hover:border-slate-700 transition";
+                const activo = "bg-slate-900/90 border-2 border-blue-500 rounded-2xl p-5 cursor-pointer shadow-lg shadow-blue-500/10 transition";
+
+                if (tabRutina) tabRutina.className = inactivo;
+                if (tabActividades) tabActividades.className = inactivo;
+                if (tabPerfil) tabPerfil.className = inactivo;
+
+                // 3. Mostrar SOLO la elegida
+                if (tabId === 'rutina') {
+                    if (secRutina) secRutina.style.display = 'block';
+                    if (tabRutina) tabRutina.className = activo;
+                } else if (tabId === 'actividades') {
+                    if (secActividades) secActividades.style.display = 'block';
+                    if (tabActividades) tabActividades.className = activo;
+                } else if (tabId === 'perfil') {
+                    if (secPerfil) secPerfil.style.display = 'block';
+                    if (tabPerfil) tabPerfil.className = activo;
+                }
+            }
+
+            // 2. Alternar entre "Rutinas del Gimnasio" y "Mi Rutina Propia"
+            function cambiarSubTabRutina(tipo) {
+                const panelGym = document.getElementById('subpanel-gym');
+                const panelCustom = document.getElementById('subpanel-custom');
+                const btnGym = document.getElementById('subtab-btn-gym');
+                const btnCustom = document.getElementById('subtab-btn-custom');
+
+                if (tipo === 'gym') {
+                    panelGym.classList.remove('hidden');
+                    panelCustom.classList.add('hidden');
+                    btnGym.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow";
+                    btnCustom.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition";
+                } else {
+                    panelGym.classList.add('hidden');
+                    panelCustom.classList.remove('hidden');
+                    btnCustom.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow";
+                    btnGym.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition";
+                }
+            }
+
+            // 3. Alternar entre las 4 categorías institucionales
+            function seleccionarRutinaGym(cat) {
+                document.querySelectorAll('.panel-rutina-gym').forEach(p => p.classList.add('hidden'));
+                document.querySelectorAll('.btn-rutina-cat').forEach(b => {
+                    b.className = "btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition";
+                });
+
+                document.getElementById('rutina-' + cat).classList.remove('hidden');
+                const idMap = { 'hipertrofia': 'btn-cat-hip', 'fuerza': 'btn-cat-fue', 'spinning': 'btn-cat-spi', 'profe': 'btn-cat-pro' };
+                document.getElementById(idMap[cat]).className = "btn-rutina-cat px-4 py-2 rounded-xl text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 transition";
+            }
+        </script>
 
         <!-- ========================================================= -->
         <!-- 🧘‍♀️ SECCIÓN 2: ACTIVIDADES                                -->
