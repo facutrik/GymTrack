@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymTrack - Actividades y Clases</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }</style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col antialiased">
+
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl">🏋️‍♂️</div>
+                <span class="text-2xl font-black bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">GymTrack</span>
+                <span class="text-[11px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-0.5 rounded-full ml-2">Recepción</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'dashboard' %}" class="text-xs font-semibold text-slate-400 hover:text-white transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-left"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2">
+                <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                Control de Disciplinas & Clases
+            </div>
+            <h1 class="text-3xl font-extrabold text-white">Actividades Especiales 🧘‍♀️</h1>
+            <p class="text-xs text-slate-400 mt-1">Socios inscriptos a clases específicas fuera del pase de sala libre (Pilates, Funcional, Spinning).</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Selector de Clases -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-3">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Seleccionar Clase</h3>
+                <div class="space-y-2">
+                    {% for act in actividades %}
+                        <a href="?actividad_id={{ act.id }}" class="flex items-center justify-between p-3.5 rounded-xl border transition {% if actividad_actual.id == act.id %}bg-blue-600/20 border-blue-500 text-white{% else %}bg-slate-950/60 border-slate-800 text-slate-300 hover:border-slate-700{% endif %}">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center text-sm">
+                                    <i class="fa-solid fa-dumbbell"></i>
+                                </div>
+                                <span class="font-bold text-xs">{{ act.nombre }}</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-xs opacity-50"></i>
+                        </a>
+                    {% empty %}
+                        <p class="text-xs text-slate-500">No hay actividades cargadas.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Listado de Socios Inscriptos -->
+            <div class="lg:col-span-2 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <h3 class="font-bold text-white text-base">
+                            {% if actividad_actual %}{{ actividad_actual.nombre }}{% else %}Seleccione una actividad{% endif %}
+                        </h3>
+                        <p class="text-xs text-slate-400">Padrón de socios asignados o con reserva</p>
+                    </div>
+                    {% if actividad_actual %}
+                        <span class="text-xs font-bold px-3 py-1 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                            Total: {{ total_inscriptos }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                            <tr>
+                                <th class="pb-3 px-3">Socio</th>
+                                <th class="pb-3 px-3">DNI</th>
+                                <th class="pb-3 px-3">Email</th>
+                                <th class="pb-3 px-3 text-right">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                            {% for socio in socios_inscriptos %}
+                                <tr class="hover:bg-slate-800/30 transition">
+                                    <td class="py-3 px-3 font-semibold text-white">{{ socio.first_name }} {{ socio.last_name }}</td>
+                                    <td class="py-3 px-3 font-mono text-slate-400">{{ socio.username }}</td>
+                                    <td class="py-3 px-3 text-slate-400">{{ socio.email|default:"Sin email" }}</td>
+                                    <td class="py-3 px-3 text-right">
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                            Inscripto
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="py-8 text-center text-slate-500 text-xs">
+                                        {% if actividad_actual %}No hay socios registrados para esta actividad.{% else %}Seleccione una clase en el menú lateral para ver la lista.{% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

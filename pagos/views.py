@@ -14,7 +14,6 @@ def admin_pagos(request):
     mes_actual = hoy.month
     anio_actual = hoy.year
 
-    # 1. Filtros GET
     mes_filtro = request.GET.get('mes', str(mes_actual))
     anio_filtro = request.GET.get('anio', str(anio_actual))
     metodo_filtro = request.GET.get('medio', 'todos')
@@ -37,7 +36,6 @@ def admin_pagos(request):
             Q(socio__usuario__last_name__icontains=query)
         )
 
-    # 2. Totales calculados
     total_recaudado = pagos.aggregate(total=Sum('monto'))['total'] or 0
     total_efectivo = pagos.filter(metodo_pago='efectivo').aggregate(total=Sum('monto'))['total'] or 0
     total_transferencia = pagos.filter(metodo_pago='transferencia').aggregate(total=Sum('monto'))['total'] or 0

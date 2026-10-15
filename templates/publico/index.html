@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymTrack - Tu Centro de Entrenamiento</title>
+    <title>GymTrack - Tu entrenamiento inteligente</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -15,9 +15,8 @@
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
+            background-color: #0b1120;
         }
-        
         .carousel-slide {
             opacity: 0;
             transition: opacity 1s ease-in-out;
@@ -27,7 +26,7 @@
         }
     </style>
 </head>
-<body class="text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
+<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
     <!-- NAVBAR FIXED -->
     <nav class="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 text-white transition-all duration-300">
@@ -45,13 +44,13 @@
 
                 <!-- Navigation Links & Login -->
                 <div class="flex items-center gap-6">
-                    <a href="#actividades" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Actividades</a>
-                    <a href="#membresias" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Membresías</a>
+                    <a href="#sobre-nosotros" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Sobre Nosotros</a>
+                    <a href="#actividades-membresias" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Actividades y Planes</a>
                     <a href="#ubicacion" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Sedes</a>
-                    <button onclick="openLoginModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-600/30 hover:shadow-blue-500/50 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
+                    <a href="{% url 'login' %}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-600/30 hover:shadow-blue-500/50 transition duration-200 flex items-center gap-2">
                         <i class="fa-solid fa-right-to-bracket text-xs"></i>
                         Iniciar Sesión
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -61,48 +60,39 @@
     <section class="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden bg-slate-950">
         <!-- Carrusel Img Backgrounds -->
         <div class="absolute inset-0 z-0">
-            <!-- Slide 1 -->
             <div class="carousel-slide active absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1920&auto=format&fit=crop');">
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/40"></div>
             </div>
-            <!-- Slide 2 -->
             <div class="carousel-slide absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1920&auto=format&fit=crop');">
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/40"></div>
             </div>
-            <!-- Slide 3 -->
             <div class="carousel-slide absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=1920&auto=format&fit=crop');">
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/40"></div>
             </div>
         </div>
 
-        <!-- Overlaid Content (Nombre y Frase) -->
+        <!-- Overlaid Content -->
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
             <div class="max-w-2xl">
-                <!-- Badge -->
                 <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-6 backdrop-blur-md">
                     <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
                     Tu mejor versión empieza hoy
                 </div>
                 
-                <!-- Nombre del Gimnasio -->
                 <h1 class="text-5xl sm:text-7xl font-extrabold text-white tracking-tight mb-6 leading-none">
                     Gym<span class="text-blue-500">Track</span>
                 </h1>
 
-                <!-- Frase Corta -->
                 <p class="text-xl sm:text-2xl text-slate-300 font-light leading-relaxed mb-8 border-l-4 border-blue-600 pl-4 bg-slate-900/40 py-2 rounded-r-lg backdrop-blur-sm">
                     El espacio ideal para entrenar, superar tus límites y transformar tu rutina diaria.
                 </p>
 
-                <!-- Botones CTA -->
                 <div class="flex flex-wrap gap-4">
-                    <a href="#actividades" class="px-7 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 transition duration-200 flex items-center gap-2">
-                        Ver Actividades
-                        <i class="fa-solid fa-arrow-down text-sm"></i>
+                    <a href="#actividades-membresias" class="px-7 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 transition duration-200 flex items-center gap-2">
+                        Ver Actividades y Planes <i class="fa-solid fa-arrow-down text-sm"></i>
                     </a>
                     <a href="#ubicacion" class="px-7 py-3.5 bg-slate-800/80 hover:bg-slate-700/80 text-white font-semibold rounded-xl border border-slate-700 backdrop-blur-md transition duration-200 flex items-center gap-2">
-                        Conocer Sede
-                        <i class="fa-solid fa-location-dot text-sm text-blue-400"></i>
+                        Conocer Sede <i class="fa-solid fa-location-dot text-sm text-blue-400"></i>
                     </a>
                 </div>
             </div>
@@ -116,340 +106,283 @@
         </div>
     </section>
 
-    <!-- SECCIÓN 2: TRES PANTALLAS EN FILA (ACTIVIDADES - MEMBRESÍAS - HORARIOS/CONTACTO) -->
-    <section class="py-20 bg-slate-100 border-y border-slate-200">
+<!-- SECCIÓN 2: EXPERIENCIA DIGITAL & MOCKUP DEL SOCIO (SOBRE NOSOTROS) -->
+    <section id="sobre-nosotros" class="py-20 bg-slate-950 text-white relative overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-14">
-                <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Todo lo que necesitas en un solo lugar</h2>
-                <p class="text-slate-600 mt-2 text-lg">Información rápida sobre nuestras clases, planes y canales de atención.</p>
-            </div>
-
-            <!-- Grid de 3 Columnas -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                 
-                <!-- CARD 1: ACTIVIDADES -->
-                <div id="actividades" class="bg-white rounded-2xl p-7 shadow-sm border border-slate-200 hover:shadow-md transition duration-300 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-                            <div class="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-xl font-bold">
-                                🏋️‍♂️
+                <!-- Columna Izquierda: Mockup Celular -->
+                <div class="lg:col-span-5 flex justify-center relative">
+                    <div class="absolute -top-10 -left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
+                    <div class="relative z-10 w-64 sm:w-72 bg-slate-900 p-4 rounded-[2.5rem] border-4 border-slate-800 shadow-2xl">
+                        <div class="w-full h-[480px] bg-slate-950 rounded-[2rem] p-4 flex flex-col justify-between border border-slate-800/80">
+                            <div class="text-center pt-4">
+                                <span class="text-2xl">🏋️‍♂️</span>
+                                <h4 class="font-bold text-sm mt-1 text-white">GymTrack</h4>
+                                <p class="text-[10px] text-blue-400 font-semibold">Portal del Socio</p>
                             </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-900">Actividades</h3>
-                                <p class="text-xs text-slate-500 font-medium">Variedad de disciplinas</p>
+
+                            <div class="space-y-2 py-4">
+                                <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-left">
+                                    <p class="text-[10px] text-slate-400">Estado de Membresía</p>
+                                    <p class="text-xs font-bold text-emerald-400 flex items-center gap-1.5 mt-0.5">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Al Día
+                                    </p>
+                                </div>
+                                <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-left">
+                                    <p class="text-[10px] text-slate-400">Próxima Clase</p>
+                                    <p class="text-xs font-bold text-slate-200 mt-0.5">Funcional – 18:30 hs</p>
+                                </div>
+                            </div>
+
+                            <div class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-center font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition">
+                                
+                                Ver Rutina
                             </div>
                         </div>
-
-                        <ul class="space-y-4">
-                            {% for act in actividades %}
-                                <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                    <span class="text-2xl">🏋️‍♂️</span>
-                                    <div>
-                                        <h4 class="font-bold text-slate-900 text-sm">{{ act.nombre }}</h4>
-                                        <p class="text-xs text-slate-600 mt-0.5">{{ act.descripcion }}</p>
-                                    </div>
-                                </li>
-                            {% empty %}
-                                <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                    <span class="text-2xl">🏋️‍♂️</span>
-                                    <div>
-                                        <h4 class="font-bold text-slate-900 text-sm">Musculación / Clases</h4>
-                                        <p class="text-xs text-slate-600 mt-0.5">Acceso libre por llegada. Equipamiento completo.</p>
-                                    </div>
-                                </li>
-                                <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                    <span class="text-2xl">🧘‍♀️</span>
-                                    <div>
-                                        <h4 class="font-bold text-slate-900 text-sm">Clases</h4>
-                                        <p class="text-xs text-slate-600 mt-0.5">Clases grupales con reserva previa desde la app.</p>
-                                    </div>
-                                </li>
-                                <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                    <span class="text-2xl">🚴‍♂️</span>
-                                    <div>
-                                        <h4 class="font-bold text-slate-900 text-sm">Spinning & Cardio</h4>
-                                        <p class="text-xs text-slate-600 mt-0.5">Entrenamiento de alta intensidad.</p>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-
-                    <div class="mt-6 pt-4 border-t border-slate-100 text-center">
-                        <span class="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-full inline-block">
-                            + Consultá grilla horaria actualizada
-                        </span>
                     </div>
                 </div>
 
-                <!-- CARD 2: MEMBRESÍAS Y PRECIOS -->
-                <div id="membresias" class="bg-white rounded-2xl p-7 shadow-sm border border-slate-200 hover:shadow-md transition duration-300 flex flex-col justify-between relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold tracking-wider px-3 py-1 rounded-bl-lg uppercase">
-                        Popular
+                <!-- Columna Derecha: Contenido y Beneficios -->
+                <div class="lg:col-span-7 space-y-6">
+                    <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">EXPERIENCIA DIGITAL</span>
+                    
+                    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                        Tu entrenamiento y membresía, gestionados desde cualquier lugar
+                    </h2>
+                    <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+                        Nuestra plataforma web optimizada para móviles permite a cada socio tener el control total de sus actividades, turnos y estado de cuenta sin hacer filas en recepción.
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                        <div class="flex items-center gap-2.5 text-xs text-slate-300 font-medium">
+                            <span class="text-emerald-400 font-bold">✓</span> Renovación y estado de membresía
+                        </div>
+                        <div class="flex items-center gap-2.5 text-xs text-slate-300 font-medium">
+                            <span class="text-emerald-400 font-bold">✓</span> Reserva de cupos en clases grupales
+                        </div>
+                        <div class="flex items-center gap-2.5 text-xs text-slate-300 font-medium">
+                            <span class="text-emerald-400 font-bold">✓</span> Rutinas de ejercicios personalizadas
+                        </div>
+                        <div class="flex items-center gap-2.5 text-xs text-slate-300 font-medium">
+                            <span class="text-emerald-400 font-bold">✓</span> Historial de pagos y comprobantes
+                        </div>
+                        <div class="flex items-center gap-2.5 text-xs text-slate-300 font-medium">
+                            <span class="text-emerald-400 font-bold">✓</span> Notificaciones y avisos del gimnasio
+                        </div>
+                        <div class="flex items-center gap-2.5 text-xs text-slate-300 font-medium">
+                            <span class="text-emerald-400 font-bold">✓</span> Acceso 100% web sin descargas pesadas
+                        </div>
                     </div>
+
+                    <div class="pt-4 flex items-center gap-4">
+                        <a href="{% url 'login' %}" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition">
+                            Ingresar a mi cuenta
+                        </a>
+                        <a href="#actividades-membresias" class="text-xs text-slate-400 hover:text-white underline">
+                            Conocer planes disponibles
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 3: ACTIVIDADES, MEMBRESÍAS Y HORARIOS (UNIFICADO EN ACTIVIDADES Y PLANES) -->
+    <section id="actividades-membresias" class="py-20 bg-slate-900 border-y border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-14">
+                <h2 class="text-3xl font-extrabold text-white tracking-tight">Todo lo que necesitas en un solo lugar</h2>
+                <p class="text-slate-400 mt-2 text-sm">Información rápida sobre nuestras clases, planes y canales de atención.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- CARD 1: ACTIVIDADES -->
+                <div class="bg-slate-950/70 rounded-2xl p-7 border border-slate-800 hover:border-slate-700 transition flex flex-col justify-between">
                     <div>
-                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-                            <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">
-                                💳
+                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800">
+                            <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl font-bold">
+                                🏋️‍♂️
                             </div>
                             <div>
-                                <h3 class="text-xl font-bold text-slate-900">Membresías y Precios</h3>
-                                <p class="text-xs text-slate-500 font-medium">Planes a tu medida</p>
+                                <h3 class="text-xl font-bold text-white">Actividades</h3>
+                                <p class="text-xs text-slate-400 font-medium">Nuestras disciplinas</p>
                             </div>
                         </div>
 
                         <div class="space-y-4">
-                            {% for mem in membresias %}
-                                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <h4 class="font-bold text-slate-900 text-sm">💳 {{ mem.nombre }}</h4>
-                                        <span class="text-xs font-extrabold text-blue-600">${{ mem.precio }}</span>
-                                    </div>
-                                    <p class="text-xs text-slate-600">Duración: {{ mem.duracion_dias }} días.</p>
-                                </div>
-                            {% empty %}
-                                <div class="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/50 border border-blue-200/60">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <h4 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                                            💳 Pase Libre Mensual
-                                        </h4>
-                                        <span class="text-xs font-extrabold text-blue-600">Recomendado</span>
-                                    </div>
-                                    <p class="text-xs text-slate-600">Acceso ilimitado a salón de musculación y clases.</p>
-                                </div>
-
-                                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                    <h4 class="font-bold text-slate-900 text-sm mb-1">
-                                        ⭐ Pase Trimestral
-                                    </h4>
-                                    <p class="text-xs text-slate-600">Bonificación especial pagando el trimestre.</p>
-                                </div>
-
-                                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                    <h4 class="font-bold text-slate-900 text-sm mb-1">
-                                        🎟️ Pase Diario
-                                    </h4>
-                                    <p class="text-xs text-slate-600">Acceso al salon de musculación y clases.</p>
-                                </div>
-                            {% endfor %}
+                            <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                                <h4 class="font-bold text-white text-sm">Musculación y Sala de Máquinas</h4>
+                                <p class="text-xs text-slate-400 mt-1">Equipamiento completo para hipertrofia y fuerza con asistencia de profesores en sala.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                                <h4 class="font-bold text-white text-sm">Entrenamiento Funcional & Cardio</h4>
+                                <p class="text-xs text-slate-400 mt-1">Circuitos dinámicos en grupos reducidos para resistencia, agilidad y quema calórica.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                                <h4 class="font-bold text-white text-sm">Spinning, Pilates & Zumba</h4>
+                                <p class="text-xs text-slate-400 mt-1">Clases grupales guiadas con cupos controlados para entrenar con el mejor ritmo.</p>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="mt-6 pt-4 border-t border-slate-100 text-center">
-                        <button onclick="openLoginModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl transition">
-                            Inscribirse o Consultar Precios
-                        </button>
+                    <div class="mt-6 pt-4 border-t border-slate-800">
+                        <a href="{% url 'login' %}" class="block text-center w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-semibold text-xs rounded-xl transition">
+                            Reservar Lugar en Clases
+                        </a>
+                    </div>
+                </div>
+
+                <!-- CARD 2: MEMBRESÍAS -->
+                <div class="bg-slate-950/70 rounded-2xl p-7 border border-slate-800 hover:border-slate-700 transition flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold tracking-wider px-3 py-1 rounded-bl-lg uppercase">
+                        Popular
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800">
+                            <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl font-bold">
+                                💳
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Membresías</h3>
+                                <p class="text-xs text-slate-400 font-medium">Planes a tu medida</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="p-3.5 rounded-xl bg-blue-950/20 border border-blue-500/30">
+                                <h4 class="font-bold text-white text-sm flex items-center justify-between">
+                                    Pase Musculación Completo
+                                    <span class="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">Recomendado</span>
+                                </h4>
+                                <p class="text-xs text-slate-400 mt-1">Acceso libre ilimitado a sala de pesas y a todas las clases grupales.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                                <h4 class="font-bold text-white text-sm">Pase Clases Grupales</h4>
+                                <p class="text-xs text-slate-400 mt-1">Ideal si buscás foco exclusivo en disciplinas grupales y cardio.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                                <h4 class="font-bold text-white text-sm">Planes de Pilates & Familiar</h4>
+                                <p class="text-xs text-slate-400 mt-1">Opciones adaptadas por frecuencia semanal o bonificaciones para grupos.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-800">
+                        <a href="{% url 'login' %}" class="block text-center w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl shadow transition">
+                            Inscribirse o Consultar Planes
+                        </a>
                     </div>
                 </div>
 
                 <!-- CARD 3: HORARIOS Y CONTACTO -->
-                <div class="bg-white rounded-2xl p-7 shadow-sm border border-slate-200 hover:shadow-md transition duration-300 flex flex-col justify-between">
+                <div class="bg-slate-950/70 rounded-2xl p-7 border border-slate-800 hover:border-slate-700 transition flex flex-col justify-between">
                     <div>
-                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-                            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold">
+                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800">
+                            <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl font-bold">
                                 ⏱️
                             </div>
                             <div>
-                                <h3 class="text-xl font-bold text-slate-900">Horarios y Contacto</h3>
-                                <p class="text-xs text-slate-500 font-medium">Estamos para ayudarte</p>
+                                <h3 class="text-xl font-bold text-white">Horarios y Contacto</h3>
+                                <p class="text-xs text-slate-400 font-medium">Estamos para ayudarte</p>
                             </div>
                         </div>
 
                         <div class="space-y-4">
                             <!-- Horarios -->
-                            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
-                                <div class="flex items-center justify-between text-xs font-semibold text-slate-800">
-                                    <span class="flex items-center gap-2">
-                                        <i class="fa-regular fa-clock text-blue-600"></i> Lunes a Viernes
-                                    </span>
-                                    <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md text-[11px]">07:00 a 22:00 hs</span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs font-semibold text-slate-800 pt-1 border-t border-slate-200/60">
-                                    <span class="flex items-center gap-2">
-                                        <i class="fa-regular fa-clock text-blue-600"></i> Sábados
-                                    </span>
-                                    <span class="bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md text-[11px]">09:00 a 13:00 hs</span>
-                                </div>
+                            <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1">
+                                <p class="text-xs text-slate-400">Lunes a Viernes</p>
+                                <p class="text-sm font-bold text-white">07:00 a 22:00 hs (Corrido)</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1">
+                                <p class="text-xs text-slate-400">Sábados</p>
+                                <p class="text-sm font-bold text-white">09:00 a 13:00 hs</p>
                             </div>
 
-                            <!-- Contacto WhatsApp -->
-                            <a href="https://wa.me/543415707281" target="_blank" class="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100/80 transition group">
-                                <div class="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-lg">
-                                    <i class="fa-brands fa-whatsapp"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-emerald-950 text-xs group-hover:text-emerald-700 transition">Consultas WhatsApp</h4>
-                                    <p class="text-xs text-emerald-700 font-semibold">+54 9 341 570 72-81</p>
-                                </div>
-                            </a>
-
-                            <!-- Instagram / Email -->
-                            <div class="flex gap-2">
-                                <div class="flex-1 p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                                    <i class="fa-brands fa-instagram text-pink-600 text-base mb-1"></i>
-                                    <p class="text-[11px] font-bold text-slate-800">@bodynamic.tumomento</p>
-                                </div>
-                                <div class="flex-1 p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                                    <i class="fa-regular fa-envelope text-blue-600 text-base mb-1"></i>
-                                    <p class="text-[11px] font-bold text-slate-800">bodynamic@gmail.com</p>
-                                </div>
+                            <!-- Redes y Contacto Directo: Instagram y Correo -->
+                            <div class="grid grid-cols-2 gap-2">
+                                <a href="https://instagram.com/gymtrack.arg" target="_blank" class="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 text-center transition group">
+                                    <i class="fa-brands fa-instagram text-pink-500 text-base mb-1 group-hover:scale-110 transition"></i>
+                                    <p class="text-[11px] font-bold text-slate-200">@gymtrack.arg</p>
+                                </a>
+                                <a href="mailto:info@gymtrack.com" class="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 text-center transition group">
+                                    <i class="fa-regular fa-envelope text-blue-400 text-base mb-1 group-hover:scale-110 transition"></i>
+                                    <p class="text-[11px] font-bold text-slate-200">info@gymtrack.com</p>
+                                </a>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mt-6 pt-4 border-t border-slate-100">
-                        <p class="text-[11px] text-center text-slate-500">Respondemos de Lunes a Sábados en horario comercial.</p>
+                    <!-- Botón WhatsApp -->
+                    <div class="mt-6 pt-4 border-t border-slate-800">
+                        <a href="https://wa.me/543411234567" target="_blank" class="block text-center w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 font-semibold text-xs rounded-xl transition flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-whatsapp text-sm"></i> Hacer Consulta por WhatsApp
+                        </a>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
 
-    <!-- SECCIÓN 3: UBICACIÓN Y SEDES (MAPA A LA IZQ Y SEDES A LA DERECHA) -->
-    <section id="ubicacion" class="py-20 bg-white">
+    <!-- SECCIÓN 4: UBICACIÓN Y SEDES -->
+    <section id="ubicacion" class="py-20 bg-slate-900 border-t border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="mb-10">
-                <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Encuéntranos</span>
-                <h2 class="text-3xl font-bold text-slate-900 tracking-tight mt-1">Ubicación y Nuestras Sedes</h2>
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-extrabold text-white tracking-tight">Nuestras Instalaciones</h2>
+                <p class="text-slate-400 mt-2 text-sm">Encontranos fácilmente y empezá hoy mismo a entrenar.</p>
             </div>
 
-            <!-- Grid de 2 Columnas principales -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                
-                <!-- COLUMNA IZQUIERDA: MAPA INTERACTIVO (7 Cols) -->
-                <div class="lg:col-span-7 bg-slate-50 rounded-2xl p-4 border border-slate-200 shadow-sm">
-                    <div class="flex items-center justify-between mb-3 px-2">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-map-location-dot text-blue-600"></i>
-                            <h3 class="font-bold text-slate-900 text-base">Ubicación en Rosario</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <!-- Mapa -->
+                <div class="lg:col-span-7 rounded-2xl overflow-hidden border border-slate-800 shadow-lg h-80">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3347.202369498357!2d-60.642883399999995!3d-32.9720623!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95b7aba5ace1ce4d%3A0x3fe61bc46d390e1f!2sBodynamic.!5e0!3m2!1ses!2sar!4v1792023381512!5m2!1ses!2sar" 
+                    width="600" 
+                    height="450" 
+                    style="border:0;" 
+                    allowfullscreen="" 
+                    loading="lazy" 
+                    referrerpolicy="strict-origin-when-cross-origin">
+
+                    </iframe>
+                </div>
+
+                <!-- Detalle Sedes -->
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="bg-slate-950/70 p-5 rounded-2xl border border-slate-800">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-blue-400 text-lg"><i class="fa-solid fa-location-dot"></i></span>
+                            <h4 class="font-bold text-white text-base">Sede Central</h4>
                         </div>
-                        <a href="https://maps.google.com" target="_blank" class="text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                            Abrir en Google Maps
-                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        <p class="text-xs text-slate-400">Av. San Martin 2975, Rosario, Santa Fe.</p>
+                        <p class="text-[11px] text-emerald-400 mt-2 font-medium">Sala de musculación y clases grupales activas.</p>
+                    </div>
+
+                    <div class="bg-blue-950/30 p-5 rounded-2xl border border-blue-500/30">
+                        <h4 class="font-bold text-white text-sm">¿Tenés dudas sobre tu membresía?</h4>
+                        <p class="text-xs text-slate-400 mt-1 mb-3">Podés acercarte a recepción en el horario de 07:00 a 22:00 hs.</p>
+                        <a href="{% url 'login' %}" class="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition">
+                            Acceder al Sistema
                         </a>
                     </div>
-
-                    <!-- Embed de Google Maps Real en Rosario -->
-                    <div class="w-full h-[380px] rounded-xl overflow-hidden border border-slate-200 shadow-inner relative">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3347.202369498357!2d-60.642883399999995!3d-32.9720623!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95b7aba5ace1ce4d%3A0x3fe61bc46d390e1f!2sBodynamic.!5e0!3m2!1ses!2sar!4v1791832570245!5m2!1ses!2sar" 
-                            width="600" 
-                            height="450" 
-                            style="border:0;" 
-                            allowfullscreen="" 
-                            loading="lazy" 
-                            referrerpolicy="strict-origin-when-cross-origin">
-                        </iframe>
-                    </div>
                 </div>
-
-                <!-- COLUMNA DERECHA: NUESTRAS SEDES (5 Cols) -->
-                <div class="lg:col-span-5 space-y-6">
-                    <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
-                        <div class="flex items-center gap-3 mb-5">
-                            <div class="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-bold">
-                                📍
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-900">Nuestras Sedes</h3>
-                                <p class="text-xs text-slate-500">Puntos de entrenamiento disponibles</p>
-                            </div>
-                        </div>
-
-                        <!-- Sede -->
-                        <div class="space-y-4">
-                            <!-- Sede Central -->
-                            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-                                <div class="flex items-center justify-between mb-1">
-                                    <h4 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                                        📍 Sede Central
-                                    </h4>
-                                    <span class="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">Principal</span>
-                                </div>
-                                <p class="text-xs text-slate-600 font-medium">Av. San Martin 2975, Rosario</p>
-                                <div class="mt-2 flex items-center gap-3 text-[11px] text-slate-500">
-                                    <span><i class="fa-solid fa-shower text-slate-400"></i> Vestuarios</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Card Informativa Adicional -->
-                    <div class="bg-blue-600 text-white rounded-2xl p-6 shadow-md relative overflow-hidden">
-                        <div class="relative z-10">
-                            <h4 class="font-bold text-lg mb-1">¿Cuentas con Pase Libre?</h4>
-                            <p class="text-xs text-blue-100 leading-relaxed mb-4">Con tu membresía mensual activa tenés acceso liberado a cualquiera de nuestras 3 sedes sin costos adicionales.</p>
-                            <button onclick="openLoginModal()" class="px-4 py-2 bg-white text-blue-600 font-bold text-xs rounded-lg hover:bg-blue-50 transition shadow">
-                                Iniciar Sesión para Reservar
-                            </button>
-                        </div>
-                        <i class="fa-solid fa-id-card absolute -bottom-4 -right-4 text-7xl text-blue-500/30"></i>
-                    </div>
-                </div>
-
             </div>
         </div>
     </section>
 
     <!-- FOOTER -->
-    <footer class="bg-slate-900 text-slate-400 py-10 border-t border-slate-800 text-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+    <footer class="bg-slate-950 border-t border-slate-800 text-slate-500 py-8 text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-2">
-                <span class="text-lg">🏋️‍♂️</span>
-                <span class="font-bold text-white text-sm">GymTrack</span>
-                <span>— Sistema Integral de Gestión de Gimnasios</span>
+                <span class="text-base">🏋️‍♂️</span>
+                <span class="font-bold text-white">GymTrack</span>
+                <span>— Sistema Integral de Gestión Deportiva.</span>
             </div>
             <p>© 2026 GymTrack. Todos los derechos reservados.</p>
         </div>
     </footer>
 
-    <!-- MODAL INICIAR SESIÓN CONECTADO A DJANGO -->
-    <div id="loginModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in duration-200">
-            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-            <div class="text-center mb-6">
-                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-2xl mx-auto mb-3">
-                    🏋️️‍♂️
-                </div>
-                <h3 class="text-xl font-bold text-slate-900">Bienvenido a GymTrack</h3>
-                <p class="text-xs text-slate-500 mt-1">Ingresá con tu usuario de socio o staff</p>
-            </div>
-
-            <!-- FORMULARIO REAL CONECTADO AL LOGIN DE DJANGO -->
-            <form method="POST" action="{% url 'login' %}" class="space-y-4">
-                {% csrf_token %}
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Usuario / DNI</label>
-                    <input type="text" name="username" required placeholder="socio / empleado1 / admin" 
-                            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none text-slate-900">
-                </div>
-
-                <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <label class="block text-xs font-semibold text-slate-700">Contraseña</label>
-                        <a href="https://wa.me/543411234567?text=Hola,%20olvidé%20mi%20contraseña%20en%20GymTrack" target="_blank" class="text-[11px] font-semibold text-blue-600 hover:underline">
-                            ¿Olvidaste tu contraseña?
-                        </a>
-                    </div>
-                    <div class="relative">
-                        <input type="password" id="modalPasswordInput" name="password" required placeholder="••••••••" 
-                            class="w-full px-3 py-2 pr-10 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none text-slate-900">
-                        <button type="button" onclick="toggleModalPassword()" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 transition">
-                            <i id="modalToggleIcon" class="fa-solid fa-eye text-xs"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition">
-                    Ingresar
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- SCRIPT CARRUSEL & MODAL -->
+    <!-- SCRIPT DE CARRUSEL HERO -->
     <script>
         let currentSlide = 0;
         const slides = document.querySelectorAll('.carousel-slide');
@@ -457,44 +390,18 @@
 
         function setSlide(index) {
             slides[currentSlide].classList.remove('active');
-            dots[currentSlide].classList.remove('w-8', 'bg-white');
-            dots[currentSlide].classList.add('w-2', 'bg-white/40');
-
+            dots[currentSlide].className = "carousel-dot w-2 h-2 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300";
+            
             currentSlide = index;
-
+            
             slides[currentSlide].classList.add('active');
-            dots[currentSlide].classList.remove('w-2', 'bg-white/40');
-            dots[currentSlide].classList.add('w-8', 'bg-white');
+            dots[currentSlide].className = "carousel-dot w-8 h-2 rounded-full bg-white transition-all duration-300";
         }
 
-        // Auto slide cada 4 segundos
         setInterval(() => {
             let next = (currentSlide + 1) % slides.length;
             setSlide(next);
-        }, 4000);
-
-        // Funciones del Modal de Login
-        function openLoginModal() {
-            document.getElementById('loginModal').classList.remove('hidden');
-        }
-        function closeLoginModal() {
-            document.getElementById('loginModal').classList.add('hidden');
-        }
-
-        // Mostrar / Ocultar Contraseña
-        function toggleModalPassword() {
-            const input = document.getElementById('modalPasswordInput');
-            const icon = document.getElementById('modalToggleIcon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
+        }, 5000);
     </script>
 </body>
 </html>
