@@ -4,49 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GymTrack - Panel de Recepción</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #0b1120; /* Slate 950 */
+            background-color: #0b1120;
         }
     </style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-    <!-- NAVBAR DEL STAFF -->
-    <nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo -->
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-600/30">
                         🏋️‍♂️
                     </div>
-                    <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
-                        GymTrack
-                    </span>
-                    <span class="hidden sm:inline-block text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-0.5 rounded-full ml-2">
-                        Recepción / Turno
-                    </span>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-2xl font-extrabold tracking-tight text-white">GymTrack</span>
+                        <span class="text-xs font-light text-slate-500">×</span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">
+                            BODYDYNAMIC
+                        </span>
+                    </div>
                 </div>
 
-                <!-- Usuario y Salir -->
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-sm font-bold shadow-md">
-                            {{ user.username|slice:":1"|upper }}
+                        <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold shadow-md">
+                            E
                         </div>
                         <div class="hidden sm:block text-left leading-tight">
                             <p class="text-xs font-bold text-white">{{ user.username }}</p>
-                            <p class="text-[10px] text-amber-400 font-semibold">Staff Activo</p>
+                            <p class="text-[10px] text-blue-400 font-semibold">Puesto de Recepción</p>
                         </div>
                     </div>
 
@@ -61,48 +57,64 @@
         </div>
     </nav>
 
+    <!-- MENSAJES -->
+    {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+            {% for message in messages %}
+                <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
+                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <!-- CONTENEDOR PRINCIPAL -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
-        
-        <!-- ENCABEZADO -->
+
+        <!-- CABECERA -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold mb-2">
-                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                    Turno en curso
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                    Recepción & Mostrador General
                 </div>
-                <h1 class="text-3xl font-extrabold text-white tracking-tight">Panel de Operaciones 📋</h1>
-                <p class="text-slate-400 text-sm mt-1">Bienvenido/a, {{ user.username }}. Control operativo y recepción de socios.</p>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">Panel Operativo Diario 📋</h1>
+                <p class="text-slate-400 text-sm mt-1">Control de acceso, turnos de profesores y cómputo de horas.</p>
             </div>
 
-            <!-- Búsqueda rápida en mostrador -->
-            <div class="w-full md:w-72">
-                <div class="relative">
-                    <input type="text" placeholder="Buscar socio por DNI..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
-                </div>
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="openAsistenciaModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-id-card"></i> Control de Acceso (DNI)
+                </button>
+                <a href="{% url 'admin_socios' %}" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-users"></i> Padrón de Socios
+                </a>
             </div>
         </div>
 
-        <!-- TARJETAS DE MÉTRICAS OPERATIVAS -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <!-- Asistencias -->
+        <!-- 1. MÉTRICAS SUPERIORES -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Asistencias Hoy</span>
-                        <h3 class="text-2xl font-black text-white mt-1">{{ asistencias_hoy|default:"--" }}</h3>
+                        <h3 class="text-2xl font-black text-white mt-1">{{ asistencias_hoy|default:0 }}</h3>
                     </div>
                     <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl">
                         <i class="fa-solid fa-clipboard-check"></i>
                     </div>
                 </div>
+<<<<<<< HEAD
                 <!-- Botón que abre el modal emergente -->
+=======
+>>>>>>> 591647381ca3d74c6aa882a56e562bf034428fe0
                 <button type="button" onclick="openAsistenciaModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5 cursor-pointer">
                     Registrar Ingreso <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </button>
             </div>
 
+<<<<<<< HEAD
 
             <!-- Socios Registrados -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
@@ -110,49 +122,40 @@
                     <div>
                         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Socios</span>
                         <h3 class="text-2xl font-black text-white mt-1"><i class="fa-solid fa-address-book text-xl text-cyan-400"></i></h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-users"></i>
-                    </div>
-                </div>
-                <a href="#" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
-                    Buscar Socio <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                </a>
-            </div>
-
-            <!-- Cobros Turno -->
+=======
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Cobros del Turno</span>
-                        <h3 class="text-2xl font-black text-white mt-1">${{ cobros_turno|default:"--" }}</h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Padrón de Socios</span>
+                        <h3 class="text-2xl font-black text-white mt-1">{{ total_socios|default:0 }}</h3>
+>>>>>>> 591647381ca3d74c6aa882a56e562bf034428fe0
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-wallet"></i>
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-address-book"></i>
                     </div>
                 </div>
-                <a href="#" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
-                    Cobrar Cuota <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                <a href="{% url 'admin_socios' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
+                    Ver Socios <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
             </div>
 
-            <!-- Reservas Clases -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Turno / Clases</span>
-                        <h3 class="text-2xl font-black text-white mt-1">{{ reservas_hoy|default:"--" }}</h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Disciplinas Activas</span>
+                        <h3 class="text-2xl font-black text-white mt-1">{{ total_actividades|default:7 }}</h3>
                     </div>
                     <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-calendar-day"></i>
+                        <i class="fa-solid fa-calendar-days"></i>
                     </div>
                 </div>
-                <a href="#" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
-                    Ver Reservas <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                </a>
+                <span class="text-xs text-slate-400 py-2 text-center bg-slate-950/40 rounded-xl">
+                    7 profesores en nómina
+                </span>
             </div>
         </div>
 
+<<<<<<< HEAD
         <!-- TABLA: REGISTRO DE INGRESOS DE HOY                          -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 mt-6 shadow-sm">
             <div class="flex items-center justify-between mb-4">
@@ -219,16 +222,219 @@
                     <a href="#" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-2">
                         <i class="fa-solid fa-user-plus text-blue-400"></i> Alta de Nuevo Socio
                     </a>
+=======
+        <!-- =============================================================== -->
+        <!-- ⏱️ SECCIÓN INTERMEDIA: PROFESORES CON HORARIOS E HISTORIAL     -->
+        <!-- =============================================================== -->
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-extrabold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-stopwatch text-blue-400"></i> Turnos de Profesores en Gimnasio
+                    </h2>
+                    <p class="text-xs text-slate-400">Inicio protegido por DNI/Clave, cómputo de horas y botón de historial estadístico.</p>
+>>>>>>> 591647381ca3d74c6aa882a56e562bf034428fe0
                 </div>
+                <span class="text-[11px] text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
+                    Mostrador Central
+                </span>
             </div>
 
-            <div class="lg:col-span-4 bg-slate-900/60 border border-slate-800 border-l-4 border-l-cyan-500 rounded-2xl p-6">
-                <h4 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-info text-cyan-400"></i> Protocolo de Ingreso
-                </h4>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    Recordá verificar que la cuota del socio esté en estado <span class="text-emerald-400 font-semibold">Al Día</span> antes de autorizar el ingreso al salón o a las salas de clases.
-                </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {% for p in profesores_cards %}
+                    <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-slate-700 transition">
+                        <div>
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-400 flex items-center justify-center font-bold text-sm border border-blue-500/20">
+                                        {{ p.usuario.first_name|slice:":1" }}{{ p.usuario.last_name|slice:":1" }}
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-sm text-white">{{ p.usuario.first_name }} {{ p.usuario.last_name }}</h3>
+                                        <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">{{ p.rol_desc }}</span>
+                                    </div>
+                                </div>
+                                
+                                {% if p.en_turno %}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> En Turno
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-800 text-slate-400 border border-slate-700">
+                                        Inactivo
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Horarios y Actividades -->
+                            <div class="mt-3 p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 text-[11px] text-slate-300 leading-relaxed">
+                                <p class="text-slate-400 text-[10px] font-semibold uppercase mb-0.5">Actividades y Franjas:</p>
+                                {{ p.detalle }}
+                            </div>
+
+                            <!-- Estado del Turno de Hoy -->
+                            {% if p.en_turno %}
+                                <div class="mt-2 text-[11px] text-emerald-400 font-semibold flex items-center gap-1.5">
+                                    <i class="fa-regular fa-clock"></i> Ingreso activo: {{ p.turno.hora_entrada|date:"H:i" }} hs
+                                </div>
+                            {% elif p.turno and p.turno.hora_salida %}
+                                <div class="mt-2 text-[11px] text-slate-400">
+                                    Último turno: {{ p.turno.hora_entrada|date:"H:i" }} - {{ p.turno.hora_salida|date:"H:i" }} hs ({{ p.turno.horas_trabajadas }})
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Botones de Acción (Iniciar con Clave, Cortar, Historial) -->
+                        <div class="space-y-2 pt-2 border-t border-slate-800">
+                            {% if p.en_turno %}
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="profesor_id" value="{{ p.usuario.id }}">
+                                    <button type="submit" name="accion_profesor" value="cortar" class="w-full py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer">
+                                        <i class="fa-solid fa-stop"></i> Cortar Turno Manual
+                                    </button>
+                                </form>
+                            {% else %}
+                                <button type="button" onclick="abrirModalIniciarTurno('{{ p.usuario.id }}', '{{ p.usuario.first_name }} {{ p.usuario.last_name }}', '{{ p.usuario.username }}')" class="w-full py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer">
+                                    <i class="fa-solid fa-play"></i> Iniciar Horario de Clase
+                                </button>
+                            {% endif %}
+
+                            <!-- Botón de Historial y Estadísticas -->
+                            <button type="button" onclick="abrirModalHistorial('modal-historial-{{ p.usuario.id }}')" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl border border-slate-700/80 transition flex items-center justify-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-chart-simple text-blue-400"></i> Historial / Horas Trabajadas
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- MODAL INDIVIDUAL DE HISTORIAL / ESTADÍSTICAS DEL PROFE    -->
+                    <!-- ========================================================= -->
+                    <div id="modal-historial-{{ p.usuario.id }}" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                                <div>
+                                    <h3 class="font-bold text-white text-base">Historial y Estadísticas</h3>
+                                    <p class="text-xs text-blue-400 font-semibold">{{ p.usuario.first_name }} {{ p.usuario.last_name }} ({{ p.rol_desc }})</p>
+                                </div>
+                                <button type="button" onclick="cerrarModalHistorial('modal-historial-{{ p.usuario.id }}')" class="text-slate-400 hover:text-white transition">
+                                    <i class="fa-solid fa-xmark text-lg"></i>
+                                </button>
+                            </div>
+
+                            <!-- Métricas del Profe -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-xl text-center">
+                                    <span class="text-[10px] uppercase font-bold text-slate-400">Horas Acumuladas</span>
+                                    <p class="text-lg font-black text-emerald-400 mt-0.5">{{ p.horas_acumuladas }}</p>
+                                </div>
+                                <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-xl text-center">
+                                    <span class="text-[10px] uppercase font-bold text-slate-400">Jornadas Registradas</span>
+                                    <p class="text-lg font-black text-white mt-0.5">{{ p.total_turnos }} turnos</p>
+                                </div>
+                            </div>
+
+                            <!-- Tabla de Turnos -->
+                            <div class="max-h-60 overflow-y-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="text-slate-400 border-b border-slate-800 text-[10px] uppercase tracking-wider">
+                                        <tr>
+                                            <th class="pb-2">Fecha</th>
+                                            <th class="pb-2">Entrada</th>
+                                            <th class="pb-2">Salida</th>
+                                            <th class="pb-2 text-right">Duración</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                                        {% for t in p.historial %}
+                                            <tr>
+                                                <td class="py-2.5 font-medium text-white">{{ t.hora_entrada|date:"d/m/Y" }}</td>
+                                                <td class="py-2.5 text-blue-400">{{ t.hora_entrada|date:"H:i" }} hs</td>
+                                                <td class="py-2.5 text-slate-400">
+                                                    {% if t.hora_salida %}
+                                                        {{ t.hora_salida|date:"H:i" }} hs
+                                                    {% else %}
+                                                        <span class="text-emerald-400 font-bold">En curso</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="py-2.5 text-right font-bold text-slate-200">
+                                                    {{ t.horas_trabajadas }}
+                                                </td>
+                                            </tr>
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="4" class="py-4 text-center text-slate-500 text-xs">
+                                                    Sin turnos registrados previamente.
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="flex justify-end pt-2 border-t border-slate-800">
+                                <button type="button" onclick="cerrarModalHistorial('modal-historial-{{ p.usuario.id }}')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
+                                    Cerrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                {% empty %}
+                    <div class="col-span-3 p-6 bg-slate-900/40 border border-slate-800 rounded-2xl text-center text-xs text-slate-400">
+                        No hay profesores dados de alta en la nómina.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- 📋 TABLA: REGISTRO DE INGRESOS DE HOY                          -->
+        <!-- =============================================================== -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="font-bold text-white text-sm">Registro de Ingresos de Hoy</h3>
+                    <p class="text-[11px] text-slate-400">Accesos presenciales validados y computados en mostrador</p>
+                </div>
+                <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    Total: {{ asistencias_hoy|default:0 }}
+                </span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
+                        <tr>
+                            <th class="pb-3 px-3">Hora</th>
+                            <th class="pb-3 px-3">Socio</th>
+                            <th class="pb-3 px-3">DNI</th>
+                            <th class="pb-3 px-3 text-right">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                        {% for item in ultimas_asistencias %}
+                            <tr class="hover:bg-slate-800/30 transition">
+                                <td class="py-3 px-3 font-bold text-blue-400">{{ item.fecha_hora|date:"H:i" }} hs</td>
+                                <td class="py-3 px-3 text-white font-medium">
+                                    {{ item.socio.usuario.first_name }} {{ item.socio.usuario.last_name }}
+                                </td>
+                                <td class="py-3 px-3 font-mono text-slate-400">{{ item.socio.usuario.username }}</td>
+                                <td class="py-3 px-3 text-right">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        Presente
+                                    </span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="py-6 text-center text-slate-500 text-xs">
+                                    Aún no hay asistencias registradas en el día de hoy.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
         <!-- MODAL CONTROL DE ASISTENCIA / SEMÁFORO DNI - GYMTRACK -->
@@ -352,9 +558,122 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-slate-900 border-t border-slate-800 text-slate-500 py-6 text-xs text-center">
-        <p>© 2026 GymTrack — Panel Operativo de Recepción.</p>
+    <footer class="bg-slate-900 border-t border-slate-800 text-slate-500 py-6 text-xs text-center mt-auto">
+        <p>© 2026 GymTrack × Bodynamic — Puesto Operativo de Recepción.</p>
     </footer>
+
+    <!-- =============================================================== -->
+    <!-- 🔒 MODAL DE VALIDACIÓN DE INICIO DE TURNO (DNI + PASSWORD)     -->
+    <!-- =============================================================== -->
+    <div id="modalIniciarTurno" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🔐</span>
+                    <h3 class="font-extrabold text-white text-base">Iniciar Turno de Guardia</h3>
+                </div>
+                <button type="button" onclick="cerrarModalIniciarTurno()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-400">
+                Confirmá el inicio de clase para <strong id="modalProfeNombre" class="text-white"></strong> ingresando tus credenciales de seguridad.
+            </p>
+
+            <form method="POST" class="space-y-3 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion_profesor" value="iniciar">
+                <input type="hidden" name="profesor_id" id="modalProfeId">
+
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">DNI o Usuario</label>
+                    <input type="text" name="dni_verif" id="modalProfeDni" required placeholder="Ingresá tu DNI o usuario" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Contraseña</label>
+                    <input type="password" name="password_verif" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="cerrarModalIniciarTurno()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow transition">
+                        Confirmar e Iniciar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONTROL DE ASISTENCIA RÁPIDO (SOCIOS) -->
+    <div id="asistenciaModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">💳</span>
+                    <h3 class="font-extrabold text-white text-base">Control de Acceso por DNI</h3>
+                </div>
+                <button type="button" onclick="closeAsistenciaModal()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form action="{% url 'registrar_asistencia' %}" method="POST" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-slate-400 text-xs font-bold uppercase mb-2">Ingresar DNI del Socio:</label>
+                    <input type="text" name="dni" id="modalDniInput" required placeholder="Ej: 40123456" autofocus class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeAsistenciaModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition">
+                        Validar Ingreso
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JS PARA MANEJO DE MODALES -->
+    <script>
+        function openAsistenciaModal() {
+            const modal = document.getElementById('asistenciaModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('modalDniInput').focus();
+            }, 100);
+        }
+
+        function closeAsistenciaModal() {
+            document.getElementById('asistenciaModal').classList.add('hidden');
+        }
+
+        function abrirModalIniciarTurno(profeId, nombreCompleto, usernameDefecto) {
+            document.getElementById('modalProfeId').value = profeId;
+            document.getElementById('modalProfeNombre').textContent = nombreCompleto;
+            document.getElementById('modalProfeDni').value = usernameDefecto;
+            document.getElementById('modalIniciarTurno').classList.remove('hidden');
+        }
+
+        function cerrarModalIniciarTurno() {
+            document.getElementById('modalIniciarTurno').classList.add('hidden');
+        }
+
+        function abrirModalHistorial(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function cerrarModalHistorial(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.add('hidden');
+        }
+    </script>
 
 </body>
 </html>

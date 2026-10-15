@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymTrack - Gestión de Membresías</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }</style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col antialiased">
+
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg">🏋️‍♂️</div>
+                    <span class="text-2xl font-extrabold tracking-tight text-white">GymTrack</span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2.5 py-0.5 rounded-md">Administración</span>
+                </div>
+                <a href="{% url 'dashboard' %}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al Panel
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+            {% for message in messages %}
+                <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300">
+                    <i class="fa-solid fa-circle-check"></i> {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">Membresías & Aranceles 💳</h1>
+                <p class="text-slate-400 text-sm mt-1">Configuración de pases mensuales, promociones familiares y precios por frecuencia.</p>
+            </div>
+            <button onclick="abrirModalCrearPlan()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-plus"></i> Nuevo Plan / Membresía
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for p in planes %}
+                <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-slate-700 transition space-y-4">
+                    <div>
+                        <div class="flex items-start justify-between">
+                            <h3 class="font-bold text-base text-white">{{ p.nombre }}</h3>
+                            <span class="text-xs font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                                ${{ p.precio }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">{{ p.descripcion|default:"Acceso según las normas del plan." }}</p>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800 flex items-center justify-between text-xs">
+                        <span class="text-slate-500 font-semibold">{{ p.duracion_dias|default:30 }} días de vigencia</span>
+                        
+                        <div class="flex items-center gap-2">
+                            <!-- Botón Editar -->
+                            <button type="button" onclick="abrirModalEditarPlan('{{ p.id }}', '{{ p.nombre }}', '{{ p.precio }}', '{{ p.duracion_dias|default:30 }}', '{{ p.descripcion|default:',' }}')" class="p-2 text-slate-400 hover:text-blue-400 transition" title="Editar">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </button>
+
+                            <!-- Botón Eliminar -->
+                            <form method="POST" onsubmit="return confirm('¿Seguro que deseás eliminar este plan de membresía?');" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="eliminar">
+                                <input type="hidden" name="plan_id" value="{{ p.id }}">
+                                <button type="submit" class="p-2 text-slate-400 hover:text-rose-400 transition" title="Eliminar">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <!-- MODAL CREAR / EDITAR PLAN -->
+    <div id="modalPlan" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 id="modalPlanTitulo" class="font-bold text-white text-base">Crear Plan de Membresía</h3>
+                <button type="button" onclick="cerrarModalPlan()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form method="POST" class="space-y-3 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" id="modalPlanAccion" value="crear">
+                <input type="hidden" name="plan_id" id="modalPlanId">
+
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre del Plan</label>
+                    <input type="text" name="nombre" id="modalPlanNombre" required placeholder="Ej: Musculación (Pase Completo)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Precio ($)</label>
+                        <input type="number" name="precio" id="modalPlanPrecio" required placeholder="60000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Duración (Días)</label>
+                        <input type="number" name="duracion_dias" id="modalPlanDuracion" value="30" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Descripción / Condiciones</label>
+                    <textarea name="descripcion" id="modalPlanDesc" rows="3" placeholder="Incluye sala de musculación y clases..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="cerrarModalPlan()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition">
+                        Guardar Plan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalCrearPlan() {
+            document.getElementById('modalPlanTitulo').textContent = 'Crear Plan de Membresía';
+            document.getElementById('modalPlanAccion').value = 'crear';
+            document.getElementById('modalPlanId').value = '';
+            document.getElementById('modalPlanNombre').value = '';
+            document.getElementById('modalPlanPrecio').value = '';
+            document.getElementById('modalPlanDuracion').value = '30';
+            document.getElementById('modalPlanDesc').value = '';
+            document.getElementById('modalPlan').classList.remove('hidden');
+        }
+
+        function abrirModalEditarPlan(id, nombre, precio, duracion, desc) {
+            document.getElementById('modalPlanTitulo').textContent = 'Editar Plan de Membresía';
+            document.getElementById('modalPlanAccion').value = 'editar';
+            document.getElementById('modalPlanId').value = id;
+            document.getElementById('modalPlanNombre').value = nombre;
+            document.getElementById('modalPlanPrecio').value = precio;
+            document.getElementById('modalPlanDuracion').value = duracion;
+            document.getElementById('modalPlanDesc').value = desc;
+            document.getElementById('modalPlan').classList.remove('hidden');
+        }
+
+        function cerrarModalPlan() {
+            document.getElementById('modalPlan').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
