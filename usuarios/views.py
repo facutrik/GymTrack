@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-# usuarios/views.py
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.utils import timezone                   
-from actividades.models import Actividad
-from membresias.models import Plan
-from usuarios.models import Usuario
-from asistencias.models import Asistencia                
-=======
 from datetime import datetime, time
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -20,7 +10,6 @@ from membresias.models import Plan
 from usuarios.models import Usuario, AsistenciaEmpleado
 from socios.models import Socio
 from asistencias.models import Asistencia
->>>>>>> 591647381ca3d74c6aa882a56e562bf034428fe0
 
 try:
     from rutinas.models import Rutina
@@ -68,9 +57,6 @@ def dashboard(request):
         total_socios = Usuario.objects.filter(rol='socio').count()
         total_empleados = Usuario.objects.filter(rol__in=['recepcion', 'entrenador', 'empleado']).count()
         total_actividades = Actividad.objects.count()
-<<<<<<< HEAD
-        
-=======
 
         hoy = timezone.localdate()
         total_mes = 0
@@ -80,35 +66,10 @@ def dashboard(request):
                 fecha_pago__month=hoy.month
             ).aggregate(total=Sum('monto'))['total'] or 0
 
->>>>>>> 591647381ca3d74c6aa882a56e562bf034428fe0
         context = {
             'total_socios': total_socios,
             'total_empleados': total_empleados,
             'total_actividades': total_actividades,
-<<<<<<< HEAD
-            'ingresos_mes': '0',
-        }
-        return render(request, 'admin/dashboard.html', context)
-    
-    # 2. Empleado / Recepción / Entrenador  👈 ACÁ AGREGAMOS LA CARGA DE ASISTENCIAS
-    elif getattr(user, 'rol', None) in ('recepcion', 'entrenador', 'empleado'):
-        hoy = timezone.localdate()
-        asistencias_hoy = Asistencia.objects.filter(fecha_hora__date=hoy).count()
-        ultimas_asistencias = Asistencia.objects.filter(
-            fecha_hora__date=hoy
-        ).select_related('socio__usuario').order_by('-fecha_hora')[:10]
-
-        context = {
-            'asistencias_hoy': asistencias_hoy,
-            'ultimas_asistencias': ultimas_asistencias,
-        }
-        return render(request, 'empleado/dashboard.html', context)
-    
-    # 3. Socio (por defecto)
-    else:
-        actividades = Actividad.objects.all()
-        return render(request, 'socio/dashboard.html', {'actividades': actividades})
-=======
             'ingresos_mes': f"{total_mes:,.0f}".replace(',', '.'),
         }
         return render(request, 'admin/dashboard.html', context)
@@ -663,4 +624,3 @@ def mi_perfil_empleado(request):
         'historial_turnos': historial_turnos,
     }
     return render(request, 'empleado/perfil.html', context)
->>>>>>> 591647381ca3d74c6aa882a56e562bf034428fe0
