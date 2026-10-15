@@ -11,9 +11,10 @@ from usuarios.models import Usuario
 # 🛡️ 1. MÓDULO ADMINISTRADOR: GESTIÓN DE SOCIOS
 # ==========================================================
 @login_required
+@login_required
 def admin_socios(request):
     user = request.user
-    if not (user.is_superuser or getattr(user, 'rol', None) == 'admin'):
+    if not (user.is_superuser or getattr(user, 'rol', None) in ('admin', 'recepcion', 'empleado', 'entrenador')):
         return redirect('dashboard')
 
     hoy = timezone.localdate()

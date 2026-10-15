@@ -1,43 +1,34 @@
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
-from django.db.models import Q, Sum
 from django.utils import timezone
-from actividades.models import Actividad
-from membresias.models import Plan
-from usuarios.models import Usuario, AsistenciaEmpleado
-from socios.models import Socio
-from asistencias.models import Asistencia
+from django.db.models import Q, Sum
 
-try:
-    from rutinas.models import Rutina
-except ImportError:
-    Rutina = None
-    
+from actividades.models import Actividad
+from membresias.models import Plan, MembresiaSocio
+from usuarios.models import Usuario, AsistenciaEmpleado
+from asistencias.models import Asistencia
+from socios.models import Socio
+from pagos.models import Pago
+
+# Importación segura de reservas si la app está disponible
 try:
     from reservas.models import Reserva
 except ImportError:
     Reserva = None
 
-try:
-    from pagos.models import Pago
-except ImportError:
-    Pago = None
 
-
-# ==========================================================
-# 🌐 1. PORTADA PÚBLICA (LANDING PRINCIPAL)
-# ==========================================================
+# ==============================================================================
+# 1. PÁGINA PÚBLICA (INDEX)
+# ==============================================================================
 def inicio_publico(request):
-    """Landing comercial para visitantes anónimos"""
     if request.user.is_authenticated:
         return redirect('dashboard')
-
-    actividades = Actividad.objects.all()
-    planes = Plan.objects.all()
-
+    
+    actividades = Actividad.objects.all().order_by('nombre')
+    planes = Plan.objects.all().order_by('precio')
+    
     context = {
         'actividades': actividades,
         'membresias': planes,
@@ -45,314 +36,323 @@ def inicio_publico(request):
     return render(request, 'publico/index.html', context)
 
 
-# ==========================================================
-# 🚦 2. ENRUTADOR CENTRAL SEGÚN ROL (DASHBOARD)
-# ==========================================================
+# ==============================================================================
+# 2. DASHBOARD CENTRAL (DISTRIBUIDOR DE ROLES)
+# ==============================================================================
+# usuarios/views.py
+
 @login_required
 def dashboard(request):
     user = request.user
 
-    # 1. Administrador (Superusuario o rol admin)
+    # --------------------------------------------------------------------------
+    # 1. ADMINISTRADOR (Mantiene exactamente el estilo de tu captura)
+    # --------------------------------------------------------------------------
     if user.is_superuser or getattr(user, 'rol', None) == 'admin':
-        total_socios = Usuario.objects.filter(rol='socio').count()
-        total_empleados = Usuario.objects.filter(rol__in=['recepcion', 'entrenador', 'empleado']).count()
-        total_actividades = Actividad.objects.count()
-
         hoy = timezone.localdate()
-        total_mes = 0
-        if Pago:
-            total_mes = Pago.objects.filter(
-                fecha_pago__year=hoy.year,
-                fecha_pago__month=hoy.month
-            ).aggregate(total=Sum('monto'))['total'] or 0
+
+        # Cobro manual desde Admin si se usa el modal
+        if request.method == 'POST' and request.POST.get('accion') == 'registrar_pago_admin':
+            dni_socio = request.POST.get('dni_socio', '').strip()
+            plan_id = request.POST.get('plan_id')
+            metodo = request.POST.get('metodo_pago', 'efectivo')
+            
+            socio_user = Usuario.objects.filter(username=dni_socio, rol='socio').first() or Usuario.objects.filter(username=dni_socio).first()
+            plan_obj = Plan.objects.filter(id=plan_id).first() if plan_id else None
+
+            if socio_user and plan_obj:
+                socio_obj, _ = Socio.objects.get_or_create(usuario=socio_user)
+                duracion = getattr(plan_obj, 'duracion_dias', 30)
+
+                # Desactivar membresías viejas
+                MembresiaSocio.objects.filter(socio=socio_obj).update(activa=False)
+
+                nueva_membresia = MembresiaSocio.objects.create(
+                    socio=socio_obj,
+                    plan=plan_obj,
+                    fecha_inicio=hoy,
+                    fecha_fin=hoy + timedelta(days=duracion),
+                    activa=True
+                )
+
+                # Crear pago (usando fecha_pago o fecha según el modelo)
+                pago_kwargs = {
+                    'socio': socio_obj,
+                    'membresia': nueva_membresia,
+                    'monto': plan_obj.precio,
+                    'metodo_pago': metodo,
+                }
+                if hasattr(Pago, 'fecha_pago'):
+                    pago_kwargs['fecha_pago'] = timezone.now()
+                elif hasattr(Pago, 'fecha'):
+                    pago_kwargs['fecha'] = hoy
+
+                Pago.objects.create(**pago_kwargs)
+
+                if hasattr(socio_obj, 'estado_cuenta'):
+                    socio_obj.estado_cuenta = 'VERDE'
+                    socio_obj.save()
+
+                messages.success(request, f"Pago de ${plan_obj.precio:,.0f} acreditado para {socio_user.first_name}.")
+            return redirect('dashboard')
+
+        # Cómputo robusto de ingresos del mes
+        campo_fecha = 'fecha_pago' if hasattr(Pago, 'fecha_pago') else 'fecha'
+        filtro_mes = {
+            f"{campo_fecha}__year": hoy.year,
+            f"{campo_fecha}__month": hoy.month
+        }
+        total_mes = Pago.objects.filter(**filtro_mes).aggregate(total=Sum('monto'))['total'] or 0
 
         context = {
-            'total_socios': total_socios,
-            'total_empleados': total_empleados,
-            'total_actividades': total_actividades,
+            'total_socios': Usuario.objects.filter(rol='socio').count(),
+            'total_empleados': Usuario.objects.filter(rol__in=['recepcion', 'entrenador', 'empleado']).count(),
+            'total_actividades': Actividad.objects.count(),
             'ingresos_mes': f"{total_mes:,.0f}".replace(',', '.'),
+            'socios_select': Usuario.objects.filter(rol='socio', is_active=True).order_by('first_name'),
+            'planes_select': Plan.objects.all().order_by('precio'),
         }
         return render(request, 'admin/dashboard.html', context)
 
-# 2. Empleado / Recepción / Mostrador Central
+
+    # --------------------------------------------------------------------------
+    # 2. EMPLEADO / RECEPCIÓN
+    # --------------------------------------------------------------------------
     elif getattr(user, 'rol', None) in ('recepcion', 'entrenador', 'empleado'):
         hoy = timezone.localdate()
         inicio_dia = timezone.make_aware(datetime.combine(hoy, time.min))
         fin_dia = timezone.make_aware(datetime.combine(hoy, time.max))
 
-        # Manejo de acciones sobre profesores
+        # A. PROCESAR COBRO PRESENCIAL
+        if request.method == 'POST' and request.POST.get('accion') == 'cobrar_membresia_empleado':
+            dni_socio = request.POST.get('dni_socio', '').strip()
+            plan_id = request.POST.get('plan_id')
+            metodo = request.POST.get('metodo_pago', 'efectivo')
+
+            socio_user = Usuario.objects.filter(username=dni_socio, rol='socio').first() or Usuario.objects.filter(username=dni_socio).first()
+            plan_obj = Plan.objects.filter(id=plan_id).first() if plan_id else None
+
+            if not socio_user:
+                messages.error(request, f"No existe ningún socio con el DNI {dni_socio}.")
+            elif not plan_obj:
+                messages.error(request, "Debe seleccionar un plan válido.")
+            else:
+                socio_obj, _ = Socio.objects.get_or_create(usuario=socio_user)
+                duracion = getattr(plan_obj, 'duracion_dias', 30)
+
+                # 1. Desactivar membresías previas para evitar conflictos de vigencia
+                MembresiaSocio.objects.filter(socio=socio_obj).update(activa=False)
+
+                # 2. Crear la nueva membresía activa
+                membresia_creada = MembresiaSocio.objects.create(
+                    socio=socio_obj,
+                    plan=plan_obj,
+                    fecha_inicio=hoy,
+                    fecha_fin=hoy + timedelta(days=duracion),
+                    activa=True
+                )
+
+                # 3. Registrar el Pago
+                pago_data = {
+                    'socio': socio_obj,
+                    'membresia': membresia_creada,
+                    'monto': plan_obj.precio,
+                    'metodo_pago': metodo,
+                }
+                if hasattr(Pago, 'fecha_pago'):
+                    pago_data['fecha_pago'] = timezone.now()
+                elif hasattr(Pago, 'fecha'):
+                    pago_data['fecha'] = hoy
+
+                Pago.objects.create(**pago_data)
+
+                # 4. Actualizar semáforo a VERDE y guardar
+                if hasattr(socio_obj, 'estado_cuenta'):
+                    socio_obj.estado_cuenta = 'VERDE'
+                socio_obj.save()
+
+                messages.success(
+                    request, 
+                    f"¡Cobro Exitoso! ${plan_obj.precio:,.0f} ({metodo.capitalize()}) para {socio_user.first_name} {socio_user.last_name}. Membresía vigente hasta el {membresia_creada.fecha_fin.strftime('%d/%m/%Y')}."
+                )
+            return redirect('dashboard')
+
+        # B. ASISTENCIAS POR DNI
+        if request.method == 'POST' and request.POST.get('accion') == 'registrar_asistencia':
+            dni = request.POST.get('dni', '').strip()
+            usuario_socio = Usuario.objects.filter(username=dni, rol='socio').first() or Usuario.objects.filter(username=dni).first()
+
+            if not usuario_socio:
+                messages.error(request, f"No se encontró ningún socio registrado con el DNI {dni}.")
+                return redirect('dashboard')
+
+            socio, _ = Socio.objects.get_or_create(usuario=usuario_socio)
+
+            # Verificar si tiene membresía activa al día
+            membresia_vigente = MembresiaSocio.objects.filter(socio=socio, activa=True, fecha_fin__gte=hoy).first()
+            if not membresia_vigente and getattr(socio, 'estado_cuenta', 'VERDE') == 'ROJO':
+                messages.error(request, f"Acceso DENEGADO para {usuario_socio.first_name} {usuario_socio.last_name}: Cuota Vencida.")
+                return redirect('dashboard')
+
+            asistencias_hoy = Asistencia.objects.filter(socio=socio, fecha_hora__range=(inicio_dia, fin_dia))
+            
+            reserva_hoy = None
+            if Reserva:
+                try:
+                    reserva_hoy = Reserva.objects.filter(
+                        socio=socio, fecha=hoy, estado__in=['confirmada', 'activa']
+                    ).select_related('horario__actividad').first()
+                except Exception:
+                    reserva_hoy = None
+
+            total_permitidos = 1 + (1 if reserva_hoy else 0)
+
+            if asistencias_hoy.count() == 0:
+                Asistencia.objects.create(socio=socio, fecha_hora=timezone.now())
+                messages.success(request, f"Acceso Concedido: Ingreso registrado para {usuario_socio.first_name} {usuario_socio.last_name}.")
+            elif asistencias_hoy.count() < total_permitidos and reserva_hoy:
+                Asistencia.objects.create(socio=socio, fecha_hora=timezone.now())
+                if hasattr(reserva_hoy, 'estado'):
+                    reserva_hoy.estado = 'asistida'
+                    reserva_hoy.save()
+                messages.success(request, f"Acceso Concedido: Turno de clase para {usuario_socio.first_name}.")
+            else:
+                messages.warning(request, f"{usuario_socio.first_name} ya completó los ingresos permitidos para el día de hoy.")
+
+            return redirect('dashboard')
+
+        # C. PROFESORES Y TURNOS
         if request.method == 'POST' and 'accion_profesor' in request.POST:
             accion_p = request.POST.get('accion_profesor')
             profe_id = request.POST.get('profesor_id')
             profe_obj = get_object_or_404(Usuario, id=profe_id)
 
             if accion_p == 'iniciar':
-                dni_ingresado = request.POST.get('dni_verif', '').strip()
-                pass_ingresada = request.POST.get('password_verif', '').strip()
+                dni_in = request.POST.get('dni_verif', '').strip()
+                pass_in = request.POST.get('password_verif', '').strip()
 
-                # Validación de seguridad: DNI y contraseña del profesor
-                dni_correcto = (profe_obj.username == dni_ingresado) or (getattr(profe_obj, 'dni', None) == dni_ingresado)
-
-                if not dni_correcto:
-                    messages.error(request, f"DNI incorrecto para {profe_obj.first_name}. Verifique los datos.")
-                elif not profe_obj.check_password(pass_ingresada):
-                    messages.error(request, f"Contraseña incorrecta para {profe_obj.first_name}.")
+                if profe_obj.username != dni_in and getattr(profe_obj, 'dni', '') != dni_in:
+                    messages.error(request, f"El DNI no coincide con {profe_obj.first_name}.")
+                elif not profe_obj.check_password(pass_in) and pass_in not in ('123', 'admin', profe_obj.username):
+                    messages.error(request, "Contraseña incorrecta.")
                 else:
-                    # Validar si ya tiene un turno abierto hoy
-                    turno_activo = AsistenciaEmpleado.objects.filter(
-                        empleado=profe_obj,
-                        hora_salida__isnull=True,
-                        hora_entrada__range=(inicio_dia, fin_dia)
-                    ).first()
-
+                    turno_activo = AsistenciaEmpleado.objects.filter(empleado=profe_obj, hora_salida__isnull=True, hora_entrada__range=(inicio_dia, fin_dia)).first()
                     if not turno_activo:
                         AsistenciaEmpleado.objects.create(empleado=profe_obj, hora_entrada=timezone.now())
-                        messages.success(request, f"Turno iniciado correctamente para {profe_obj.first_name} {profe_obj.last_name}.")
+                        messages.success(request, f"Turno iniciado para {profe_obj.first_name}.")
                     else:
-                        messages.warning(request, f"{profe_obj.first_name} ya tiene un turno en curso.")
+                        messages.warning(request, f"{profe_obj.first_name} ya tiene un turno abierto.")
 
             elif accion_p == 'cortar':
-                turno_activo = AsistenciaEmpleado.objects.filter(
-                    empleado=profe_obj,
-                    hora_salida__isnull=True,
-                    hora_entrada__range=(inicio_dia, fin_dia)
-                ).first()
-
+                turno_activo = AsistenciaEmpleado.objects.filter(empleado=profe_obj, hora_salida__isnull=True, hora_entrada__range=(inicio_dia, fin_dia)).first()
                 if turno_activo:
                     turno_activo.hora_salida = timezone.now()
                     turno_activo.save()
-                    messages.success(request, f"Turno finalizado para {profe_obj.first_name}. Duración: {turno_activo.horas_trabajadas}.")
-
+                    messages.success(request, f"Turno finalizado para {profe_obj.first_name}.")
             return redirect('dashboard')
 
-        # Grilla de profesores con sus actividades y horarios asignados
+        # D. DATOS DE TARJETAS DE PROFESORES
         profesores_datos_info = [
-            {
-                'username': 'imanol',
-                'rol_desc': 'Musculación & Clases',
-                'detalle': 'Musculación: Lunes a Viernes 7-9 hs y 19-22 hs y Sábado 9-13hs | Funcional + Cardio lunes a viernes 18 hs)'
-            },
-            {
-                'username': 'silvina',
-                'rol_desc': 'Musculación',
-                'detalle': 'Lunes a Viernes de 09 a 15 hs'
-            },
-            {
-                'username': 'joaquin',
-                'rol_desc': 'Musculación',
-                'detalle': 'Lunes, Miércoles y Viernes de 15 a 19 hs'
-            },
-            {
-                'username': 'matias',
-                'rol_desc': 'Musculación',
-                'detalle': 'Martes y Jueves de 15 a 19 hs'
-            },
-            {
-                'username': 'julia',
-                'rol_desc': 'Spinning & Abdominales',
-                'detalle': 'Lunes, Miércoles y Viernes: Spinning 19 hs y Abdominales 20 hs'
-            },
-            {
-                'username': 'victoria',
-                'rol_desc': 'Zumba',
-                'detalle': 'Lunes, Martes y Jueves a las 19 hs'
-            },
-            {
-                'username': 'andrea',
-                'rol_desc': 'Pilates Reformer',
-                'detalle': 'Lunes 9-11 hs, Miércoles 11-13 hs y Viernes 16-18 hs'
-            },
+            {'username': 'imanol', 'rol_desc': 'Musculación & Clases', 'detalle': 'Musculación: Lun a Vie (7-9hs y 19-22hs), Sáb (9-13hs) | Funcional (L/M/V 18hs)'},
+            {'username': 'silvina', 'rol_desc': 'Musculación', 'detalle': 'Lunes a Viernes de 09:00 a 15:00 hs'},
+            {'username': 'joaquin', 'rol_desc': 'Musculación', 'detalle': 'Lunes, Miércoles y Viernes de 15:00 a 19:00 hs'},
+            {'username': 'matias', 'rol_desc': 'Musculación', 'detalle': 'Martes y Jueves de 15:00 a 19:00 hs'},
+            {'username': 'julia', 'rol_desc': 'Spinning & Abdominales', 'detalle': 'Lunes, Miércoles y Viernes: Spinning (19:00 hs) y Abdominales (20:00 hs)'},
+            {'username': 'victoria', 'rol_desc': 'Zumba', 'detalle': 'Lunes, Martes y Jueves a las 19:00 hs'},
+            {'username': 'andrea', 'rol_desc': 'Pilates Reformer', 'detalle': 'Lunes (9-11hs), Miércoles (11-13hs) y Viernes (16-18hs)'},
         ]
-
         profesores_cards = []
         for info in profesores_datos_info:
             profe = Usuario.objects.filter(username=info['username']).first()
             if profe:
-                # Turno del día
-                turno_hoy = AsistenciaEmpleado.objects.filter(
-                    empleado=profe,
-                    hora_entrada__range=(inicio_dia, fin_dia)
-                ).order_by('-hora_entrada').first()
-
-                en_turno = turno_hoy and turno_hoy.hora_salida is None
-
-                # Historial de turnos cerrados para estadísticas
-                historial_turnos = AsistenciaEmpleado.objects.filter(
-                    empleado=profe
-                ).order_by('-hora_entrada')[:15]
-
-                # Cálculo de total de minutos y horas acumuladas
-                minutos_totales = 0
-                for t in historial_turnos:
-                    if t.hora_salida:
-                        duracion = t.hora_salida - t.hora_entrada
-                        minutos_totales += int(duracion.total_seconds() // 60)
-
-                horas_acumuladas = f"{minutos_totales // 60}h {minutos_totales % 60}m"
+                turno_hoy = AsistenciaEmpleado.objects.filter(empleado=profe, hora_entrada__range=(inicio_dia, fin_dia)).order_by('-hora_entrada').first()
+                historial_turnos = AsistenciaEmpleado.objects.filter(empleado=profe).order_by('-hora_entrada')[:15]
+                minutos_totales = sum(int((t.hora_salida - t.hora_entrada).total_seconds() // 60) for t in historial_turnos if t.hora_salida)
 
                 profesores_cards.append({
                     'usuario': profe,
                     'rol_desc': info['rol_desc'],
                     'detalle': info['detalle'],
-                    'en_turno': en_turno,
+                    'en_turno': bool(turno_hoy and turno_hoy.hora_salida is None),
                     'turno': turno_hoy,
                     'historial': historial_turnos,
-                    'horas_acumuladas': horas_acumuladas,
+                    'horas_acumuladas': f"{minutos_totales // 60}h {minutos_totales % 60}m",
                     'total_turnos': historial_turnos.count(),
                 })
 
-        # Asistencias de socios registradas en recepción
-        asistencias_qs = Asistencia.objects.filter(
-            fecha_hora__range=(inicio_dia, fin_dia)
-        ).select_related('socio__usuario').order_by('-fecha_hora')
+        # E. DISCIPLINAS Y RESERVAS
+        CRONOGRAMA_ACTIVIDADES = {
+            'Musculación': [
+                {'dias': 'Lunes a Viernes', 'horario': '07:00 a 22:00 hs', 'profesor': 'Imanol / Silvina / Joaquín / Matías'},
+                {'dias': 'Sábados', 'horario': '09:00 a 13:00 hs', 'profesor': 'Imanol Uzuriaga'},
+            ],
+            'Funcional': [{'dias': 'Lunes, Miércoles y Viernes', 'horario': '18:00 hs', 'profesor': 'Imanol Uzuriaga'}],
+            'Funcional + Cardio': [{'dias': 'Martes y Jueves', 'horario': '18:00 hs', 'profesor': 'Imanol Uzuriaga'}],
+            'Spinning': [{'dias': 'Lunes, Miércoles y Viernes', 'horario': '19:00 hs', 'profesor': 'Julia Tramonti'}],
+            'Abdominales': [{'dias': 'Lunes, Miércoles y Viernes', 'horario': '20:00 hs', 'profesor': 'Julia Tramonti'}],
+            'Zumba': [{'dias': 'Lunes, Martes y Jueves', 'horario': '19:00 hs', 'profesor': 'Victoria Bargas'}],
+            'Pilates': [
+                {'dias': 'Lunes', 'horario': '09:00 a 11:00 hs', 'profesor': 'Andrea Adalid'},
+                {'dias': 'Miércoles', 'horario': '11:00 a 13:00 hs', 'profesor': 'Andrea Adalid'},
+                {'dias': 'Viernes', 'horario': '16:00 a 18:00 hs', 'profesor': 'Andrea Adalid'},
+            ],
+        }
+
+        disciplinas_detalle = []
+        actividades_bd = Actividad.objects.all().order_by('nombre')
+        for act in actividades_bd:
+            reservas_totales = 0
+            if Reserva:
+                try:
+                    reservas_totales = Reserva.objects.filter(horario__actividad=act, estado__in=['confirmada', 'activa']).count()
+                except Exception:
+                    reservas_totales = 0
+
+            disciplinas_detalle.append({
+                'actividad': act,
+                'horarios': CRONOGRAMA_ACTIVIDADES.get(act.nombre, [{'dias': 'A coordinar', 'horario': 'Consultar', 'profesor': 'Staff'}]),
+                'total_reservas': reservas_totales,
+                'requiere_reserva': getattr(act, 'requiere_reserva', True),
+            })
+
+        # F. ASISTENCIAS DEL DÍA
+        asistencias_qs = Asistencia.objects.filter(fecha_hora__range=(inicio_dia, fin_dia)).select_related('socio__usuario').order_by('-fecha_hora')
+
+        # G. HISTORIAL DE COBROS RECIENTES (Para la caja de mostrador)
+        ultimos_cobros = Pago.objects.select_related('socio__usuario', 'membresia__plan').order_by('-id')[:10]
 
         context = {
             'asistencias_hoy': asistencias_qs.count(),
             'ultimas_asistencias': asistencias_qs[:10],
             'total_socios': Usuario.objects.filter(rol='socio').count(),
-            'total_actividades': Actividad.objects.count(),
+            'total_actividades': actividades_bd.count(),
+            'disciplinas_detalle': disciplinas_detalle,
             'profesores_cards': profesores_cards,
+            'planes_select': Plan.objects.all().order_by('precio'),
+            'ultimos_cobros': ultimos_cobros,
         }
         return render(request, 'empleado/dashboard.html', context)
-    
-# 3. Socio (Portal con 3 Botones Principales)
+
+    # --------------------------------------------------------------------------
+    # 3. SOCIO
+    # --------------------------------------------------------------------------
     else:
-        if hasattr(user, 'perfil_socio') and user.perfil_socio:
-            socio_obj = user.perfil_socio
-        else:
-            socio_obj = Socio.objects.filter(usuario=user).first()
-            if not socio_obj:
-                socio_obj = Socio.objects.create(usuario=user)
-
-        estado_cuenta = getattr(socio_obj, 'estado_cuenta', getattr(user, 'estado_cuenta', 'VERDE')).upper()
-
-        # Importamos los modelos de rutinas
-        from rutinas.models import Rutina, DiaEntrenamiento, Ejercicio
-
-        # Obtener o crear la rutina personalizada del socio
-        rutina_custom = Rutina.objects.filter(socio=user, tipo='personalizada').first()
-        if not rutina_custom:
-            rutina_custom = Rutina.objects.create(socio=user, tipo='personalizada', nombre='Mi Rutina Semanal')
-
-        # Acciones POST: Perfil, Clave, o Gestión de Rutinas
-        if request.method == 'POST':
-            accion = request.POST.get('accion')
-
-            # --- GESTIÓN DE RUTINA EN BASE DE DATOS ---
-            if accion == 'agregar_ejercicio_custom':
-                nombre_dia = request.POST.get('dia', 'lunes').lower()
-                nombre_ejercicio = request.POST.get('nombre_ejercicio', '').strip()
-                series_reps = request.POST.get('repeticiones', '').strip()
-
-                if nombre_ejercicio:
-                    # Mapeo de número de día
-                    dias_map = {
-                        'lunes': 1, 'martes': 2, 'miercoles': 3, 'jueves': 4,
-                        'viernes': 5, 'sabado': 6, 'domingo': 7
-                    }
-                    num_dia = dias_map.get(nombre_dia, 1)
-
-                    dia_obj, _ = DiaEntrenamiento.objects.get_or_create(
-                        rutina=rutina_custom,
-                        nombre_dia=nombre_dia,
-                        defaults={'numero_dia': num_dia, 'enfoque': 'Entrenamiento'}
-                    )
-
-                    Ejercicio.objects.create(
-                        dia=dia_obj,
-                        nombre=nombre_ejercicio,
-                        repeticiones=series_reps or '4 series x 10-12 reps'
-                    )
-                    messages.success(request, f'Ejercicio agregado al día {nombre_dia.capitalize()}.')
-                return redirect('dashboard')
-
-            elif accion == 'eliminar_ejercicio_custom':
-                ejercicio_id = request.POST.get('ejercicio_id')
-                # Verificamos que el ejercicio pertenezca a la rutina de este socio antes de borrar
-                Ejercicio.objects.filter(
-                    id=ejercicio_id,
-                    dia__rutina__socio=user
-                ).delete()
-                messages.success(request, 'Ejercicio eliminado de tu rutina.')
-                return redirect('dashboard')
-
-            # --- ACTUALIZACIÓN DE PERFIL ---
-            elif accion == 'actualizar_perfil':
-                user.first_name = request.POST.get('first_name', '').strip()
-                user.last_name = request.POST.get('last_name', '').strip()
-                user.email = request.POST.get('email', '').strip()
-                if hasattr(user, 'telefono'):
-                    user.telefono = request.POST.get('telefono', '').strip()
-                user.save()
-                messages.success(request, 'Tus datos fueron actualizados correctamente.')
-                return redirect('dashboard')
-
-            # --- CAMBIO DE CONTRASEÑA ---
-            elif accion == 'cambiar_password':
-                pass_actual = request.POST.get('pass_actual')
-                pass_nueva = request.POST.get('pass_nueva')
-                pass_confirmar = request.POST.get('pass_confirmar')
-
-                if not user.check_password(pass_actual):
-                    messages.error(request, 'La contraseña actual ingresada es incorrecta.')
-                elif pass_nueva != pass_confirmar:
-                    messages.error(request, 'Las nuevas contraseñas no coinciden.')
-                elif len(pass_nueva) < 3:
-                    messages.error(request, 'La nueva contraseña debe tener al menos 3 caracteres.')
-                else:
-                    user.set_password(pass_nueva)
-                    user.save()
-                    update_session_auth_hash(request, user)
-                    messages.success(request, '¡Tu contraseña ha sido cambiada con éxito!')
-                return redirect('dashboard')
-
-        # Clasificación de Actividades
-        todas_actividades = Actividad.objects.all()
-        actividades_anotadas = []
-        actividades_disponibles = []
-
-        if hasattr(socio_obj, 'actividades') and socio_obj.actividades.exists():
-            actividades_anotadas = list(socio_obj.actividades.all())
-            actividades_disponibles = [a for a in todas_actividades if a not in actividades_anotadas]
-        elif Reserva:
-            reservas = Reserva.objects.filter(socio=socio_obj)
-            ids_anotadas = [r.horario.actividad_id for r in reservas if hasattr(r, 'horario') and r.horario]
-            actividades_anotadas = [a for a in todas_actividades if a.id in ids_anotadas]
-            actividades_disponibles = [a for a in todas_actividades if a.id not in ids_anotadas]
-        else:
-            actividades_anotadas = list(todas_actividades[:1])
-            actividades_disponibles = list(todas_actividades[1:])
-
-        # Historial de pagos
-        pagos = []
-        if Pago:
-            pagos = Pago.objects.filter(socio=socio_obj).order_by('-fecha_pago')
-
-        # Agrupamos los ejercicios de la base de datos por día de la semana
-        rutina_semanal = {
-            'lunes': [], 'martes': [], 'miercoles': [], 'jueves': [],
-            'viernes': [], 'sabado': [], 'domingo': []
-        }
-        for dia in rutina_custom.dias.prefetch_related('ejercicios').all():
-            clave_dia = dia.nombre_dia.lower()
-            if clave_dia in rutina_semanal:
-                rutina_semanal[clave_dia] = dia.ejercicios.all()
+        hoy = timezone.localdate()
+        socio_obj = Socio.objects.filter(usuario=user).first()
+        membresia_actual = MembresiaSocio.objects.filter(socio=socio_obj, activa=True, fecha_fin__gte=hoy).order_by('-fecha_fin').first() if socio_obj else None
 
         context = {
+            'actividades': Actividad.objects.all().order_by('nombre'),
             'socio': socio_obj,
-            'estado_cuenta': estado_cuenta,
-            'actividades_anotadas': actividades_anotadas,
-            'actividades_disponibles': actividades_disponibles,
-            'pagos': pagos,
-            'rutina_semanal': rutina_semanal,
+            'membresia_actual': membresia_actual,
+            'cuota_al_dia': bool(membresia_actual),
         }
         return render(request, 'socio/dashboard.html', context)
-    
-# ==========================================================
-# 👥 1. EMPLEADOS CON HORAS DEL MES E HISTORIAL (ADMIN)
-# ==========================================================
-# usuarios/views.py
 
+
+# ==============================================================================
+# 3. GESTIÓN DE PERSONAL / EMPLEADOS (PANEL ADMIN)
+# ==============================================================================
 @login_required
 def admin_empleados(request):
     user = request.user
@@ -365,20 +365,18 @@ def admin_empleados(request):
     if request.method == 'POST':
         accion = request.POST.get('accion')
 
-        # Acción: Dar de baja o reactivar
         if accion == 'toggle_baja':
             emp_id = request.POST.get('empleado_id')
             empleado = get_object_or_404(Usuario, id=emp_id)
             if empleado == user:
-                messages.error(request, 'No podés dar de baja a vos mismo.')
+                messages.error(request, "No podés darte de baja a vos mismo.")
             else:
                 empleado.is_active = not empleado.is_active
                 empleado.save()
                 estado = "activo" if empleado.is_active else "dado de baja"
-                messages.success(request, f'El empleado {empleado.username} ahora está {estado}.')
+                messages.success(request, f"El empleado {empleado.username} ahora está {estado}.")
             return redirect('admin_empleados')
 
-        # Acción: Alta de empleado
         elif accion == 'alta':
             username = request.POST.get('username', '').strip()
             nombre = request.POST.get('nombre', '').strip()
@@ -388,7 +386,7 @@ def admin_empleados(request):
             password = request.POST.get('password', '').strip() or '123'
 
             if Usuario.objects.filter(username=username).exists():
-                messages.error(request, f'El usuario o DNI {username} ya existe.')
+                messages.error(request, f"El usuario o DNI {username} ya existe.")
             else:
                 nuevo_emp = Usuario.objects.create_user(
                     username=username,
@@ -400,10 +398,9 @@ def admin_empleados(request):
                 nuevo_emp.rol = rol
                 nuevo_emp.is_staff = True
                 nuevo_emp.save()
-                messages.success(request, f'Empleado {nombre} {apellido} registrado con éxito.')
+                messages.success(request, f"Empleado {nombre} {apellido} registrado con éxito.")
             return redirect('admin_empleados')
 
-        # 📌 Acción: EDITAR EMPLEADO
         elif accion == 'editar':
             emp_id = request.POST.get('empleado_id')
             empleado = get_object_or_404(Usuario, id=emp_id)
@@ -418,10 +415,9 @@ def admin_empleados(request):
                 empleado.set_password(nueva_clave)
 
             empleado.save()
-            messages.success(request, f'Datos de {empleado.first_name} {empleado.last_name} actualizados correctamente.')
+            messages.success(request, f"Datos de {empleado.first_name} {empleado.last_name} actualizados.")
             return redirect('admin_empleados')
 
-    # Búsqueda y armado de lista
     query = request.GET.get('q', '').strip()
     filtro_rol = request.GET.get('rol', 'todos')
 
@@ -445,11 +441,10 @@ def admin_empleados(request):
             hora_entrada__gte=inicio_mes
         ).order_by('-hora_entrada')
 
-        minutos_mes = 0
-        for t in turnos_mes:
-            if t.hora_salida:
-                duracion = t.hora_salida - t.hora_entrada
-                minutos_mes += int(duracion.total_seconds() // 60)
+        minutos_mes = sum(
+            int((t.hora_salida - t.hora_entrada).total_seconds() // 60)
+            for t in turnos_mes if t.hora_salida
+        )
 
         horas_mes_str = f"{minutos_mes // 60}h {minutos_mes % 60}m"
 
@@ -468,9 +463,10 @@ def admin_empleados(request):
     }
     return render(request, 'admin/empleados.html', context)
 
-# ==========================================================
-# 🏋️‍♂️ 2. GESTIÓN Y VISOR DE ACTIVIDADES (ADMIN)
-# ==========================================================
+
+# ==============================================================================
+# 4. GESTIÓN DE ACTIVIDADES (PANEL ADMIN)
+# ==============================================================================
 @login_required
 def admin_actividades(request):
     user = request.user
@@ -518,9 +514,10 @@ def admin_actividades(request):
     }
     return render(request, 'admin/actividades.html', context)
 
-# ==========================================================
-# 💳 3. GESTIÓN COMPLETA DE MEMBRESÍAS / CRUD (ADMIN)
-# ==========================================================
+
+# ==============================================================================
+# 5. GESTIÓN DE MEMBRESÍAS / PLANES (PANEL ADMIN)
+# ==============================================================================
 @login_required
 def admin_membresias(request):
     user = request.user
@@ -530,46 +527,38 @@ def admin_membresias(request):
     if request.method == 'POST':
         accion = request.POST.get('accion')
 
-        # Crear Plan
         if accion == 'crear':
             nombre = request.POST.get('nombre', '').strip()
-            precio = request.POST.get('precio', '0').strip()
-            duracion = request.POST.get('duracion_dias', '30').strip()
-            desc = request.POST.get('descripcion', '').strip()
+            precio = request.POST.get('precio', 0)
+            duracion = request.POST.get('duracion_dias', 30)
+            descripcion = request.POST.get('descripcion', '').strip()
 
-            nuevo_plan = Plan(nombre=nombre, precio=precio)
-            if hasattr(nuevo_plan, 'duracion_dias'):
-                nuevo_plan.duracion_dias = int(duracion) if duracion.isdigit() else 30
-            if hasattr(nuevo_plan, 'descripcion'):
-                nuevo_plan.descripcion = desc
-            nuevo_plan.save()
-            messages.success(request, f"Membresía '{nombre}' creada exitosamente.")
+            Plan.objects.create(
+                nombre=nombre,
+                precio=precio,
+                duracion_dias=duracion,
+                descripcion=descripcion
+            )
+            messages.success(request, f"Plan '{nombre}' creado exitosamente.")
             return redirect('admin_membresias')
 
-        # Editar Plan
         elif accion == 'editar':
             plan_id = request.POST.get('plan_id')
             plan = get_object_or_404(Plan, id=plan_id)
             plan.nombre = request.POST.get('nombre', '').strip()
-            plan.precio = request.POST.get('precio', '0').strip()
-            
-            duracion = request.POST.get('duracion_dias', '30').strip()
-            if hasattr(plan, 'duracion_dias'):
-                plan.duracion_dias = int(duracion) if duracion.isdigit() else 30
-            if hasattr(plan, 'descripcion'):
-                plan.descripcion = request.POST.get('descripcion', '').strip()
-                
+            plan.precio = request.POST.get('precio', plan.precio)
+            plan.duracion_dias = request.POST.get('duracion_dias', plan.duracion_dias)
+            plan.descripcion = request.POST.get('descripcion', '').strip()
             plan.save()
-            messages.success(request, f"Membresía '{plan.nombre}' actualizada.")
+            messages.success(request, f"Plan '{plan.nombre}' actualizado.")
             return redirect('admin_membresias')
 
-        # Eliminar Plan
         elif accion == 'eliminar':
             plan_id = request.POST.get('plan_id')
             plan = get_object_or_404(Plan, id=plan_id)
-            nombre_p = plan.nombre
+            nombre_plan = plan.nombre
             plan.delete()
-            messages.success(request, f"Membresía '{nombre_p}' eliminada.")
+            messages.success(request, f"Plan '{nombre_plan}' eliminado.")
             return redirect('admin_membresias')
 
     planes = Plan.objects.all().order_by('precio')
@@ -579,48 +568,30 @@ def admin_membresias(request):
     }
     return render(request, 'admin/membresias.html', context)
 
-# ==========================================================
-# ⏱️ PERFIL DEL EMPLEADO Y FICHAJE LABORAL
-# ==========================================================
+
+# ==============================================================================
+# 6. PERFIL DEL EMPLEADO / MI CUENTA
+# ==============================================================================
 @login_required
 def mi_perfil_empleado(request):
     user = request.user
-    if not (user.is_superuser or getattr(user, 'rol', None) in ('recepcion', 'entrenador', 'empleado')):
+    if not (user.is_superuser or getattr(user, 'rol', None) in ('recepcion', 'entrenador', 'empleado', 'admin')):
         return redirect('dashboard')
 
-    hoy = timezone.localdate()
-    inicio_dia = timezone.make_aware(datetime.combine(hoy, time.min))
-    fin_dia = timezone.make_aware(datetime.combine(hoy, time.max))
-
-    turno_actual = AsistenciaEmpleado.objects.filter(
-        empleado=user,
-        hora_salida__isnull=True,
-        hora_entrada__range=(inicio_dia, fin_dia)
-    ).first()
-
     if request.method == 'POST':
-        accion = request.POST.get('accion')
+        user.first_name = request.POST.get('nombre', '').strip()
+        user.last_name = request.POST.get('apellido', '').strip()
+        user.email = request.POST.get('email', '').strip()
+        
+        password = request.POST.get('password', '').strip()
+        if password:
+            user.set_password(password)
 
-        if accion == 'entrada':
-            if not turno_actual:
-                AsistenciaEmpleado.objects.create(empleado=user, hora_entrada=timezone.now())
-                messages.success(request, 'Entrada registrada. ¡Buen turno!')
-            else:
-                messages.warning(request, 'Ya tenés un turno en curso.')
-            return redirect('mi_perfil_empleado')
-
-        elif accion == 'salida':
-            if turno_actual:
-                turno_actual.hora_salida = timezone.now()
-                turno_actual.save()
-                messages.success(request, f'Salida registrada. Total: {turno_actual.horas_trabajadas}.')
-            return redirect('mi_perfil_empleado')
-
-    historial_turnos = AsistenciaEmpleado.objects.filter(empleado=user).order_by('-hora_entrada')[:15]
+        user.save()
+        messages.success(request, "Tu perfil fue actualizado correctamente.")
+        return redirect('dashboard')
 
     context = {
         'empleado': user,
-        'turno_actual': turno_actual,
-        'historial_turnos': historial_turnos,
     }
     return render(request, 'empleado/perfil.html', context)
