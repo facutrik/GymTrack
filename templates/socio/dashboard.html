@@ -63,6 +63,12 @@
                         </div>
                     </div>
 
+                    <button type="button" onclick="toggleModalNovedades()" class="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition cursor-pointer" title="Novedades y Anuncios">
+                        <i class="fa-solid fa-bell text-sm"></i>
+                        <!-- Punto indicador de novedad activa -->
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                    </button>
+
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
                         <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition" title="Cerrar sesión">
@@ -115,6 +121,79 @@
                         <p class="font-bold text-rose-400">Vencida • Regularizar en mostrador</p>
                     </div>
                 {% endif %}
+            </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- 📢 MODAL: PORTAL DE NOVEDADES DEL GIMNASIO (SOLO LECTURA)  -->
+        <!-- ========================================================= -->
+        <div id="modal-novedades" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-5 animate-in fade-in duration-200">
+                
+                <!-- Cabecera del Modal -->
+                <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-bullhorn"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-white">Tablón de Novedades</h3>
+                            <p class="text-xs text-slate-400">Avisos importantes de GymTrack</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleModalNovedades()" class="text-slate-400 hover:text-white text-lg p-1 transition cursor-pointer">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Lista de Novedades (Lectura informativa) -->
+                <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
+                    
+                    <!-- Novedad 1 -->
+                    <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">Institucional</span>
+                            <span class="text-[10px] text-slate-500">Hoy</span>
+                        </div>
+                        <h4 class="text-xs font-bold text-white">Mantenimiento en Sala de Musculación</h4>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">
+                            Este sábado por la tarde se realizarán tareas de mantenimiento preventivo en poleas y cintas. El resto de las áreas funcionará con normalidad.
+                        </p>
+                    </div>
+
+                    <!-- Novedad 2 -->
+                    <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Clases</span>
+                            <span class="text-[10px] text-slate-500">Hace 2 días</span>
+                        </div>
+                        <h4 class="text-xs font-bold text-white">Nuevos horarios para Spinning</h4>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">
+                            Sumamos un nuevo turno los días martes y jueves a las 19:30 hs. Podés consultar disponibilidad y cupos en recepción.
+                        </p>
+                    </div>
+
+                    <!-- Novedad 3 -->
+                    <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Atención</span>
+                            <span class="text-[10px] text-slate-500">Esta semana</span>
+                        </div>
+                        <h4 class="text-xs font-bold text-white">Horarios especiales en feriados</h4>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">
+                            Recordá que durante los días feriados el gimnasio permanece abierto en horario reducido de 09:00 a 14:00 hs.
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Pie del Modal -->
+                <div class="pt-2 border-t border-slate-800 flex justify-end">
+                    <button onclick="toggleModalNovedades()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition cursor-pointer">
+                        Entendido
+                    </button>
+                </div>
+
             </div>
         </div>
 
@@ -1064,6 +1143,14 @@
 
     <!-- JS PARA ALTERNAR SECCIONES Y SUBRUTINAS -->
     <script>
+
+        function toggleModalNovedades() {
+            const modal = document.getElementById('modal-novedades');
+            if (modal) {
+                modal.classList.toggle('hidden');
+            }
+        }
+        
         function mostrarSeccion(seccionId) {
             // Ocultar todas las secciones
             document.querySelectorAll('.seccion-bloque').forEach(el => el.classList.add('hidden'));
