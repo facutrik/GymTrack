@@ -5,7 +5,6 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from django.db.models import Q, Sum
 from django.utils import timezone
-
 from actividades.models import Actividad
 from membresias.models import Plan
 from usuarios.models import Usuario, AsistenciaEmpleado
@@ -75,12 +74,134 @@ def dashboard(request):
         }
         return render(request, 'admin/dashboard.html', context)
 
-    # 2. Empleado / Recepción / Entrenador
+# 2. Empleado / Recepción / Mostrador Central
     elif getattr(user, 'rol', None) in ('recepcion', 'entrenador', 'empleado'):
         hoy = timezone.localdate()
         inicio_dia = timezone.make_aware(datetime.combine(hoy, time.min))
         fin_dia = timezone.make_aware(datetime.combine(hoy, time.max))
 
+        # Manejo de acciones sobre profesores
+        if request.method == 'POST' and 'accion_profesor' in request.POST:
+            accion_p = request.POST.get('accion_profesor')
+            profe_id = request.POST.get('profesor_id')
+            profe_obj = get_object_or_404(Usuario, id=profe_id)
+
+            if accion_p == 'iniciar':
+                dni_ingresado = request.POST.get('dni_verif', '').strip()
+                pass_ingresada = request.POST.get('password_verif', '').strip()
+
+                # Validación de seguridad: DNI y contraseña del profesor
+                dni_correcto = (profe_obj.username == dni_ingresado) or (getattr(profe_obj, 'dni', None) == dni_ingresado)
+
+                if not dni_correcto:
+                    messages.error(request, f"DNI incorrecto para {profe_obj.first_name}. Verifique los datos.")
+                elif not profe_obj.check_password(pass_ingresada):
+                    messages.error(request, f"Contraseña incorrecta para {profe_obj.first_name}.")
+                else:
+                    # Validar si ya tiene un turno abierto hoy
+                    turno_activo = AsistenciaEmpleado.objects.filter(
+                        empleado=profe_obj,
+                        hora_salida__isnull=True,
+                        hora_entrada__range=(inicio_dia, fin_dia)
+                    ).first()
+
+                    if not turno_activo:
+                        AsistenciaEmpleado.objects.create(empleado=profe_obj, hora_entrada=timezone.now())
+                        messages.success(request, f"Turno iniciado correctamente para {profe_obj.first_name} {profe_obj.last_name}.")
+                    else:
+                        messages.warning(request, f"{profe_obj.first_name} ya tiene un turno en curso.")
+
+            elif accion_p == 'cortar':
+                turno_activo = AsistenciaEmpleado.objects.filter(
+                    empleado=profe_obj,
+                    hora_salida__isnull=True,
+                    hora_entrada__range=(inicio_dia, fin_dia)
+                ).first()
+
+                if turno_activo:
+                    turno_activo.hora_salida = timezone.now()
+                    turno_activo.save()
+                    messages.success(request, f"Turno finalizado para {profe_obj.first_name}. Duración: {turno_activo.horas_trabajadas}.")
+
+            return redirect('dashboard')
+
+        # Grilla de profesores con sus actividades y horarios asignados
+        profesores_datos_info = [
+            {
+                'username': 'imanol',
+                'rol_desc': 'Musculación & Clases',
+                'detalle': 'Musculación: Lunes a Viernes 7-9 hs y 19-22 hs y Sábado 9-13hs | Funcional + Cardio lunes a viernes 18 hs)'
+            },
+            {
+                'username': 'silvina',
+                'rol_desc': 'Musculación',
+                'detalle': 'Lunes a Viernes de 09 a 15 hs'
+            },
+            {
+                'username': 'joaquin',
+                'rol_desc': 'Musculación',
+                'detalle': 'Lunes, Miércoles y Viernes de 15 a 19 hs'
+            },
+            {
+                'username': 'matias',
+                'rol_desc': 'Musculación',
+                'detalle': 'Martes y Jueves de 15 a 19 hs'
+            },
+            {
+                'username': 'julia',
+                'rol_desc': 'Spinning & Abdominales',
+                'detalle': 'Lunes, Miércoles y Viernes: Spinning 19 hs y Abdominales 20 hs'
+            },
+            {
+                'username': 'victoria',
+                'rol_desc': 'Zumba',
+                'detalle': 'Lunes, Martes y Jueves a las 19 hs'
+            },
+            {
+                'username': 'andrea',
+                'rol_desc': 'Pilates Reformer',
+                'detalle': 'Lunes 9-11 hs, Miércoles 11-13 hs y Viernes 16-18 hs'
+            },
+        ]
+
+        profesores_cards = []
+        for info in profesores_datos_info:
+            profe = Usuario.objects.filter(username=info['username']).first()
+            if profe:
+                # Turno del día
+                turno_hoy = AsistenciaEmpleado.objects.filter(
+                    empleado=profe,
+                    hora_entrada__range=(inicio_dia, fin_dia)
+                ).order_by('-hora_entrada').first()
+
+                en_turno = turno_hoy and turno_hoy.hora_salida is None
+
+                # Historial de turnos cerrados para estadísticas
+                historial_turnos = AsistenciaEmpleado.objects.filter(
+                    empleado=profe
+                ).order_by('-hora_entrada')[:15]
+
+                # Cálculo de total de minutos y horas acumuladas
+                minutos_totales = 0
+                for t in historial_turnos:
+                    if t.hora_salida:
+                        duracion = t.hora_salida - t.hora_entrada
+                        minutos_totales += int(duracion.total_seconds() // 60)
+
+                horas_acumuladas = f"{minutos_totales // 60}h {minutos_totales % 60}m"
+
+                profesores_cards.append({
+                    'usuario': profe,
+                    'rol_desc': info['rol_desc'],
+                    'detalle': info['detalle'],
+                    'en_turno': en_turno,
+                    'turno': turno_hoy,
+                    'historial': historial_turnos,
+                    'horas_acumuladas': horas_acumuladas,
+                    'total_turnos': historial_turnos.count(),
+                })
+
+        # Asistencias de socios registradas en recepción
         asistencias_qs = Asistencia.objects.filter(
             fecha_hora__range=(inicio_dia, fin_dia)
         ).select_related('socio__usuario').order_by('-fecha_hora')
@@ -88,6 +209,9 @@ def dashboard(request):
         context = {
             'asistencias_hoy': asistencias_qs.count(),
             'ultimas_asistencias': asistencias_qs[:10],
+            'total_socios': Usuario.objects.filter(rol='socio').count(),
+            'total_actividades': Actividad.objects.count(),
+            'profesores_cards': profesores_cards,
         }
         return render(request, 'empleado/dashboard.html', context)
 
