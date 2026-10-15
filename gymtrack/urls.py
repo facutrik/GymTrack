@@ -20,8 +20,11 @@ urlpatterns = [
     # Panel Administrador
     path('admin-panel/socios/', socios_views.admin_socios, name='admin_socios'),
     path('admin-panel/empleados/', usuarios_views.admin_empleados, name='admin_empleados'),
+    path('admin-panel/actividades/', usuarios_views.admin_actividades, name='admin_actividades'),
+    path('admin-panel/membresias/', usuarios_views.admin_membresias, name='admin_membresias'),
     path('admin-panel/pagos/', pagos_views.admin_pagos, name='admin_pagos'),
-    path('admin-panel/actividades/', actividades_views.admin_actividades, name='admin_actividades'),
+    
+    path('admin/', admin.site.urls),
 
     # Módulo Empleado / Recepción
     path('empleado/asistencia/', asistencias_views.registrar_asistencia, name='registrar_asistencia'),
