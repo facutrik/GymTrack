@@ -1,4 +1,5 @@
 from datetime import datetime, time, timedelta
+from django.http import request
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -10,6 +11,8 @@ from usuarios.models import Usuario, AsistenciaEmpleado
 from asistencias.models import Asistencia
 from socios.models import Socio
 from pagos.models import Pago
+from rutinas.models import Rutina, DiaEntrenamiento, Ejercicio
+
 
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -24,6 +27,8 @@ except ImportError:
 def inicio_publico(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
+        return redirect('/dashboard/?tab=custom')
+    
     actividades = Actividad.objects.all().order_by('nombre')
     planes = Plan.objects.all().order_by('precio')
     context = {
@@ -374,15 +379,18 @@ def dashboard(request):
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 3. SOCIO (POR DEFECTO)
     else:
+        hoy = timezone.localdate()
         socio_obj = Socio.objects.filter(usuario=user).first()
         # Membresías activas vigentes
-        membresia_actual = (
-            MembresiaSocio.objects.filter(
-                socio=socio_obj, activa=True, fecha_fin__gte=hoy
+        membresia_actual = None
+        if socio_obj:
+            membresia_actual = (
+                MembresiaSocio.objects.filter(
+                    socio=socio_obj, activa=True, fecha_fin__gte=hoy
+                )
+                .order_by('-fecha_fin')
+                .first()
             )
-            .order_by('-fecha_fin')
-            .first()
-        )
         # Todas las actividades que ofrece el gimnasio
         todas_actividades = Actividad.objects.all().order_by('nombre')
         # Reservas activas del socio
@@ -394,6 +402,143 @@ def dashboard(request):
                 ).select_related('horario__actividad')
             except Exception:
                 reservas_socio = []
+
+        # ---------------------------------------------------------
+        # A. LÓGICA DE RUTINAS
+        # ---------------------------------------------------------
+        # 1. Buscamos las rutinas del socio (con doble guión bajo __)
+        rutina_gym = Rutina.objects.filter(socio=user, tipo='gimnasio').prefetch_related('dias__ejercicios').first()
+        rutina_propia = Rutina.objects.filter(socio=user, tipo='personalizada').prefetch_related('dias__ejercicios').first()
+
+        # 2. Guardar ejercicio cuando se envía el formulario
+        if request.method == 'POST' and request.POST.get('accion') == 'agregar_ejercicio_custom':
+            if not rutina_propia:
+                rutina_propia = Rutina.objects.create(socio=user, tipo='personalizada', nombre='Mi Rutina Propia')
+            dia_raw = (request.POST.get('dia') or request.POST.get('grupo') or 'lunes').strip().lower()
+            reemplazos = {'miércoles': 'miercoles', 'sábado': 'sabado'}
+            dia_seleccionado = reemplazos.get(dia_raw, dia_raw)
+
+            dia_obj, _ = DiaEntrenamiento.objects.get_or_create(
+                rutina=rutina_propia,
+                nombre_dia=dia_seleccionado
+            )
+
+            nombre_ej = request.POST.get('nombre_ejercicio') or request.POST.get('nombre') or 'Ejercicio'
+            reps_ej = request.POST.get('repeticiones') or '4 series x 10 reps'
+
+            Ejercicio.objects.create(
+                dia=dia_obj,
+                nombre=nombre_ej,
+                repeticiones=reps_ej,
+                series=4,
+                descanso='60s'
+            )
+            return redirect('/dashboard/?tab=custom')
+
+        # 3. Eliminar ejercicio de la rutina
+        if request.method == 'POST' and request.POST.get('accion') == 'eliminar_ejercicio_custom':
+            ej_id = request.POST.get('ejercicio_id')
+            if ej_id:
+                Ejercicio.objects.filter(id=ej_id, dia__rutina__socio=user).delete()
+            return redirect('/dashboard/?tab=custom')
+
+        # 4. Agrupar ejercicios por día para la grilla semanal
+        dias_claves = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
+        rutina_semanal = {d: [] for d in dias_claves}
+
+        if rutina_propia:
+            for d in rutina_propia.dias.all():
+                clave = d.nombre_dia.strip().lower()
+                if clave == 'miércoles':
+                    clave = 'miercoles'
+                elif clave == 'sábado':
+                    clave = 'sabado'
+
+                if clave in rutina_semanal:
+                    rutina_semanal[clave] = d.ejercicios.all()
+
+        # ---------------------------------------------------------
+        # B. LÓGICA DE AUTOGESTIÓN DE PAGOS
+        # ---------------------------------------------------------
+        if request.method == 'POST' and request.POST.get('accion') == 'pagar_cuota_socio':
+            servicios_seleccionados = request.POST.getlist('servicios')
+            metodo = request.POST.get('metodo_pago', 'transferencia')
+
+            TARIFAS = {
+                'musculacion': {'nombre': 'Musculación (Pase Libre)', 'precio': 60000},
+                'clases': {'nombre': 'Pase Clases Grupales', 'precio': 45000},
+                'pilates_1': {'nombre': 'Pilates (1 vez/semana)', 'precio': 35000},
+                'pilates_2': {'nombre': 'Pilates (2 veces/semana)', 'precio': 42000},
+                'pilates_3': {'nombre': 'Pilates (3 veces/semana)', 'precio': 50000},
+            }
+
+            total_a_pagar = 0
+            nombres_items = []
+            for s in servicios_seleccionados:
+                if s in TARIFAS:
+                    total_a_pagar += TARIFAS[s]['precio']
+                    nombres_items.append(TARIFAS[s]['nombre'])
+
+            if total_a_pagar <= 0:
+                messages.error(request, 'Debes seleccionar al menos una clase o disciplina para abonar.')
+            else:
+                if not socio_obj:
+                    socio_obj = Socio.objects.create(usuario=user)
+
+            # Unimos los nombres de las clases seleccionadas (Ej: "Musculación (Pase Libre) + Pilates (2 veces/semana)")
+                detalle_items = " + ".join(nombres_items)
+
+                # Buscamos o creamos el plan con el nombre combinado real
+                plan_obj, _ = Plan.objects.get_or_create(
+                    nombre=detalle_items,
+                    defaults={'precio': total_a_pagar, 'duracion_dias': 30}
+                )
+
+                # Desactivar membresías previas del socio
+                MembresiaSocio.objects.filter(socio=socio_obj).update(activa=False)
+
+                # 1. Crear MembresiaSocio por 30 días con el plan combinado exacto
+                nueva_membresia = MembresiaSocio.objects.create(
+                    socio=socio_obj,
+                    plan=plan_obj,
+                    fecha_inicio=hoy,
+                    fecha_fin=hoy + timedelta(days=30),
+                    activa=True
+                )
+
+                # 2. Registrar el pago con el modelo oficial
+                Pago.objects.create(
+                    socio=socio_obj,
+                    membresia=nueva_membresia,
+                    monto=total_a_pagar,
+                    metodo_pago=metodo,
+                    fecha_pago=timezone.now()
+                )
+
+                # 3. Regularizar semáforo a VERDE
+                if hasattr(socio_obj, 'estado_cuenta'):
+                    socio_obj.estado_cuenta = 'VERDE'
+                    socio_obj.save()
+
+                if hasattr(user, 'estado_cuenta'):
+                    user.estado_cuenta = 'VERDE'
+                    user.save()
+
+                detalle_items = ", ".join(nombres_items)
+                messages.success(
+                    request,
+                    f'¡Pago registrado con éxito por ${total_a_pagar:,.0f} ({metodo.capitalize()})! '
+                    f'Concepto: {detalle_items}. Tu cuenta ha quedado al día hasta el {nueva_membresia.fecha_fin.strftime("%d/%m/%Y")}.'
+                )
+            return redirect('/dashboard/?tab=perfil')
+
+        # ---------------------------------------------------------
+        # C. RESPUESTA GET / RENDER
+        # ---------------------------------------------------------
+
+        # Traer los pagos reales del socio para la tabla de historial
+        historial_pagos = Pago.objects.filter(socio=socio_obj).order_by('-fecha_pago') if socio_obj else []
+        
         context = {
             'socio': socio_obj,
             'membresia_actual': membresia_actual,
@@ -401,12 +546,17 @@ def dashboard(request):
             'actividades': todas_actividades,
             'mis_reservas': reservas_socio,
             'total_inscriptas': len(reservas_socio),
+            'historial_pagos': historial_pagos,
+            'rutina_gym': locals().get('rutina_gym', None),
+            'rutina_propia': locals().get('rutina_propia', None),
+            'rutina_semanal': locals().get('rutina_semanal', None),
         }
         return render(request, 'socio/dashboard.html', context)
 
 
-# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# 4. GESTIÓN DE PERSONAL / EMPLEADOS (PANEL ADMIN)
+# ==============================================================================
+# 3. GESTIÓN DE PERSONAL / EMPLEADOS (PANEL ADMIN)
+# ==============================================================================
 @login_required
 def admin_empleados(request):
     user = request.user
