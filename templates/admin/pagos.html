@@ -60,48 +60,66 @@
             </button>
         </div>
 
-        <!-- TARJETAS DE TOTALES Y RECAUDACIÓN -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Total Recaudado -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Período</span>
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <!-- TARJETAS SUPERIORES DE TOTALES (Efectivo y Transferencia) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+            
+            <!-- TOTAL PERÍODO -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">TOTAL PERÍODO</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 </div>
-                <h3 class="text-2xl font-black text-emerald-400">${{ total_recaudado }}</h3>
-                <p class="text-[11px] text-slate-500 mt-1">{{ cantidad_cobros }} cobros registrados</p>
+                <h3 class="text-3xl font-black text-emerald-400 font-mono mt-3">
+                    ${{ total_periodo|default:"0" }}
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">
+                    {{ total_cobros|default:0 }} cobros registrados
+                </p>
             </div>
 
-            <!-- Efectivo -->
+            <!-- EFECTIVO -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Efectivo</span>
-                    <i class="fa-solid fa-money-bill-1-wave text-emerald-500 text-xs"></i>
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">EFECTIVO</span>
+                    <span class="text-emerald-400 text-lg">💵</span>
                 </div>
-                <h3 class="text-2xl font-bold text-white">${{ total_efectivo }}</h3>
-                <p class="text-[11px] text-slate-500 mt-1">Caja física de mostrador</p>
+                <h3 class="text-3xl font-black text-white font-mono mt-3">
+                    ${{ total_efectivo|default:"0" }}
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">Caja física de mostrador</p>
             </div>
 
-            <!-- Transferencias -->
+            <!-- TRANSFERENCIAS -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Transferencias</span>
-                    <i class="fa-solid fa-building-columns text-blue-400 text-xs"></i>
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">TRANSFERENCIAS</span>
+                    <span class="text-blue-400 text-lg"><i class="fa-solid fa-building-columns"></i></span>
                 </div>
-                <h3 class="text-2xl font-bold text-white">${{ total_transferencia }}</h3>
-                <p class="text-[11px] text-slate-500 mt-1">Bancos / Alias / MP</p>
+                <h3 class="text-3xl font-black text-white font-mono mt-3">
+                    ${{ total_transferencia|default:"0" }}
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">Bancos / Alias / MP</p>
             </div>
 
-            <!-- Débito -->
+            <!--
+            ========================================================================
+            TARJETA DÉBITO / POSNET (COMENTADA TEMPORALMENTE - LISTA PARA ACTIVAR)
+            Para volver a habilitarla: descomentar este bloque y cambiar grid-cols-3 a grid-cols-4
+            ========================================================================
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Débito</span>
-                    <i class="fa-solid fa-credit-card text-purple-400 text-xs"></i>
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">DÉBITO</span>
+                    <span class="text-purple-400 text-lg"><i class="fa-solid fa-credit-card"></i></span>
                 </div>
-                <h3 class="text-2xl font-bold text-white">${{ total_debito }}</h3>
-                <p class="text-[11px] text-slate-500 mt-1">Terminal posnet</p>
+                <h3 class="text-3xl font-black text-white font-mono mt-3">
+                    ${{ total_debito|default:"0" }}
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">Terminal posnet</p>
             </div>
+            -->
         </div>
+
+
 
         <!-- BARRA DE FILTROS (MES, AÑO, MEDIO, BÚSQUEDA) -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
@@ -116,6 +134,7 @@
 
                 <!-- Mes -->
                 <select name="mes" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    <option value="todos" {% if mes_seleccionado == 'todos' %}selected{% endif %}>Todos los meses</option>
                     <option value="1" {% if mes_filtro == '1' %}selected{% endif %}>Enero</option>
                     <option value="2" {% if mes_filtro == '2' %}selected{% endif %}>Febrero</option>
                     <option value="3" {% if mes_filtro == '3' %}selected{% endif %}>Marzo</option>
@@ -219,4 +238,5 @@
 
 </body>
 </html>
-{{ p.medio_pago }}
+
+select name ="mes"

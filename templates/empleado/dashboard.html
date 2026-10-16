@@ -44,7 +44,7 @@
         </div>
     </nav>
 
-    <!-- MENSAJES -->
+    <!-- MENSAJES FLOTANTES / ALERTAS -->
     {% if messages %}
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
             {% for message in messages %}
@@ -53,6 +53,108 @@
                     {{ message }}
                 </div>
             {% endfor %}
+        </div>
+    {% endif %}
+    <!-- ============================================================== -->
+    <!-- 👤 MENÚ DESPLEGABLE / MODAL DE VALIDACIÓN DEL SOCIO           -->
+    <!-- ============================================================== -->
+    {% if perfil_socio_acceso %}
+        <div id="modalMiniPerfil" class="fixed inset-0 z-50 flex items-start justify-center p-4 sm:pt-16 bg-slate-950/80 backdrop-blur-sm transition-all duration-300">
+            <div class="relative w-full max-w-lg overflow-hidden rounded-3xl border {% if perfil_socio_acceso.acceso_permitido %}border-emerald-500/40 bg-slate-900 shadow-2xl shadow-emerald-950/40{% else %}border-rose-500/40 bg-slate-900 shadow-2xl shadow-rose-950/40{% endif %} p-6 animate-in fade-in slide-in-from-top-6 duration-300">
+                
+                <!-- Botón de Cerrar (X) -->
+                <button type="button" onclick="cerrarMenuPerfil()" class="absolute top-5 right-5 text-slate-400 hover:text-white transition p-1.5 rounded-xl hover:bg-slate-800">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+
+                <!-- Cabecera del Menú -->
+                <div class="flex items-center gap-3.5 pb-4 border-b border-slate-800">
+                    <div class="w-12 h-12 rounded-2xl {% if perfil_socio_acceso.acceso_permitido %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/30{% else %}bg-rose-500/10 text-rose-400 border border-rose-500/30{% endif %} flex items-center justify-center text-xl font-black">
+                        {% if perfil_socio_acceso.acceso_permitido %}
+                            <i class="fa-solid fa-user-check"></i>
+                        {% else %}
+                            <i class="fa-solid fa-user-xmark"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Verificación de Mostrador</span>
+                            <span class="w-2 h-2 rounded-full {% if perfil_socio_acceso.acceso_permitido %}bg-emerald-400 animate-pulse{% else %}bg-rose-500{% endif %}"></span>
+                        </div>
+                        <h3 class="text-lg font-black text-white tracking-tight">{{ perfil_socio_acceso.nombre_completo }}</h3>
+                    </div>
+                </div>
+
+                <!-- Badge Principal de Resultado -->
+                <div class="my-4">
+                    {% if perfil_socio_acceso.acceso_permitido %}
+                        <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs font-bold text-emerald-400">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-door-open text-base"></i> ACCESO CONCEDIDO</span>
+                            <span class="text-[11px] text-emerald-300 font-semibold">{{ perfil_socio_acceso.tipo_acceso }}</span>
+                        </div>
+                    {% else %}
+                        <div class="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between text-xs font-bold text-rose-400">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-ban text-base"></i> ACCESO DENEGADO</span>
+                            <span class="text-[11px] text-rose-300 font-semibold">{{ perfil_socio_acceso.estado_texto }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Datos Desplegados en Rejilla -->
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <!-- DNI -->
+                    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-3">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">DNI</span>
+                        <span class="font-mono text-sm font-bold text-slate-200">{{ perfil_socio_acceso.dni }}</span>
+                    </div>
+
+                    <!-- Plan -->
+                    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-3">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">Plan / Cuota</span>
+                        <span class="font-bold text-amber-300 truncate block">{{ perfil_socio_acceso.plan_nombre }}</span>
+                    </div>
+
+                    <!-- Estado Cuenta -->
+                    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-3">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">Estado de Cuota</span>
+                        {% if perfil_socio_acceso.al_dia %}
+                            <span class="text-emerald-400 font-bold flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> AL DÍA
+                            </span>
+                        {% else %}
+                            <span class="text-rose-400 font-bold flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> VENCIDA
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Vencimiento -->
+                    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-3">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">Vencimiento</span>
+                        <span class="font-mono font-bold {% if perfil_socio_acceso.al_dia %}text-slate-300{% else %}text-rose-400{% endif %}">
+                            {{ perfil_socio_acceso.fecha_vencimiento }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Detalle / Motivo -->
+                <div class="mt-3.5 p-3 rounded-xl bg-slate-950/50 border border-slate-800/60 text-[11px] text-slate-400">
+                    <strong class="text-slate-300">Detalle:</strong> {{ perfil_socio_acceso.motivo }}
+                </div>
+
+                <!-- Botones de Acción al pie -->
+                <div class="flex items-center justify-end gap-3 mt-5 pt-3 border-t border-slate-800">
+                    {% if not perfil_socio_acceso.al_dia %}
+                        <button type="button" onclick="irACobrarDesdePerfil('{{ perfil_socio_acceso.dni }}')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-cash-register"></i> Cobrar Membresía
+                        </button>
+                    {% endif %}
+                    <button type="button" onclick="cerrarMenuPerfil()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
+                        Cerrar (Esc)
+                    </button>
+                </div>
+
+            </div>
         </div>
     {% endif %}
 
@@ -67,26 +169,26 @@
                     Recepción & Mostrador General
                 </div>
                 <h1 class="text-3xl font-extrabold text-white tracking-tight">Panel Operativo Diario 📋</h1>
-                <p class="text-slate-400 text-sm mt-1">Control de acceso, turnos de profesores en sala y cobro presencial de socios.</p>
+                <p class="text-slate-400 text-sm mt-1">Control de acceso por DNI, turnos de profesores en sala y cobro presencial de membresías.</p>
             </div>
 
+            <!-- Accesos Rápidos -->
             <!-- Accesos Rápidos -->
             <div class="flex items-center gap-3">
                 <button type="button" onclick="openCobroModal()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-cash-register"></i> Cobrar Membresía
                 </button>
-                <button type="button" onclick="openAsistenciaModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-id-card"></i> Control de Acceso (DNI)
-                </button>
-                <a href="{% url 'padron_socios_empleado' %}" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-2">
-                    <i class="fa-solid fa-users"></i> Padrón de Socios
+                
+                <!-- Botón Novedades -->
+                <a href="#novedades" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-bullhorn text-amber-400"></i> Novedades
                 </a>
             </div>
         </div>
 
-        <!-- 1. TARJETAS SUPERIORES DE MÉTRICAS (GRID 3 COLUMNAS) -->
+        <!-- 1. TARJETAS SUPERIORES DE MÉTRICAS -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <!-- 1. Asistencias Hoy -->
+            <!-- Asistencias Hoy -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -97,15 +199,13 @@
                         <i class="fa-solid fa-clipboard-check"></i>
                     </div>
                 </div>
-<<<<<<< HEAD
                 <!-- Botón que abre el modal emergente -->
-=======
->>>>>>> 591647381ca3d74c6aa882a56e562bf034428fe0
                 <button type="button" onclick="openAsistenciaModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5 cursor-pointer">
                     Registrar Ingreso <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </button>
             </div>
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 
             <!-- Socios Registrados -->
@@ -116,6 +216,9 @@
                         <h3 class="text-2xl font-black text-white mt-1"><i class="fa-solid fa-address-book text-xl text-cyan-400"></i></h3>
 =======
             <!-- 2. Padrón de Socios -->
+=======
+            <!-- Padrón de Socios -->
+>>>>>>> 9b6c5cb (cambios)
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -132,7 +235,7 @@
                 </a>
             </div>
 
-            <!-- 3. Disciplinas Activas (ABRE MODAL) -->
+            <!-- Disciplinas Activas -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -149,6 +252,7 @@
             </div>
         </div>
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         <!-- TABLA: REGISTRO DE INGRESOS DE HOY                          -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 mt-6 shadow-sm">
@@ -218,6 +322,9 @@
                     </a>
 =======
         <!-- 2. PROFESORES EN SALA (GRILLA COMPLETA) -->
+=======
+        <!-- 2. PROFESORES EN SALA (Fichaje y control) -->
+>>>>>>> 9b6c5cb (cambios)
         <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <div>
@@ -346,7 +453,7 @@
             </div>
         </div>
 
-        <!-- 3. TABLA: REGISTRO DE INGRESOS DE HOY -->
+        <!-- 3. TABLA: REGISTRO DE INGRESOS DE HOY (Leyendo fecha_hora) -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-sm">
             <div class="flex items-center justify-between mb-4">
                 <div>
@@ -370,7 +477,9 @@
                     <tbody class="divide-y divide-slate-800/60 text-slate-300">
                         {% for item in ultimas_asistencias %}
                             <tr class="hover:bg-slate-800/30 transition">
-                                <td class="py-3 px-3 font-bold text-blue-400">{{ item.fecha_hora|date:"H:i" }} hs</td>
+                                <td class="py-3 px-3 font-bold text-blue-400">
+                                    {{ item.fecha_hora|date:"H:i" }} hs
+                                </td>
                                 <td class="py-3 px-3 text-white font-medium">{{ item.socio.usuario.first_name }} {{ item.socio.usuario.last_name }}</td>
                                 <td class="py-3 px-3 font-mono text-slate-400">{{ item.socio.usuario.username }}</td>
                                 <td class="py-3 px-3 text-right">
@@ -392,7 +501,7 @@
                     <h3 class="font-bold text-white text-sm flex items-center gap-2">
                         <i class="fa-solid fa-receipt text-emerald-400"></i> Historial Reciente de Cobros
                     </h3>
-                    <p class="text-[11px] text-slate-400">Últimos comprobantes generados en caja</p>
+                    <p class="text-[11px] text-slate-400">Últimos comprobantes emitidos en caja de recepción</p>
                 </div>
                 <button type="button" onclick="openCobroModal()" class="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
                     <i class="fa-solid fa-plus text-[10px]"></i> Nuevo Cobro
@@ -696,12 +805,9 @@
         </div>
     </div>
 
-    <!-- ============================================================== -->
-    <!-- 🏋️‍♂️ MODAL: DISCIPLINAS ACTIVAS, CRONOGRAMA Y RESERVAS         -->
-    <!-- ============================================================== -->
+    <!-- MODAL DISCIPLINAS Y RESERVAS -->
     <div id="modalDisciplinas" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full p-6 space-y-5 shadow-2xl">
-            
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl font-bold border border-amber-500/20">
@@ -720,8 +826,6 @@
             <div class="max-h-[60vh] overflow-y-auto space-y-3 pr-1">
                 {% for item in disciplinas_detalle %}
                     <div class="bg-slate-950/80 border border-slate-800/90 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-700 transition">
-                        
-                        <!-- Columna 1: Nombre de Disciplina y Tipo -->
                         <div class="md:w-1/4">
                             <h4 class="font-black text-white text-base tracking-tight">{{ item.actividad.nombre }}</h4>
                             <div class="mt-1">
@@ -741,7 +845,6 @@
                             </div>
                         </div>
 
-                        <!-- Columna 2: Días, Horarios y Profesores -->
                         <div class="md:w-2/4 space-y-1.5">
                             {% for h in item.horarios %}
                                 <div class="flex items-center justify-between bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800/80 text-xs">
@@ -757,7 +860,6 @@
                             {% endfor %}
                         </div>
 
-                        <!-- Columna 3: Cupo / Reservas Activas -->
                         <div class="md:w-1/4 flex md:flex-col md:items-end justify-between items-center border-t md:border-t-0 border-slate-800/60 pt-2 md:pt-0">
                             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Inscripciones / Cupo</span>
                             {% if item.actividad.nombre == 'Musculación' %}
@@ -769,7 +871,6 @@
                                 </div>
                             {% endif %}
                         </div>
-
                     </div>
                 {% empty %}
                     <div class="text-center py-8 text-slate-500 text-xs">
@@ -784,41 +885,93 @@
                     Cerrar
                 </button>
             </div>
-
         </div>
     </div>
 
     <!-- SCRIPTS -->
     <script>
+        // Cierre manual y suave del modal de verificación
+        function cerrarMenuPerfil() {
+            const modal = document.getElementById('modalMiniPerfil');
+            if (modal) {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => modal.remove(), 250);
+            }
+        }
+
+        // Transición fluida de Mini Perfil -> Modal de Cobro
+        function irACobrarDesdePerfil(dni) {
+            cerrarMenuPerfil();
+            setTimeout(() => {
+                openCobroModal(dni);
+            }, 150);
+        }
+
+        // Modal de Cobro
         function openCobroModal(dniPrellenado = '') {
             const modal = document.getElementById('modalCobro');
             const inputDni = document.getElementById('inputDniCobro');
-            if (dniPrellenado) {
-                inputDni.value = dniPrellenado;
+            if (modal) {
+                if (dniPrellenado && inputDni) {
+                    inputDni.value = dniPrellenado;
+                }
+                modal.classList.remove('hidden');
+                setTimeout(() => { 
+                    if (inputDni) inputDni.focus(); 
+                }, 100);
             }
-            modal.classList.remove('hidden');
-            setTimeout(() => { inputDni.focus(); }, 100);
         }
 
         function closeCobroModal() {
-            document.getElementById('modalCobro').classList.add('hidden');
+            const modal = document.getElementById('modalCobro');
+            if (modal) modal.classList.add('hidden');
         }
 
+        // Modal de Asistencia
         function openAsistenciaModal() {
-            document.getElementById('asistenciaModal').classList.remove('hidden');
-            setTimeout(() => { document.getElementById('modalDniInput').focus(); }, 100);
+            const modal = document.getElementById('asistenciaModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                setTimeout(() => { 
+                    const input = document.getElementById('modalDniInput');
+                    if (input) input.focus(); 
+                }, 100);
+            }
         }
 
         function closeAsistenciaModal() {
-            document.getElementById('asistenciaModal').classList.add('hidden');
+            const modal = document.getElementById('asistenciaModal');
+            if (modal) modal.classList.add('hidden');
         }
 
+        // Fichaje Profesor
         function abrirModalIniciarTurno(profeId, nombreCompleto, usernameDefecto) {
             document.getElementById('modalProfeId').value = profeId;
             document.getElementById('modalProfeNombre').textContent = nombreCompleto;
             document.getElementById('modalProfeDni').value = usernameDefecto;
             document.getElementById('modalIniciarTurno').classList.remove('hidden');
         }
+
+        // ⏱️ Auto-cierre del mini perfil tras 10 segundos
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalPerfil = document.getElementById('modalMiniPerfil');
+            if (modalPerfil) {
+                setTimeout(() => {
+                    cerrarMenuPerfil();
+                }, 10000); // 10000 ms = 10 segundos
+            }
+        });
+
+        // Cerrar con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cerrarMenuPerfil();
+                closeCobroModal();
+                closeAsistenciaModal();
+            }
+        });
     </script>
 </body>
 </html>
+
+accesos 

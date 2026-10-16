@@ -27,53 +27,106 @@
         </div>
     </nav>
 
+    <!-- MENSAJES -->
     {% if messages %}
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
             {% for message in messages %}
-                <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300">
-                    <i class="fa-solid fa-circle-check"></i> {{ message }}
+                <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% elif message.tags == 'warning' %}bg-amber-950/60 border border-amber-500/40 text-amber-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
+                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                    {{ message }}
                 </div>
             {% endfor %}
         </div>
     {% endif %}
 
+    <!-- CONTENEDOR PRINCIPAL -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
-
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-extrabold text-white tracking-tight">Actividades & Clases Grupales 🏋️‍♂️</h1>
-                <p class="text-slate-400 text-sm mt-1">Disciplinas dictadas en el gimnasio, cupos de reserva y profesores asignados.</p>
+                <p class="text-slate-400 text-sm mt-1">Disciplinas dictadas, métricas mensuales de concurrencia y control de estado.</p>
             </div>
             <button onclick="document.getElementById('modalNuevaActividad').classList.remove('hidden')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer">
                 <i class="fa-solid fa-plus"></i> Nueva Actividad
             </button>
         </div>
 
+        <!-- GRILLA -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {% for a in actividades %}
-                <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition space-y-4">
+            {% for item in actividades %}
+                <div class="bg-slate-900/70 border {% if item.objeto.activa %}border-slate-800{% else %}border-amber-500/30 bg-slate-950/60{% endif %} rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition space-y-4">
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <h3 class="font-bold text-base text-white">{{ a.nombre }}</h3>
-                            {% if a.requiere_reserva %}
+                            <h3 class="font-bold text-base text-white flex items-center gap-2">
+                                {{ item.objeto.nombre }}
+                                {% if not item.objeto.activa %}
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">Pausada</span>
+                                {% endif %}
+                            </h3>
+                            {% if item.objeto.requiere_reserva %}
                                 <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">Requiere Reserva</span>
                             {% else %}
                                 <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">Acceso Libre</span>
                             {% endif %}
                         </div>
-                        <p class="text-xs text-slate-400 leading-relaxed">{{ a.descripcion }}</p>
+                        <p class="text-xs text-slate-400 leading-relaxed min-h-[40px]">{{ item.objeto.descripcion }}</p>
+
+                        <!-- Concurrencia Mensual -->
+                        <div class="mt-4 p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl flex items-center justify-between text-xs">
+                            <span class="text-slate-400 font-medium flex items-center gap-1.5">
+                                <i class="fa-solid fa-users text-blue-400"></i> Asistencias este mes:
+                            </span>
+                            <span class="font-black text-white font-mono text-sm bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-lg">
+                                {{ item.concurrencia_mes }}
+                            </span>
+                        </div>
                     </div>
 
-                    <div class="pt-3 border-t border-slate-800 flex justify-end">
-                        <form method="POST" onsubmit="return confirm('¿Seguro que deseás eliminar esta actividad?');">
+                    <!-- BOTONES DE ACCIÓN -->
+                    <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <!-- UN SOLO BOTÓN EDITAR -->
+                            <button type="button" 
+                                    data-id="{{ item.objeto.id }}" 
+                                    data-nombre="{{ item.objeto.nombre }}" 
+                                    data-descripcion="{{ item.objeto.descripcion|default:'' }}" 
+                                    data-reserva="{{ item.objeto.requiere_reserva|yesno:'true,false' }}" 
+                                    onclick="abrirModalEditarDesdeBoton(this)" 
+                                    class="text-blue-400 hover:text-blue-300 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
+                                <i class="fa-solid fa-pen text-[11px]"></i> Editar
+                            </button>
+
+                            <!-- Toggle Pausar / Reactivar -->
+                            <form method="POST" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="toggle_baja">
+                                <input type="hidden" name="actividad_id" value="{{ item.objeto.id }}">
+                                {% if item.objeto.activa %}
+                                    <button type="submit" class="text-amber-400 hover:text-amber-300 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
+                                        <i class="fa-solid fa-pause text-[11px]"></i> Pausar
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="text-emerald-400 hover:text-emerald-300 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
+                                        <i class="fa-solid fa-play text-[11px]"></i> Reactivar
+                                    </button>
+                                {% endif %}
+                            </form>
+                        </div>
+
+                        <!-- Eliminar Definitivamente -->
+                        <form method="POST" onsubmit="return confirm('¿Seguro que deseás eliminar definitivamente esta actividad?');" class="inline">
                             {% csrf_token %}
                             <input type="hidden" name="accion" value="eliminar">
-                            <input type="hidden" name="actividad_id" value="{{ a.id }}">
-                            <button type="submit" class="text-rose-400 hover:text-rose-300 font-semibold text-xs flex items-center gap-1 transition">
-                                <i class="fa-regular fa-trash-can"></i> Eliminar
+                            <input type="hidden" name="actividad_id" value="{{ item.objeto.id }}">
+                            <button type="submit" class="text-rose-400 hover:text-rose-300 font-semibold text-xs flex items-center gap-1 transition cursor-pointer" title="Eliminar definitivamente">
+                                <i class="fa-regular fa-trash-can"></i>
                             </button>
                         </form>
                     </div>
+                </div>
+            {% empty %}
+                <div class="col-span-3 py-10 text-center text-slate-500 text-xs">
+                    No hay actividades registradas en el sistema.
                 </div>
             {% endfor %}
         </div>
@@ -88,36 +141,76 @@
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-
             <form method="POST" class="space-y-3 text-xs">
                 {% csrf_token %}
                 <input type="hidden" name="accion" value="crear">
-
                 <div>
                     <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre de la Disciplina</label>
                     <input type="text" name="nombre" required placeholder="Ej: Spinning" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
                 </div>
-
                 <div>
                     <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Descripción / Días y Horarios</label>
                     <textarea name="descripcion" rows="3" required placeholder="Lunes, Miércoles y Viernes 19:00 hs..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></textarea>
                 </div>
-
                 <div class="flex items-center gap-2 pt-1">
                     <input type="checkbox" name="requiere_reserva" id="chkReserva" class="rounded bg-slate-950 border-slate-800 text-blue-600 focus:ring-0">
                     <label for="chkReserva" class="text-slate-300 font-semibold text-xs">Requiere reserva previa de cupo</label>
                 </div>
-
                 <div class="flex justify-end gap-2 pt-3">
-                    <button type="button" onclick="document.getElementById('modalNuevaActividad').classList.add('hidden')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition">
-                        Guardar
-                    </button>
+                    <button type="button" onclick="document.getElementById('modalNuevaActividad').classList.add('hidden')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
+
+    <!-- MODAL EDITAR ACTIVIDAD -->
+    <div id="modalEditarActividad" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-white text-base">Editar Actividad</h3>
+                <button type="button" onclick="document.getElementById('modalEditarActividad').classList.add('hidden')" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form method="POST" class="space-y-3 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="editar">
+                <input type="hidden" name="actividad_id" id="editActividadId">
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre de la Disciplina</label>
+                    <input type="text" name="nombre" id="editNombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Descripción / Días y Horarios</label>
+                    <textarea name="descripcion" id="editDescripcion" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></textarea>
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                    <input type="checkbox" name="requiere_reserva" id="editChkReserva" class="rounded bg-slate-950 border-slate-800 text-blue-600 focus:ring-0">
+                    <label for="editChkReserva" class="text-slate-300 font-semibold text-xs">Requiere reserva previa de cupo</label>
+                </div>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="document.getElementById('modalEditarActividad').classList.add('hidden')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow transition">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT EDICIÓN -->
+    <script>
+        function abrirModalEditarDesdeBoton(btn) {
+            const id = btn.getAttribute('data-id');
+            const nombre = btn.getAttribute('data-nombre');
+            const descripcion = btn.getAttribute('data-descripcion');
+            const requiereReserva = btn.getAttribute('data-reserva') === 'true';
+
+            document.getElementById('editActividadId').value = id;
+            document.getElementById('editNombre').value = nombre;
+            document.getElementById('editDescripcion').value = descripcion;
+            document.getElementById('editChkReserva').checked = requiereReserva;
+            document.getElementById('modalEditarActividad').classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>

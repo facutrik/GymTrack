@@ -1,8 +1,10 @@
-from django.shortcuts import render
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q, Sum
+from django.shortcuts import redirect, render
 from django.utils import timezone
-from django.db.models import Sum, Q
 from pagos.models import Pago
+
 
 @login_required
 def admin_pagos(request):
@@ -11,50 +13,70 @@ def admin_pagos(request):
         return redirect('dashboard')
 
     hoy = timezone.localdate()
-    mes_filtro = request.GET.get('mes', str(hoy.month))
+
+    # Por defecto 'todos' para ver toda la caja histórica o el mes actual
+    mes_filtro = request.GET.get('mes', 'todos')
     anio_filtro = request.GET.get('anio', str(hoy.year))
     medio_filtro = request.GET.get('medio', 'todos')
     query = request.GET.get('q', '').strip()
 
-    # Determinar el nombre exacto del campo de fecha en el modelo Pago
     campo_fecha = 'fecha_pago' if hasattr(Pago, 'fecha_pago') else 'fecha'
 
-    # Consulta base con select_related para traer socio, usuario y plan
-    pagos_qs = Pago.objects.select_related('socio__usuario', 'membresia__plan').all().order_by(f'-{campo_fecha}')
+    pagos_qs = (
+        Pago.objects.select_related('socio__usuario', 'membresia__plan')
+        .all()
+        .order_by(f'-{campo_fecha}')
+    )
 
-    # Filtro por búsqueda de DNI o Nombre si se ingresó texto
+    # Búsqueda por DNI o Nombre
     if query:
         pagos_qs = pagos_qs.filter(
-            Q(socio__usuario__username__icontains=query) |
-            Q(socio__usuario__first_name__icontains=query) |
-            Q(socio__usuario__last_name__icontains=query)
+            Q(socio__usuario__username__icontains=query)
+            | Q(socio__usuario__first_name__icontains=query)
+            | Q(socio__usuario__last_name__icontains=query)
         )
 
-    # Filtro por mes y año (si no se selecciona 'todos')
+    # Filtro de Mes
     if mes_filtro and mes_filtro != 'todos':
-        pagos_qs = pagos_qs.filter(**{f"{campo_fecha}__month": int(mes_filtro)})
-    if anio_filtro and anio_filtro != 'todos':
-        pagos_qs = pagos_qs.filter(**{f"{campo_fecha}__year": int(anio_filtro)})
+        pagos_qs = pagos_qs.filter(**{f'{campo_fecha}__month': int(mes_filtro)})
 
-    # Filtro por medio de pago
+    # Filtro de Año
+    if anio_filtro and anio_filtro != 'todos':
+        pagos_qs = pagos_qs.filter(**{f'{campo_fecha}__year': int(anio_filtro)})
+
+    # Filtro de Medio (Efectivo / Transferencia)
     if medio_filtro and medio_filtro != 'todos':
         pagos_qs = pagos_qs.filter(metodo_pago=medio_filtro)
 
-    # Totales monetarios calculados sobre el queryset filtrado
+    # Cálculos de Totales
     total_periodo = pagos_qs.aggregate(total=Sum('monto'))['total'] or 0
-    total_efectivo = pagos_qs.filter(metodo_pago='efectivo').aggregate(total=Sum('monto'))['total'] or 0
-    total_transferencia = pagos_qs.filter(metodo_pago='transferencia').aggregate(total=Sum('monto'))['total'] or 0
-    total_debito = pagos_qs.filter(metodo_pago__in=['tarjeta', 'debito']).aggregate(total=Sum('monto'))['total'] or 0
+    total_efectivo = (
+        pagos_qs.filter(metodo_pago='efectivo').aggregate(total=Sum('monto'))[
+            'total'
+        ]
+        or 0
+    )
+    total_transferencia = (
+        pagos_qs.filter(metodo_pago='transferencia').aggregate(
+            total=Sum('monto')
+        )['total']
+        or 0
+    )
 
     context = {
         'pagos': pagos_qs,
-        'total_periodo': total_periodo,
-        'total_efectivo': total_efectivo,
-        'total_transferencia': total_transferencia,
-        'total_debito': total_debito,
+        'total_periodo': f'{total_periodo:,.2f}'.replace(',', 'X')
+        .replace('.', ',')
+        .replace('X', '.'),
+        'total_efectivo': f'{total_efectivo:,.2f}'.replace(',', 'X')
+        .replace('.', ',')
+        .replace('X', '.'),
+        'total_transferencia': f'{total_transferencia:,.2f}'.replace(',', 'X')
+        .replace('.', ',')
+        .replace('X', '.'),
         'total_cobros': pagos_qs.count(),
-        'mes_seleccionado': int(mes_filtro) if mes_filtro.isdigit() else hoy.month,
-        'anio_seleccionado': int(anio_filtro) if anio_filtro.isdigit() else hoy.year,
+        'mes_seleccionado': mes_filtro,
+        'anio_seleccionado': anio_filtro,
         'medio_seleccionado': medio_filtro,
         'query': query,
     }
