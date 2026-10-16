@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.urls import path
 from django.contrib.auth import views as auth_views
-
+from asistencias import views as asistencias_views
+from usuarios import views
 from usuarios import views as usuarios_views
 from socios import views as socios_views
 from pagos import views as pagos_views
@@ -34,4 +35,7 @@ urlpatterns = [
 
     # Django Admin nativo
     path('admin/', admin.site.urls),
-]
+
+    # 5. Panel Empleado / Recepción: Control de Ingresos por DNI
+    path('empleado/asistencia/', asistencias_views.registrar_asistencia, name='registrar_asistencia'),
+]   
