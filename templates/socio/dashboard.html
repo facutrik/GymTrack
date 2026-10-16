@@ -3,72 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymTrack - Portal del Socio</title>
-    <!-- Tailwind CSS CDN -->
+    <title>GymTrack - Portal Socio</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #0b1120;
-        }
-        .main-btn.active {
-            border-color: #3b82f6;
-            background: linear-gradient(145deg, rgba(30, 58, 138, 0.4), rgba(15, 23, 42, 0.9));
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
-        }
-    </style>
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }</style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-    <!-- NAVBAR UNIFICADA -->
+    <!-- NAVBAR (Original y limpio) -->
     <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo -->
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-600/30">
-                        🏋️‍♂️
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-600/30">🏋️‍♂️</div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-2xl font-extrabold tracking-tight text-white">GymTrack</span>
+                        <span class="text-xs font-light text-slate-500">×</span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2.5 py-0.5 rounded-md">Portal Socio</span>
                     </div>
-                    <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
-                        GymTrack
-                    </span>
-                    <span class="hidden sm:inline-block text-[11px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-0.5 rounded-full ml-2">
-                        Portal Socio
-                    </span>
                 </div>
-
-                <!-- Usuario y Logout -->
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-sm font-bold shadow-md">
-                            {{ user.first_name|slice:":1"|default:user.username|slice:":1"|upper }}
+                        <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold shadow-md">
+                            {{ user.first_name|slice:":1"|default:"S"|upper }}
                         </div>
                         <div class="hidden sm:block text-left leading-tight">
-                            <p class="text-xs font-bold text-white">{{ user.first_name|default:user.username }} {{ user.last_name }}</p>
-                            {% if estado_cuenta == 'VERDE' %}
-                                <p class="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Cuota al Día
-                                </p>
-                            {% else %}
-                                <p class="text-[10px] text-rose-400 font-semibold flex items-center gap-1">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span> Cuota Vencida
-                                </p>
-                            {% endif %}
+                            <p class="text-xs font-bold text-white">{{ user.first_name }} {{ user.last_name }}</p>
+                            <p class="text-[10px] text-slate-400 font-mono">DNI: {{ user.username }}</p>
                         </div>
                     </div>
-
-                    <button type="button" onclick="toggleModalNovedades()" class="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition cursor-pointer" title="Novedades y Anuncios">
-                        <i class="fa-solid fa-bell text-sm"></i>
-                        <!-- Punto indicador de novedad activa -->
-                        <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                    </button>
-
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
                         <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition" title="Cerrar sesión">
@@ -79,6 +43,43 @@
             </div>
         </div>
     </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+
+        <!-- CABECERA: SALUDO + TARJETA ÚNICA DE ESTADO A LA DERECHA -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                    Autogestión de Miembro
+                </span>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">Hola, {{ user.first_name|default:user.username }} 👋</h1>
+                <p class="text-slate-400 text-sm mt-1">Elegí una sección para gestionar tus entrenamientos, clases y perfil.</p>
+            </div>
+
+            <!-- TARJETA ÚNICA DE ESTADO DE MEMBRESÍA -->
+            <div class="sm:self-end">
+                {% if cuota_al_dia and membresia_actual %}
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl px-5 py-3.5 flex items-center gap-3.5 shadow-sm">
+                        <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Estado de Membresía</span>
+                            <span class="text-xs font-bold text-emerald-400">Al Día • {{ membresia_actual.plan.nombre }}</span>
+                            <p class="text-[10px] text-slate-500 mt-0.5">Vence: {{ membresia_actual.fecha_fin|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl px-5 py-3.5 flex items-center gap-3.5 shadow-sm">
+                        <span class="w-3 h-3 rounded-full bg-rose-500 animate-pulse"></span>
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Estado de Membresía</span>
+                            <span class="text-xs font-bold text-rose-400">Vencida • Regularizar en mostrador</span>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
 
     <!-- MENSAJES DE ALERTA -->
     {% if messages %}
@@ -91,111 +92,6 @@
             {% endfor %}
         </div>
     {% endif %}
-
-    <!-- CONTENEDOR PRINCIPAL -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
-
-        <!-- CABECERA DE BIENVENIDA -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2">
-                    <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-                    Autogestión de Miembro
-                </div>
-                <h1 class="text-3xl font-extrabold text-white tracking-tight">Hola, {{ user.first_name|default:user.username }} 👋</h1>
-                <p class="text-slate-400 text-sm mt-1">Elegí una sección para gestionar tus entrenamientos, clases y perfil.</p>
-            </div>
-
-            <!-- Resumen de Estado de Membresía -->
-            <div class="inline-flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-sm">
-                {% if estado_cuenta == 'VERDE' %}
-                    <div class="w-3.5 h-3.5 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50"></div>
-                    <div class="text-xs">
-                        <p class="text-slate-400">Estado de Membresía</p>
-                        <p class="font-bold text-emerald-400">Habilitado • Al Día</p>
-                    </div>
-                {% else %}
-                    <div class="w-3.5 h-3.5 rounded-full bg-rose-500 shadow-lg shadow-rose-500/50"></div>
-                    <div class="text-xs">
-                        <p class="text-slate-400">Estado de Membresía</p>
-                        <p class="font-bold text-rose-400">Vencida • Regularizar en mostrador</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- ========================================================= -->
-        <!-- 📢 MODAL: PORTAL DE NOVEDADES DEL GIMNASIO (SOLO LECTURA)  -->
-        <!-- ========================================================= -->
-        <div id="modal-novedades" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-5 animate-in fade-in duration-200">
-                
-                <!-- Cabecera del Modal -->
-                <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
-                            <i class="fa-solid fa-bullhorn"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-base font-bold text-white">Tablón de Novedades</h3>
-                            <p class="text-xs text-slate-400">Avisos importantes de GymTrack</p>
-                        </div>
-                    </div>
-                    <button onclick="toggleModalNovedades()" class="text-slate-400 hover:text-white text-lg p-1 transition cursor-pointer">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-
-                <!-- Lista de Novedades (Lectura informativa) -->
-                <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
-                    
-                    <!-- Novedad 1 -->
-                    <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-1.5">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">Institucional</span>
-                            <span class="text-[10px] text-slate-500">Hoy</span>
-                        </div>
-                        <h4 class="text-xs font-bold text-white">Mantenimiento en Sala de Musculación</h4>
-                        <p class="text-[11px] text-slate-400 leading-relaxed">
-                            Este sábado por la tarde se realizarán tareas de mantenimiento preventivo en poleas y cintas. El resto de las áreas funcionará con normalidad.
-                        </p>
-                    </div>
-
-                    <!-- Novedad 2 -->
-                    <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-1.5">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Clases</span>
-                            <span class="text-[10px] text-slate-500">Hace 2 días</span>
-                        </div>
-                        <h4 class="text-xs font-bold text-white">Nuevos horarios para Spinning</h4>
-                        <p class="text-[11px] text-slate-400 leading-relaxed">
-                            Sumamos un nuevo turno los días martes y jueves a las 19:30 hs. Podés consultar disponibilidad y cupos en recepción.
-                        </p>
-                    </div>
-
-                    <!-- Novedad 3 -->
-                    <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-1.5">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Atención</span>
-                            <span class="text-[10px] text-slate-500">Esta semana</span>
-                        </div>
-                        <h4 class="text-xs font-bold text-white">Horarios especiales en feriados</h4>
-                        <p class="text-[11px] text-slate-400 leading-relaxed">
-                            Recordá que durante los días feriados el gimnasio permanece abierto en horario reducido de 09:00 a 14:00 hs.
-                        </p>
-                    </div>
-
-                </div>
-
-                <!-- Pie del Modal -->
-                <div class="pt-2 border-t border-slate-800 flex justify-end">
-                    <button onclick="toggleModalNovedades()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition cursor-pointer">
-                        Entendido
-                    </button>
-                </div>
-
-            </div>
-        </div>
 
         <!-- ========================================================= -->
         <!-- 🔘 LOS 3 BOTONES EN GRANDE                              -->
@@ -1143,14 +1039,6 @@
 
     <!-- JS PARA ALTERNAR SECCIONES Y SUBRUTINAS -->
     <script>
-
-        function toggleModalNovedades() {
-            const modal = document.getElementById('modal-novedades');
-            if (modal) {
-                modal.classList.toggle('hidden');
-            }
-        }
-        
         function mostrarSeccion(seccionId) {
             // Ocultar todas las secciones
             document.querySelectorAll('.seccion-bloque').forEach(el => el.classList.add('hidden'));

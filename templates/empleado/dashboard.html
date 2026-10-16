@@ -6,15 +6,8 @@
     <title>GymTrack - Panel de Recepción</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #0b1120;
-        }
-    </style>
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }</style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
@@ -23,29 +16,23 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-600/30">
-                        🏋️‍♂️
-                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-600/30">🏋️‍♂️</div>
                     <div class="flex items-baseline gap-2">
                         <span class="text-2xl font-extrabold tracking-tight text-white">GymTrack</span>
                         <span class="text-xs font-light text-slate-500">×</span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">
-                            BODYDYNAMIC
-                        </span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">BODYDYNAMIC</span>
                     </div>
                 </div>
-
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold shadow-md">
-                            E
+                            {{ user.first_name|slice:":1"|default:"E"|upper }}
                         </div>
                         <div class="hidden sm:block text-left leading-tight">
                             <p class="text-xs font-bold text-white">{{ user.username }}</p>
                             <p class="text-[10px] text-blue-400 font-semibold">Puesto de Recepción</p>
                         </div>
                     </div>
-
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
                         <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition" title="Cerrar sesión">
@@ -61,7 +48,7 @@
     {% if messages %}
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
             {% for message in messages %}
-                <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
+                <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% elif message.tags == 'warning' %}bg-amber-950/60 border border-amber-500/40 text-amber-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
                     <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
                     {{ message }}
                 </div>
@@ -80,21 +67,26 @@
                     Recepción & Mostrador General
                 </div>
                 <h1 class="text-3xl font-extrabold text-white tracking-tight">Panel Operativo Diario 📋</h1>
-                <p class="text-slate-400 text-sm mt-1">Control de acceso, turnos de profesores y cómputo de horas.</p>
+                <p class="text-slate-400 text-sm mt-1">Control de acceso, turnos de profesores en sala y cobro presencial de socios.</p>
             </div>
 
+            <!-- Accesos Rápidos -->
             <div class="flex items-center gap-3">
+                <button type="button" onclick="openCobroModal()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-cash-register"></i> Cobrar Membresía
+                </button>
                 <button type="button" onclick="openAsistenciaModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-id-card"></i> Control de Acceso (DNI)
                 </button>
-                <a href="{% url 'admin_socios' %}" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-2">
+                <a href="{% url 'padron_socios_empleado' %}" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-2">
                     <i class="fa-solid fa-users"></i> Padrón de Socios
                 </a>
             </div>
         </div>
 
-        <!-- 1. MÉTRICAS SUPERIORES -->
+        <!-- 1. TARJETAS SUPERIORES DE MÉTRICAS (GRID 3 COLUMNAS) -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <!-- 1. Asistencias Hoy -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -123,6 +115,7 @@
                         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Socios</span>
                         <h3 class="text-2xl font-black text-white mt-1"><i class="fa-solid fa-address-book text-xl text-cyan-400"></i></h3>
 =======
+            <!-- 2. Padrón de Socios -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -134,11 +127,12 @@
                         <i class="fa-solid fa-address-book"></i>
                     </div>
                 </div>
-                <a href="{% url 'admin_socios' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
+                <a href="{% url 'padron_socios_empleado' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
                     Ver Socios <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
             </div>
 
+            <!-- 3. Disciplinas Activas (ABRE MODAL) -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -149,9 +143,9 @@
                         <i class="fa-solid fa-calendar-days"></i>
                     </div>
                 </div>
-                <span class="text-xs text-slate-400 py-2 text-center bg-slate-950/40 rounded-xl">
-                    7 profesores en nómina
-                </span>
+                <button type="button" onclick="document.getElementById('modalDisciplinas').classList.remove('hidden')" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5 cursor-pointer">
+                    Ver Clases & Reservas <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </button>
             </div>
         </div>
 
@@ -223,21 +217,17 @@
                         <i class="fa-solid fa-user-plus text-blue-400"></i> Alta de Nuevo Socio
                     </a>
 =======
-        <!-- =============================================================== -->
-        <!-- ⏱️ SECCIÓN INTERMEDIA: PROFESORES CON HORARIOS E HISTORIAL     -->
-        <!-- =============================================================== -->
+        <!-- 2. PROFESORES EN SALA (GRILLA COMPLETA) -->
         <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-lg font-extrabold text-white flex items-center gap-2">
                         <i class="fa-solid fa-stopwatch text-blue-400"></i> Turnos de Profesores en Gimnasio
                     </h2>
-                    <p class="text-xs text-slate-400">Inicio protegido por DNI/Clave, cómputo de horas y botón de historial estadístico.</p>
+                    <p class="text-xs text-slate-400">Inicio protegido por DNI/Clave, cómputo de horas e historial estadístico.</p>
 >>>>>>> 591647381ca3d74c6aa882a56e562bf034428fe0
                 </div>
-                <span class="text-[11px] text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
-                    Mostrador Central
-                </span>
+                <span class="text-[11px] text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">Mostrador Central</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -254,25 +244,20 @@
                                         <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">{{ p.rol_desc }}</span>
                                     </div>
                                 </div>
-                                
                                 {% if p.en_turno %}
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> En Turno
                                     </span>
                                 {% else %}
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-800 text-slate-400 border border-slate-700">
-                                        Inactivo
-                                    </span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-800 text-slate-400 border border-slate-700">Inactivo</span>
                                 {% endif %}
                             </div>
 
-                            <!-- Horarios y Actividades -->
                             <div class="mt-3 p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 text-[11px] text-slate-300 leading-relaxed">
                                 <p class="text-slate-400 text-[10px] font-semibold uppercase mb-0.5">Actividades y Franjas:</p>
                                 {{ p.detalle }}
                             </div>
 
-                            <!-- Estado del Turno de Hoy -->
                             {% if p.en_turno %}
                                 <div class="mt-2 text-[11px] text-emerald-400 font-semibold flex items-center gap-1.5">
                                     <i class="fa-regular fa-clock"></i> Ingreso activo: {{ p.turno.hora_entrada|date:"H:i" }} hs
@@ -284,7 +269,6 @@
                             {% endif %}
                         </div>
 
-                        <!-- Botones de Acción (Iniciar con Clave, Cortar, Historial) -->
                         <div class="space-y-2 pt-2 border-t border-slate-800">
                             {% if p.en_turno %}
                                 <form method="POST">
@@ -299,42 +283,34 @@
                                     <i class="fa-solid fa-play"></i> Iniciar Horario de Clase
                                 </button>
                             {% endif %}
-
-                            <!-- Botón de Historial y Estadísticas -->
-                            <button type="button" onclick="abrirModalHistorial('modal-historial-{{ p.usuario.id }}')" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl border border-slate-700/80 transition flex items-center justify-center gap-2 cursor-pointer">
+                            <button type="button" onclick="document.getElementById('modal-historial-{{ p.usuario.id }}').classList.remove('hidden')" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl border border-slate-700/80 transition flex items-center justify-center gap-2 cursor-pointer">
                                 <i class="fa-solid fa-chart-simple text-blue-400"></i> Historial / Horas Trabajadas
                             </button>
                         </div>
                     </div>
 
-                    <!-- ========================================================= -->
-                    <!-- MODAL INDIVIDUAL DE HISTORIAL / ESTADÍSTICAS DEL PROFE    -->
-                    <!-- ========================================================= -->
+                    <!-- MODAL HISTORIAL INDIVIDUAL -->
                     <div id="modal-historial-{{ p.usuario.id }}" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-                        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+                        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
                             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                                 <div>
-                                    <h3 class="font-bold text-white text-base">Historial y Estadísticas</h3>
+                                    <h3 class="font-bold text-white text-base">Historial de Turnos</h3>
                                     <p class="text-xs text-blue-400 font-semibold">{{ p.usuario.first_name }} {{ p.usuario.last_name }} ({{ p.rol_desc }})</p>
                                 </div>
-                                <button type="button" onclick="cerrarModalHistorial('modal-historial-{{ p.usuario.id }}')" class="text-slate-400 hover:text-white transition">
+                                <button type="button" onclick="document.getElementById('modal-historial-{{ p.usuario.id }}').classList.add('hidden')" class="text-slate-400 hover:text-white transition">
                                     <i class="fa-solid fa-xmark text-lg"></i>
                                 </button>
                             </div>
-
-                            <!-- Métricas del Profe -->
                             <div class="grid grid-cols-2 gap-3">
                                 <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-xl text-center">
                                     <span class="text-[10px] uppercase font-bold text-slate-400">Horas Acumuladas</span>
                                     <p class="text-lg font-black text-emerald-400 mt-0.5">{{ p.horas_acumuladas }}</p>
                                 </div>
                                 <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-xl text-center">
-                                    <span class="text-[10px] uppercase font-bold text-slate-400">Jornadas Registradas</span>
-                                    <p class="text-lg font-black text-white mt-0.5">{{ p.total_turnos }} turnos</p>
+                                    <span class="text-[10px] uppercase font-bold text-slate-400">Jornadas</span>
+                                    <p class="text-lg font-black text-white mt-0.5">{{ p.total_turnos }}</p>
                                 </div>
                             </div>
-
-                            <!-- Tabla de Turnos -->
                             <div class="max-h-60 overflow-y-auto">
                                 <table class="w-full text-left text-xs">
                                     <thead class="text-slate-400 border-b border-slate-800 text-[10px] uppercase tracking-wider">
@@ -351,57 +327,36 @@
                                                 <td class="py-2.5 font-medium text-white">{{ t.hora_entrada|date:"d/m/Y" }}</td>
                                                 <td class="py-2.5 text-blue-400">{{ t.hora_entrada|date:"H:i" }} hs</td>
                                                 <td class="py-2.5 text-slate-400">
-                                                    {% if t.hora_salida %}
-                                                        {{ t.hora_salida|date:"H:i" }} hs
-                                                    {% else %}
-                                                        <span class="text-emerald-400 font-bold">En curso</span>
-                                                    {% endif %}
+                                                    {% if t.hora_salida %}{{ t.hora_salida|date:"H:i" }} hs{% else %}<span class="text-emerald-400 font-bold">En curso</span>{% endif %}
                                                 </td>
-                                                <td class="py-2.5 text-right font-bold text-slate-200">
-                                                    {{ t.horas_trabajadas }}
-                                                </td>
+                                                <td class="py-2.5 text-right font-bold text-slate-200">{{ t.horas_trabajadas }}</td>
                                             </tr>
                                         {% empty %}
-                                            <tr>
-                                                <td colspan="4" class="py-4 text-center text-slate-500 text-xs">
-                                                    Sin turnos registrados previamente.
-                                                </td>
-                                            </tr>
+                                            <tr><td colspan="4" class="py-4 text-center text-slate-500 text-xs">Sin turnos previos registrados.</td></tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
-
                             <div class="flex justify-end pt-2 border-t border-slate-800">
-                                <button type="button" onclick="cerrarModalHistorial('modal-historial-{{ p.usuario.id }}')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
-                                    Cerrar
-                                </button>
+                                <button type="button" onclick="document.getElementById('modal-historial-{{ p.usuario.id }}').classList.add('hidden')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">Cerrar</button>
                             </div>
                         </div>
-                    </div>
-
-                {% empty %}
-                    <div class="col-span-3 p-6 bg-slate-900/40 border border-slate-800 rounded-2xl text-center text-xs text-slate-400">
-                        No hay profesores dados de alta en la nómina.
                     </div>
                 {% endfor %}
             </div>
         </div>
 
-        <!-- =============================================================== -->
-        <!-- 📋 TABLA: REGISTRO DE INGRESOS DE HOY                          -->
-        <!-- =============================================================== -->
+        <!-- 3. TABLA: REGISTRO DE INGRESOS DE HOY -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-sm">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="font-bold text-white text-sm">Registro de Ingresos de Hoy</h3>
-                    <p class="text-[11px] text-slate-400">Accesos presenciales validados y computados en mostrador</p>
+                    <p class="text-[11px] text-slate-400">Accesos validados y computados en mostrador</p>
                 </div>
                 <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                    Total: {{ asistencias_hoy|default:0 }}
+                    Total Hoy: {{ asistencias_hoy|default:0 }}
                 </span>
             </div>
-
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs">
                     <thead class="text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
@@ -416,22 +371,71 @@
                         {% for item in ultimas_asistencias %}
                             <tr class="hover:bg-slate-800/30 transition">
                                 <td class="py-3 px-3 font-bold text-blue-400">{{ item.fecha_hora|date:"H:i" }} hs</td>
-                                <td class="py-3 px-3 text-white font-medium">
-                                    {{ item.socio.usuario.first_name }} {{ item.socio.usuario.last_name }}
-                                </td>
+                                <td class="py-3 px-3 text-white font-medium">{{ item.socio.usuario.first_name }} {{ item.socio.usuario.last_name }}</td>
                                 <td class="py-3 px-3 font-mono text-slate-400">{{ item.socio.usuario.username }}</td>
                                 <td class="py-3 px-3 text-right">
-                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                        Presente
-                                    </span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Presente</span>
                                 </td>
                             </tr>
                         {% empty %}
-                            <tr>
-                                <td colspan="4" class="py-6 text-center text-slate-500 text-xs">
-                                    Aún no hay asistencias registradas en el día de hoy.
+                            <tr><td colspan="4" class="py-6 text-center text-slate-500 text-xs">Aún no hay asistencias registradas en el día de hoy.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. TABLA: HISTORIAL DE COBROS DE MEMBRESÍAS EN CAJA -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-receipt text-emerald-400"></i> Historial Reciente de Cobros
+                    </h3>
+                    <p class="text-[11px] text-slate-400">Últimos comprobantes generados en caja</p>
+                </div>
+                <button type="button" onclick="openCobroModal()" class="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus text-[10px]"></i> Nuevo Cobro
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
+                        <tr>
+                            <th class="pb-3 px-3">Fecha / Hora</th>
+                            <th class="pb-3 px-3">Socio</th>
+                            <th class="pb-3 px-3">DNI</th>
+                            <th class="pb-3 px-3">Plan / Membresía</th>
+                            <th class="pb-3 px-3">Medio</th>
+                            <th class="pb-3 px-3 text-right">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                        {% for cobro in ultimos_cobros %}
+                            <tr class="hover:bg-slate-800/30 transition">
+                                <td class="py-3 px-3 font-mono text-slate-400">
+                                    {{ cobro.fecha_pago|date:"d/m/Y H:i" }}
+                                </td>
+                                <td class="py-3 px-3 text-white font-medium">
+                                    {{ cobro.socio.usuario.first_name }} {{ cobro.socio.usuario.last_name }}
+                                </td>
+                                <td class="py-3 px-3 font-mono text-slate-400">
+                                    {{ cobro.socio.usuario.username }}
+                                </td>
+                                <td class="py-3 px-3 text-amber-300 font-semibold">
+                                    {{ cobro.membresia.plan.nombre }}
+                                </td>
+                                <td class="py-3 px-3">
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase {% if cobro.metodo_pago == 'efectivo' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% else %}bg-blue-500/10 text-blue-400 border border-blue-500/20{% endif %}">
+                                        {{ cobro.metodo_pago }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-right font-black text-emerald-400 font-mono text-sm">
+                                    ${{ cobro.monto }}
                                 </td>
                             </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="py-6 text-center text-slate-500 text-xs">No hay cobros registrados en caja todavía.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -557,58 +561,81 @@
 
     </main>
 
-    <!-- FOOTER -->
-    <footer class="bg-slate-900 border-t border-slate-800 text-slate-500 py-6 text-xs text-center mt-auto">
-        <p>© 2026 GymTrack × Bodynamic — Puesto Operativo de Recepción.</p>
-    </footer>
-
-    <!-- =============================================================== -->
-    <!-- 🔒 MODAL DE VALIDACIÓN DE INICIO DE TURNO (DNI + PASSWORD)     -->
-    <!-- =============================================================== -->
-    <div id="modalIniciarTurno" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+    <!-- ============================================================== -->
+    <!-- 💵 MODAL: COBRO PRESENCIAL DE MEMBRESÍAS                      -->
+    <!-- ============================================================== -->
+    <div id="modalCobro" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div class="flex items-center gap-2">
-                    <span class="text-xl">🔐</span>
-                    <h3 class="font-extrabold text-white text-base">Iniciar Turno de Guardia</h3>
+                    <span class="text-xl">💵</span>
+                    <h3 class="font-extrabold text-white text-base">Registrar Cobro Presencial</h3>
                 </div>
-                <button type="button" onclick="cerrarModalIniciarTurno()" class="text-slate-400 hover:text-white transition">
+                <button type="button" onclick="closeCobroModal()" class="text-slate-400 hover:text-white transition">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <p class="text-xs text-slate-400">
-                Confirmá el inicio de clase para <strong id="modalProfeNombre" class="text-white"></strong> ingresando tus credenciales de seguridad.
-            </p>
-
-            <form method="POST" class="space-y-3 text-xs">
+            <form action="{% url 'dashboard' %}" method="POST" class="space-y-4 text-xs">
                 {% csrf_token %}
-                <input type="hidden" name="accion_profesor" value="iniciar">
-                <input type="hidden" name="profesor_id" id="modalProfeId">
+                <input type="hidden" name="accion" value="cobrar_membresia_empleado">
 
+                <!-- DNI del Socio -->
                 <div>
-                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">DNI o Usuario</label>
-                    <input type="text" name="dni_verif" id="modalProfeDni" required placeholder="Ingresá tu DNI o usuario" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
+                    <label class="block text-slate-400 font-bold uppercase text-[10px] mb-1.5">DNI del Socio:</label>
+                    <input type="text" name="dni_socio" id="inputDniCobro" required placeholder="Ej: 40123456" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
 
+                <!-- Selección de Plan -->
                 <div>
-                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Contraseña</label>
-                    <input type="password" name="password_verif" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <label class="block text-slate-400 font-bold uppercase text-[10px] mb-1.5">Plan a Renovar / Contratar:</label>
+                    <select name="plan_id" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="" disabled selected>Seleccione un plan...</option>
+                        {% for plan in planes_select %}
+                            <option value="{{ plan.id }}">{{ plan.nombre }} — ${{ plan.precio }} ({{ plan.duracion_dias|default:30 }} días)</option>
+                        {% endfor %}
+                    </select>
                 </div>
 
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="cerrarModalIniciarTurno()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
+                <!-- Medio de Pago (Efectivo y Transferencia activos, Tarjeta comentada para el futuro) -->
+                <div>
+                    <label class="block text-slate-400 font-bold uppercase text-[10px] mb-1.5">Medio de Pago:</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
+                            <input type="radio" name="metodo_pago" value="efectivo" checked class="text-emerald-500 focus:ring-0">
+                            <span class="font-bold text-slate-200">💵 Efectivo</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
+                            <input type="radio" name="metodo_pago" value="transferencia" class="text-emerald-500 focus:ring-0">
+                            <span class="font-bold text-slate-200">📱 Transferencia</span>
+                        </label>
+                        <!--
+                        ========================================================================
+                        OPCIÓN DE TARJETA (DESHABILITADA TEMPORALMENTE / LISTA PARA HABILITAR)
+                        Para habilitar a futuro: descomentar este bloque y cambiar la grilla a grid-cols-3
+                        ========================================================================
+                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
+                            <input type="radio" name="metodo_pago" value="tarjeta" class="text-emerald-500 focus:ring-0">
+                            <span class="font-bold text-slate-200">💳 Tarjeta</span>
+                        </label>
+                        -->
+                    </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="closeCobroModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">
                         Cancelar
                     </button>
-                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow transition">
-                        Confirmar e Iniciar
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition">
+                        Confirmar Cobro
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL DE CONTROL DE ASISTENCIA RÁPIDO (SOCIOS) -->
+    <!-- MODAL CONTROL DE ASISTENCIA RÁPIDO (DNI) -->
     <div id="asistenciaModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -621,32 +648,165 @@
                 </button>
             </div>
 
-            <form action="{% url 'registrar_asistencia' %}" method="POST" class="space-y-4">
+            <form action="{% url 'dashboard' %}" method="POST" class="space-y-4">
                 {% csrf_token %}
+                <input type="hidden" name="accion" value="registrar_asistencia">
                 <div>
                     <label class="block text-slate-400 text-xs font-bold uppercase mb-2">Ingresar DNI del Socio:</label>
                     <input type="text" name="dni" id="modalDniInput" required placeholder="Ej: 40123456" autofocus class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="flex justify-end gap-3 pt-2">
-                    <button type="button" onclick="closeAsistenciaModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition">
-                        Validar Ingreso
-                    </button>
+                    <button type="button" onclick="closeAsistenciaModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition">Validar e Ingresar</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- JS PARA MANEJO DE MODALES -->
+    <!-- MODAL INICIAR TURNO PROFESOR -->
+    <div id="modalIniciarTurno" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🔐</span>
+                    <h3 class="font-extrabold text-white text-base">Iniciar Turno de Guardia</h3>
+                </div>
+                <button type="button" onclick="document.getElementById('modalIniciarTurno').classList.add('hidden')" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-400">Confirmá el inicio de clase para <strong id="modalProfeNombre" class="text-white"></strong>.</p>
+            <form method="POST" class="space-y-3 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion_profesor" value="iniciar">
+                <input type="hidden" name="profesor_id" id="modalProfeId">
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">DNI o Usuario</label>
+                    <input type="text" name="dni_verif" id="modalProfeDni" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Contraseña</label>
+                    <input type="password" name="password_verif" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="document.getElementById('modalIniciarTurno').classList.add('hidden')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow transition">Confirmar e Iniciar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- 🏋️‍♂️ MODAL: DISCIPLINAS ACTIVAS, CRONOGRAMA Y RESERVAS         -->
+    <!-- ============================================================== -->
+    <div id="modalDisciplinas" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full p-6 space-y-5 shadow-2xl">
+            
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl font-bold border border-amber-500/20">
+                        <i class="fa-solid fa-calendar-week"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-white text-base">Disciplinas Activas & Cronograma</h3>
+                        <p class="text-xs text-slate-400">Días, horarios semanales, profesores asignados y cupos disponibles.</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('modalDisciplinas').classList.add('hidden')" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="max-h-[60vh] overflow-y-auto space-y-3 pr-1">
+                {% for item in disciplinas_detalle %}
+                    <div class="bg-slate-950/80 border border-slate-800/90 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-700 transition">
+                        
+                        <!-- Columna 1: Nombre de Disciplina y Tipo -->
+                        <div class="md:w-1/4">
+                            <h4 class="font-black text-white text-base tracking-tight">{{ item.actividad.nombre }}</h4>
+                            <div class="mt-1">
+                                {% if item.actividad.nombre == 'Musculación' %}
+                                    <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full inline-block">
+                                        Acceso Libre en Sala
+                                    </span>
+                                {% elif item.requiere_reserva %}
+                                    <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full inline-block">
+                                        Con Reserva Previa
+                                    </span>
+                                {% else %}
+                                    <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full inline-block">
+                                        Acceso Libre en Sala
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Columna 2: Días, Horarios y Profesores -->
+                        <div class="md:w-2/4 space-y-1.5">
+                            {% for h in item.horarios %}
+                                <div class="flex items-center justify-between bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800/80 text-xs">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-regular fa-clock text-blue-400 text-[11px]"></i>
+                                        <span class="text-slate-200 font-semibold">{{ h.dias }}</span>
+                                        <span class="text-slate-500 text-[10px]">({{ h.profesor }})</span>
+                                    </div>
+                                    <span class="font-mono font-bold text-amber-300 text-[11px] bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">
+                                        {{ h.horario }}
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Columna 3: Cupo / Reservas Activas -->
+                        <div class="md:w-1/4 flex md:flex-col md:items-end justify-between items-center border-t md:border-t-0 border-slate-800/60 pt-2 md:pt-0">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Inscripciones / Cupo</span>
+                            {% if item.actividad.nombre == 'Musculación' %}
+                                <span class="text-xs font-semibold text-emerald-400 mt-0.5">Ingreso por turno libre</span>
+                            {% else %}
+                                <div class="flex items-center gap-1.5 mt-0.5">
+                                    <span class="text-base font-black text-blue-400 font-mono">{{ item.total_reservas }}</span>
+                                    <span class="text-xs text-slate-400 font-medium">reservas</span>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                {% empty %}
+                    <div class="text-center py-8 text-slate-500 text-xs">
+                        No hay disciplinas cargadas en el sistema.
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="flex justify-between items-center pt-3 border-t border-slate-800">
+                <span class="text-xs text-slate-500">Mostrador de Recepción • Consulta de clases en tiempo real</span>
+                <button type="button" onclick="document.getElementById('modalDisciplinas').classList.add('hidden')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
+                    Cerrar
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
     <script>
-        function openAsistenciaModal() {
-            const modal = document.getElementById('asistenciaModal');
+        function openCobroModal(dniPrellenado = '') {
+            const modal = document.getElementById('modalCobro');
+            const inputDni = document.getElementById('inputDniCobro');
+            if (dniPrellenado) {
+                inputDni.value = dniPrellenado;
+            }
             modal.classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('modalDniInput').focus();
-            }, 100);
+            setTimeout(() => { inputDni.focus(); }, 100);
+        }
+
+        function closeCobroModal() {
+            document.getElementById('modalCobro').classList.add('hidden');
+        }
+
+        function openAsistenciaModal() {
+            document.getElementById('asistenciaModal').classList.remove('hidden');
+            setTimeout(() => { document.getElementById('modalDniInput').focus(); }, 100);
         }
 
         function closeAsistenciaModal() {
@@ -659,21 +819,6 @@
             document.getElementById('modalProfeDni').value = usernameDefecto;
             document.getElementById('modalIniciarTurno').classList.remove('hidden');
         }
-
-        function cerrarModalIniciarTurno() {
-            document.getElementById('modalIniciarTurno').classList.add('hidden');
-        }
-
-        function abrirModalHistorial(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function cerrarModalHistorial(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) modal.classList.add('hidden');
-        }
     </script>
-
 </body>
 </html>

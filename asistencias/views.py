@@ -1,77 +1,99 @@
 # asistencias/views.py
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.utils import timezone
-from usuarios.models import Usuario
-from socios.models import Socio
-from asistencias.models import Asistencia
-
-@login_required
-def registrar_asistencia(request):
-    user = request.user
-    if not (user.is_superuser or getattr(user, 'rol', None) in ('recepcion', 'empleado', 'admin')):
-        return redirect('dashboard')
-
-    socio_encontrado = None
-    estado_acceso = None
-
-    if request.method == 'POST':
-        dni = request.POST.get('dni', '').strip()
-        
-        try:
-            # Buscamos por username (donde se guarda el DNI)
-            usuario_socio = Usuario.objects.get(username=dni, rol='socio')
-            
-            # Obtenemos el socio por perfil_socio o Socio.objects
-            if hasattr(usuario_socio, 'perfil_socio'):
-                socio = usuario_socio.perfil_socio
-            else:
-                socio = Socio.objects.get(usuario=usuario_socio)
-                
-            socio_encontrado = socio
-
-            # Validamos el estado de cuenta
-            if getattr(socio, 'estado_cuenta', 'VERDE').upper() == 'VERDE':
-                # Guardamos la asistencia en la base de datos
-                Asistencia.objects.create(
-                    socio=socio,
-                    fecha_hora=timezone.now()
-                )
-                estado_acceso = 'verde'
-            else:
-                estado_acceso = 'rojo'
-
-        except (Usuario.DoesNotExist, Socio.DoesNotExist):
-            estado_acceso = 'no_encontrado'
-
-    # Consultamos las asistencias reales de hoy
-    hoy = timezone.localdate()
-    asistencias_hoy_count = Asistencia.objects.filter(fecha_hora__date=hoy).count()
-    ultimas_asistencias = Asistencia.objects.filter(
-        fecha_hora__date=hoy
-    ).select_related('socio__usuario').order_by('-fecha_hora')[:10]
-
-    context = {
-        'socio': socio_encontrado,
-        'estado_acceso': estado_acceso,
-        'asistencias_hoy': asistencias_hoy_count,
-        'ultimas_asistencias': ultimas_asistencias,
-    }
-    
 from datetime import datetime, time
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.utils import timezone
 
 from usuarios.models import Usuario
-from asistencias.models import Asistencia
 from socios.models import Socio
+from asistencias.models import Asistencia
 
 try:
-    from actividades.models import Actividad
+    from reservas.models import Reserva
 except ImportError:
-    Actividad = None
+    Reserva = None
 
+def validar_ingreso_socio(request, dni):
+    hoy = timezone.localdate()
+    inicio_dia = timezone.make_aware(datetime.combine(hoy, time.min))
+    fin_dia = timezone.make_aware(datetime.combine(hoy, time.max))
+
+    try:
+        usuario_socio = Usuario.objects.get(username=dni, rol='socio')
+        socio = getattr(usuario_socio, 'perfil_socio', None) or Socio.objects.get(
+            usuario=usuario_socio
+        )
+    except (Usuario.DoesNotExist, Exception):
+        messages.error(request, f'No existe ningún socio con DNI {dni}.')
+        return redirect('dashboard')
+
+    # 1. Semáforo financiero obligatorio
+    if getattr(socio, 'estado_cuenta', 'VERDE').upper() != 'VERDE':
+        messages.error(
+            request,
+            f'Acceso DENEGADO: {usuario_socio.first_name} adeuda cuota (Rojo).',
+        )
+        return redirect('dashboard')
+
+    # 2. Consultar si ya tiene ingresos hoy
+    asistencias_hoy = Asistencia.objects.filter(
+        socio=socio, fecha_hora__range=(inicio_dia, fin_dia)
+    )
+
+    if not asistencias_hoy.exists():
+        # Primer ingreso del día: Libre (Musculación / Sala)
+        Asistencia.objects.create(socio=socio, fecha_hora=timezone.now())
+        messages.success(
+            request,
+            f'Acceso Libre: Ingreso registrado para {usuario_socio.first_name} {usuario_socio.last_name}.',
+        )
+        return redirect('dashboard')
+
+    # 3. Si ya ingresó hoy, verificar reservas para turnos/clases
+    reserva_hoy = None
+    if Reserva:
+        reserva_hoy = (
+            Reserva.objects.filter(
+                socio=socio, fecha=hoy, estado__in=['confirmada', 'activa']
+            )
+            .select_related('horario__actividad')
+            .first()
+        )
+
+    # Permitir si la cantidad de ingresos es menor al cupo de accesos válidos del día (1 libre + 1 por reserva)
+    total_accesos_permitidos = 1 + (1 if reserva_hoy else 0)
+
+    if asistencias_hoy.count() < total_accesos_permitidos and reserva_hoy:
+        nombre_actividad = reserva_hoy.horario.actividad.nombre
+        hora_turno = reserva_hoy.horario.hora_inicio.strftime('%H:%M')
+
+        # Registrar el segundo ingreso específico para la clase
+        Asistencia.objects.create(socio=socio, fecha_hora=timezone.now())
+
+        # Si el modelo tiene estado de asistencia en la reserva, marcarla como asistida
+        if hasattr(reserva_hoy, 'estado'):
+            reserva_hoy.estado = 'asistida'
+            reserva_hoy.save()
+
+        messages.success(
+            request,
+            f'Acceso Concedido: Turno de {nombre_actividad} ({hora_turno} hs) para {usuario_socio.first_name}.',
+        )
+    else:
+        primer_ingreso = asistencias_hoy.first().fecha_hora.strftime('%H:%M')
+        if reserva_hoy:
+            messages.warning(
+                request,
+                f'{usuario_socio.first_name} ya completó su asistencia a musculación ({primer_ingreso} hs) y a su clase reservada.',
+            )
+        else:
+            messages.warning(
+                request,
+                f'{usuario_socio.first_name} ya ingresó hoy ({primer_ingreso} hs) y no tiene reserva activa para otra actividad.',
+            )
+
+    return redirect('dashboard')
 
 @login_required
 def registrar_asistencia(request):
@@ -79,106 +101,51 @@ def registrar_asistencia(request):
     if not (user.is_superuser or getattr(user, 'rol', None) in ('recepcion', 'entrenador', 'empleado', 'admin')):
         return redirect('dashboard')
 
-    socio_obj = None
-    usuario_socio = None
-    estado_acceso = None
-    asistencia_creada = None
-    actividades_socio = []
-    mensaje_error = None
-
-    # Fecha y hora actual en zona horaria local
-    ahora_local = timezone.localtime(timezone.now())
-    dia_semana = ahora_local.weekday()  # 0=Lunes, 4=Viernes, 5=Sábado, 6=Domingo
-    hora_actual = ahora_local.time()
-
     if request.method == 'POST':
         dni = request.POST.get('dni', '').strip()
+        hoy = timezone.localdate()
+        inicio_dia = timezone.make_aware(datetime.combine(hoy, time.min))
+        fin_dia = timezone.make_aware(datetime.combine(hoy, time.max))
 
-        # -------------------------------------------------------------
-        # 1. VALIDACIÓN DE HORARIO OPERATIVO
-        # Lunes a Viernes: 07:00 a 22:00 | Sábados: 09:00 a 13:00
-        # -------------------------------------------------------------
-        horario_valido = False
-        if 0 <= dia_semana <= 4:  # Lunes a Viernes
-            if time(7, 0) <= hora_actual <= time(22, 0):
-                horario_valido = True
+        try:
+            # 1. El DNI se busca en username para los socios
+            usuario_socio = Usuario.objects.get(username=dni, rol='socio')
+
+            # 2. Obtener el perfil del socio
+            if hasattr(usuario_socio, 'perfil_socio'):
+                socio = usuario_socio.perfil_socio
             else:
-                mensaje_error = "Fuera de horario operativo. Lunes a Viernes de 07:00 a 22:00 hs."
-        elif dia_semana == 5:  # Sábado
-            if time(9, 0) <= hora_actual <= time(13, 0):
-                horario_valido = True
+                socio = Socio.objects.get(usuario=usuario_socio)
+
+            # 3. Comprobar semáforo de estado de cuenta
+            if getattr(socio, 'estado_cuenta', 'VERDE').upper() == 'VERDE':
+                # Evitar duplicar asistencia si ya ingresó hoy
+                ya_marco = Asistencia.objects.filter(
+                    socio=socio,
+                    fecha_hora__range=(inicio_dia, fin_dia)
+                ).exists()
+
+                if not ya_marco:
+                    Asistencia.objects.create(
+                        socio=socio,
+                        fecha_hora=timezone.now()
+                    )
+                    messages.success(
+                        request,
+                        f"Acceso CONCEDIDO: {usuario_socio.first_name} {usuario_socio.last_name} (Al Día)."
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        f"{usuario_socio.first_name} {usuario_socio.last_name} ya registró ingreso el día de hoy."
+                    )
             else:
-                mensaje_error = "Fuera de horario operativo. Sábados de 09:00 a 13:00 hs."
-        else:  # Domingo cerrado
-            mensaje_error = "El gimnasio se encuentra cerrado los días domingos."
+                messages.error(
+                    request,
+                    f"Acceso DENEGADO: {usuario_socio.first_name} figura con CUOTA VENCIDA (Rojo)."
+                )
 
-        if not horario_valido:
-            estado_acceso = 'fuera_de_horario'
-        else:
-            try:
-                usuario_socio = Usuario.objects.get(username=dni, rol='socio')
+        except (Usuario.DoesNotExist, Socio.DoesNotExist):
+            messages.error(request, f"No se encontró ningún socio registrado con el DNI {dni}.")
 
-                if hasattr(usuario_socio, 'perfil_socio') and usuario_socio.perfil_socio:
-                    socio_obj = usuario_socio.perfil_socio
-                else:
-                    socio_obj = Socio.objects.filter(usuario=usuario_socio).first()
-                    if not socio_obj:
-                        socio_obj = Socio.objects.create(usuario=usuario_socio)
-
-                # 2. VALIDAR CUOTA AL DÍA
-                estado = getattr(socio_obj, 'estado_cuenta', 'VERDE')
-                if not estado:
-                    estado = getattr(usuario_socio, 'estado_cuenta', 'VERDE')
-
-                if str(estado).upper() != 'VERDE':
-                    estado_acceso = 'rojo'
-                else:
-                    # 3. VALIDAR 1 INGRESO POR DÍA
-                    hoy = ahora_local.date()
-                    inicio_dia = timezone.make_aware(datetime.combine(hoy, time.min))
-                    fin_dia = timezone.make_aware(datetime.combine(hoy, time.max))
-
-                    ya_ingreso_hoy = Asistencia.objects.filter(
-                        socio=socio_obj,
-                        fecha_hora__range=(inicio_dia, fin_dia)
-                    ).order_by('-fecha_hora').first()
-
-                    if ya_ingreso_hoy:
-                        estado_acceso = 'bloqueado_hoy'
-                        asistencia_creada = ya_ingreso_hoy
-                    else:
-                        asistencia_creada = Asistencia.objects.create(
-                            socio=socio_obj,
-                            fecha_hora=timezone.now()
-                        )
-                        estado_acceso = 'verde'
-
-                # Actividades habilitadas para la ficha
-                if hasattr(socio_obj, 'actividades'):
-                    actividades_socio = socio_obj.actividades.all()
-                elif Actividad:
-                    actividades_socio = Actividad.objects.all()[:2]
-
-            except Usuario.DoesNotExist:
-                estado_acceso = 'no_encontrado'
-
-    # Consulta de asistencias de hoy para la tabla de fondo
-    hoy = ahora_local.date()
-    inicio_dia = timezone.make_aware(datetime.combine(hoy, time.min))
-    fin_dia = timezone.make_aware(datetime.combine(hoy, time.max))
-
-    asistencias_qs = Asistencia.objects.filter(
-        fecha_hora__range=(inicio_dia, fin_dia)
-    ).select_related('socio__usuario').order_by('-fecha_hora')
-
-    context = {
-        'socio': socio_obj,
-        'usuario_socio': usuario_socio,
-        'estado_acceso': estado_acceso,
-        'asistencia_creada': asistencia_creada,
-        'actividades_socio': actividades_socio,
-        'mensaje_error': mensaje_error,
-        'asistencias_hoy': asistencias_qs.count(),
-        'ultimas_asistencias': asistencias_qs[:10],
-    }
-    return render(request, 'empleado/dashboard.html', context)
+    return redirect('dashboard')

@@ -14,10 +14,11 @@ except ImportError:
 # 👥 1. GESTIÓN DE SOCIOS PARA EL ADMINISTRADOR
 # ==========================================================
 @login_required
+@login_required
 def admin_socios(request):
     """Listado general y gestión de socios desde el panel del Administrador"""
     user = request.user
-    if not (user.is_superuser or getattr(user, 'rol', None) == 'admin'):
+    if not (user.is_superuser or getattr(user, 'rol', None) in ('admin', 'recepcion', 'empleado', 'entrenador')):
         return redirect('dashboard')
 
     if request.method == 'POST':
