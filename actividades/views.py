@@ -42,6 +42,17 @@ def admin_actividades(request):
             messages.success(request, f'Actividad "{nombre_eliminado}" eliminada.')
             return redirect('admin_actividades')
 
+        # AGREGAR ESTE BLOQUE:
+        elif accion in ['pausar', 'toggle_estado', 'toggle_baja']:
+            act_id = request.POST.get('actividad_id')
+            actividad = get_object_or_404(Actividad, id=act_id)
+            # Invierte el estado: de True a False o de False a True
+            actividad.activa = not actividad.activa
+            actividad.save()
+            estado_str = "activada" if actividad.activa else "pausada"
+            messages.success(request, f'Actividad "{actividad.nombre}" {estado_str} correctamente.')
+            return redirect('admin_actividades')
+
     actividades = Actividad.objects.all().order_by('nombre')
     context = {
         'actividades': actividades,
@@ -60,7 +71,7 @@ def actividades_empleado(request):
     if not (user.is_superuser or getattr(user, 'rol', None) in ('recepcion', 'entrenador', 'empleado', 'admin')):
         return redirect('dashboard')
 
-    actividades = Actividad.objects.all().order_by('nombre')
+    actividades = Actividad.objects.filter(activa=True).order_by('nombre')
     actividad_seleccionada_id = request.GET.get('actividad_id')
 
     socios_inscriptos = []

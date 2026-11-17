@@ -67,17 +67,27 @@
         </div>
     </nav>
 
+    <!-- ALERTAS DJANGO -->
+    {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full space-y-2">
+            {% for message in messages %}
+                <div class="p-4 rounded-xl text-xs font-semibold flex items-center justify-between border {% if message.tags == 'error' %}bg-rose-950/60 border-rose-500/40 text-rose-300{% else %}bg-emerald-950/60 border-emerald-500/40 text-emerald-300{% endif %}">
+                    <span>{{ message }}</span>
+                    <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <!-- CONTENEDOR PRINCIPAL -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
         
         <!-- ENCABEZADO -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold mb-2">
-                    <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
-                    Gestión Global
-                </div>
-                <h1 class="text-3xl font-extrabold text-white tracking-tight">Panel de Administración 🛡️</h1>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">Panel de Administración</h1>
                 <p class="text-slate-400 text-sm mt-1">Bienvenido/a, {{ user.username }}. Control general del negocio, estadísticas y membresías.</p>
             </div>
 
@@ -90,7 +100,7 @@
 
         <!-- TARJETAS DE MÉTRICAS GLOBALES -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <!-- Socios Totales (Conectado a admin_socios) -->
+            <!-- Socios Totales -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -122,7 +132,7 @@
                 </a>
             </div>
 
-            <!-- En la tarjeta de Pagos del Mes -->
+            <!-- Ingresos del Mes -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -133,7 +143,6 @@
                         <i class="fa-solid fa-sack-dollar"></i>
                     </div>
                 </div>
-                <!-- 📌 Conectado a admin_pagos -->
                 <a href="{% url 'admin_pagos' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
                     Ver Registro <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
@@ -185,7 +194,7 @@
                     <a href="{% url 'admin_socios' %}" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">
                         <i class="fa-solid fa-user-plus"></i> Nuevo Socio
                     </a>
-                    <button type="button" onclick="document.getElementById('modalRegistrarPago').classList.remove('hidden')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer">
+                    <button type="button" onclick="abrirModalCobroAdmin()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer">
                         <i class="fa-solid fa-receipt"></i> Registrar Pago
                     </button>
                 </div>
@@ -194,70 +203,311 @@
 
     </main>
 
-    <!-- FOOTER -->
-    <footer class="bg-slate-900 border-t border-slate-800 text-slate-500 py-6 text-xs text-center">
-        <p>© 2026 GymTrack — Panel General de Administración.</p>
+    <!-- 💵 MODAL: REGISTRAR PAGO CON BUSCADOR DE SOCIOS (ADMIN)        -->
+    <div id="modalCobroAdmin" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            
+            <!-- Cabecera -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-base">
+                        <i class="fa-solid fa-cash-register"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-white">Registrar Cobro a Socio</h3>
+                        <p class="text-[11px] text-slate-400">Buscá al socio, revisá su estado actual y seleccioná qué abona</p>
+                    </div>
+                </div>
+                <button type="button" onclick="cerrarModalCobroAdmin()" class="text-slate-400 hover:text-white text-lg cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{% url 'dashboard' %}" class="p-6 overflow-y-auto space-y-5 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="cobrar_desde_admin">
+                <input type="hidden" name="socio_id" id="inputSocioIdAdmin" required>
+
+                <!-- PASO 1: BUSCADOR Y LISTA DE SOCIOS -->
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                        1. Seleccionar Socio (filtrar por Nombre o DNI)
+                    </label>
+                    
+                    <!-- Input buscador -->
+                    <div class="relative mb-3">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input type="text" id="buscadorSocioCobro" onkeyup="filtrarSociosCobro()" 
+                            placeholder="Escribí nombre, apellido o DNI..." 
+                            class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+                    </div>
+
+                    <!-- Lista scrolleable de socios -->
+                    <div id="listaSociosCobro" class="max-h-52 overflow-y-auto space-y-2 pr-1">
+                        {% for s in socios_para_cobro %}
+                        <div onclick="seleccionarSocioCobro(this)"
+                            data-id="{{ s.id }}"
+                            data-nombre="{{ s.nombre }}"
+                            data-dni="{{ s.dni }}"
+                            data-aldia="{% if s.al_dia %}true{% else %}false{% endif %}"
+                            data-vence="{{ s.vence|default:'' }}"
+                            data-anotado="{{ s.anotado_en|join:', ' }}"
+                            data-search="{{ s.nombre|lower }} {{ s.dni }}"
+                            class="item-socio-cobro p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/50 cursor-pointer transition flex items-center justify-between gap-3">
+                            
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-white text-sm">{{ s.nombre }}</span>
+                                    <span class="text-[11px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded">DNI: {{ s.dni }}</span>
+                                </div>
+                                <!-- En qué está anotado -->
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <span class="text-[10px] text-slate-500">Anotado en:</span>
+                                    {% if s.anotado_en %}
+                                        {% for item in s.anotado_en %}
+                                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">{{ item }}</span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="text-[10px] italic text-slate-500">Sin inscripciones activas</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Semáforo de estado -->
+                            <div class="text-right shrink-0">
+                                {% if s.al_dia %}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Al Día
+                                    </span>
+                                    <p class="text-[10px] text-slate-400 mt-1">Vence: {{ s.vence }}</p>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] font-bold">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Vencido / Rojo
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-center text-slate-500 py-4">No hay socios registrados aún.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- RESUMEN DEL SOCIO SELECCIONADO -->
+                <div id="resumenSocioSeleccionado" class="hidden p-3.5 rounded-xl bg-slate-950 border border-emerald-500/40 flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] uppercase font-bold text-emerald-400">Socio seleccionado para cobro:</p>
+                        <p id="lblSocioNombre" class="text-sm font-extrabold text-white"></p>
+                        <p id="lblSocioInscripciones" class="text-[11px] text-slate-400 mt-0.5"></p>
+                    </div>
+                    <span id="lblSocioEstado" class="text-xs font-bold"></span>
+                </div>
+
+                <!-- PASO 2: MEMBRESÍA / ACTIVIDAD -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-800">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                            2. Membresía / Plan
+                        </label>
+                        <select name="plan_id" id="selectPlanAdmin" onchange="actualizarTotalAdmin()" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500">
+                            <option value="" data-precio="0">-- Ninguna / Solo actividad --</option>
+                            {% for plan in planes_disponibles %}
+                                <option value="{{ plan.id }}" data-precio="{{ plan.precio }}">{{ plan.nombre }} (${{ plan.precio|floatformat:0 }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                            3. Actividad Adicional (Opcional)
+                        </label>
+                        <select name="actividad_id" id="selectActAdmin" onchange="actualizarTotalAdmin()" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500">
+                            <option value="" data-precio="0">-- Ninguna / Incluida en plan --</option>
+                            {% for act in actividades_disponibles %}
+                                <option value="{{ act.id }}" data-precio="{{ act.precio|default:0 }}">{{ act.nombre }}{% if act.precio %} (${{ act.precio|floatformat:0 }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- MÉTODO DE PAGO Y TOTAL -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                            4. Medio de Pago
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center justify-center gap-1.5 p-2.5 bg-slate-950 border border-slate-700 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
+                                <input type="radio" name="metodo_pago" value="efectivo" checked class="text-emerald-500">
+                                <span class="font-bold text-slate-200">💵 Efectivo</span>
+                            </label>
+                            <label class="flex items-center justify-center gap-1.5 p-2.5 bg-slate-950 border border-slate-700 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
+                                <input type="radio" name="metodo_pago" value="transferencia" class="text-emerald-500">
+                                <span class="font-bold text-slate-200">📱 Transferencia</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+                        <span class="font-bold text-slate-300">Total a Cobrar:</span>
+                        <span id="lblTotalCobroAdmin" class="text-xl font-black text-emerald-400 font-mono">$0</span>
+                    </div>
+                </div>
+
+                <!-- BOTONES -->
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                    <button type="button" onclick="cerrarModalCobroAdmin()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition cursor-pointer">
+                        Confirmar Cobro
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FOOTER ADMIN CON ENLACES LEGALES -->
+<!-- FOOTER ADMIN LIMPIO Y EQUILIBRADO -->
+    <footer class="bg-slate-900 border-t border-slate-800 text-slate-500 py-6 text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- Izquierda: Sistema y Autores -->
+            <div class="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-left">
+                <p class="text-slate-400 font-medium">© 2026 GymTrack OS — Panel de Administración.</p>
+            </div>
+
+            <!-- Derecha: Legales -->
+            <div class="flex items-center gap-5 text-slate-400">
+                <button type="button" onclick="abrirModalLegalAdmin('modal-terminos-admin')" class="hover:text-white transition cursor-pointer">
+                    Términos de Servicio
+                </button>
+                <span class="text-slate-700">•</span>
+                <button type="button" onclick="abrirModalLegalAdmin('modal-privacidad-admin')" class="hover:text-white transition cursor-pointer">
+                    Política de Privacidad
+                </button>
+            </div>
+        </div>
     </footer>
 
-<!-- MODAL REGISTRAR PAGO DIRECTO (ADMIN) -->
-<div id="modalRegistrarPago" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-            <div class="flex items-center gap-2">
-                <span class="text-xl">🧾</span>
-                <h3 class="font-bold text-white text-base">Registrar Cobro de Cuota</h3>
+    <!-- MODAL: TÉRMINOS DE SERVICIO (ADMIN / B2B) -->
+    <div id="modal-terminos-admin" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-file-contract text-blue-400"></i> Términos de Servicio y Acuerdo SaaS B2B
+                </h3>
+                <button type="button" onclick="cerrarModalLegalAdmin('modal-terminos-admin')" class="text-slate-400 hover:text-white text-lg cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
-            <button type="button" onclick="document.getElementById('modalRegistrarPago').classList.add('hidden')" class="text-slate-400 hover:text-white transition">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
+            <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-300 leading-relaxed">
+                <p><strong class="text-white">1. Alcance de la Licencia SaaS:</strong> GymTrack OS otorga al establecimiento contratante una licencia de uso no exclusiva sobre la plataforma en la nube, sujeta a la vigencia de su plan de suscripción periódico.</p>
+                <p><strong class="text-white">2. Titularidad de la Información:</strong> El gimnasio cliente es el único propietario de la base de datos de socios, registros contables, tarifas y rutinas cargadas en su entorno aislado (tenant). GymTrack OS actúa exclusivamente como proveedor de infraestructura tecnológica.</p>
+                <p><strong class="text-white">3. Gestión de Roles y Accesos:</strong> El Administrador del establecimiento es responsable de la asignación y revocación de permisos al personal operativo (recepcionistas e instructores) y de la custodia de las credenciales administrativas.</p>
+                <p><strong class="text-white">4. Integridad Contable:</strong> Las bajas de socios se procesan mediante inactivación lógica (soft delete) con el fin de preservar la trazabilidad histórica de caja y asistencias.</p>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-800 flex justify-end">
+                <button type="button" onclick="cerrarModalLegalAdmin('modal-terminos-admin')" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition cursor-pointer">
+                    Entendido
+                </button>
+            </div>
         </div>
-
-        <form method="POST" class="space-y-4 text-xs">
-            {% csrf_token %}
-            <input type="hidden" name="accion" value="registrar_pago_admin">
-
-            <!-- Seleccionar Socio -->
-            <div>
-                <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Socio (DNI / Nombre)</label>
-                <select name="dni_socio" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
-                    <option value="">Seleccione un socio...</option>
-                    {% for s in socios_select %}
-                        <option value="{{ s.username }}">{{ s.username }} — {{ s.first_name }} {{ s.last_name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Seleccionar Plan -->
-            <div>
-                <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Membresía / Plan</label>
-                <select name="plan_id" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
-                    <option value="">Seleccione el plan a cobrar...</option>
-                    {% for p in planes_select %}
-                        <option value="{{ p.id }}">{{ p.nombre }} — ${{ p.precio }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Método de Pago -->
-            <div>
-                <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Método de Pago</label>
-                <select name="metodo_pago" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
-                    <option value="efectivo">Efectivo</option>
-                    <option value="transferencia">Transferencia</option>
-                </select>
-            </div>
-
-            <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
-                <button type="button" onclick="document.getElementById('modalRegistrarPago').classList.add('hidden')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">
-                    Cancelar
-                </button>
-                <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow transition">
-                    Confirmar Cobro
-                </button>
-            </div>
-        </form>
     </div>
-</div>
+
+    <!-- MODAL: POLÍTICA DE PRIVACIDAD (ADMIN / LEY 25.326) -->
+    <div id="modal-privacidad-admin" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-emerald-400"></i> Política de Privacidad y Protección de Datos
+                </h3>
+                <button type="button" onclick="cerrarModalLegalAdmin('modal-privacidad-admin')" class="text-slate-400 hover:text-white text-lg cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-300 leading-relaxed">
+                <p><strong class="text-white">1. Cumplimiento Legal:</strong> El almacenamiento y tratamiento de datos personales dentro de GymTrack OS se rige por la <strong class="text-white">Ley N.º 25.326 de Protección de Datos Personales</strong> de la República Argentina.</p>
+                <p><strong class="text-white">2. Aislamiento Multi-tenant:</strong> Cada establecimiento opera sobre un esquema lógico particionado que impide el cruce o visualización de información contable o de socios entre distintos gimnasios clientes.</p>
+                <p><strong class="text-white">3. Medidas Técnicas de Resguardo:</strong> Todas las credenciales se almacenan cifradas mediante algoritmos PBKDF2/SHA256 y las comunicaciones viajan encriptadas bajo protocolo HTTPS.</p>
+                <p><strong class="text-white">4. Deber de Confidencialidad:</strong> El personal autorizado por el gimnasio para operar los módulos administrativos y de mostrador debe utilizar la información de los socios únicamente para fines operativos y deportivos.</p>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-800 flex justify-end">
+                <button type="button" onclick="cerrarModalLegalAdmin('modal-privacidad-admin')" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition cursor-pointer">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalLegalAdmin(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+        function cerrarModalLegalAdmin(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+        window.addEventListener('click', function(e) {
+            if (e.target.id === 'modal-terminos-admin' || e.target.id === 'modal-privacidad-admin') {
+                e.target.classList.add('hidden');
+            }
+        });
+    </script>
+
+    <script>
+        function abrirModalCobroAdmin() {
+            document.getElementById('modalCobroAdmin').classList.remove('hidden');
+            document.getElementById('buscadorSocioCobro').focus();
+        }
+
+        function cerrarModalCobroAdmin() {
+            document.getElementById('modalCobroAdmin').classList.add('hidden');
+        }
+
+        function filtrarSociosCobro() {
+            const texto = document.getElementById('buscadorSocioCobro').value.toLowerCase().trim();
+            document.querySelectorAll('.item-socio-cobro').forEach(item => {
+                const data = item.getAttribute('data-search');
+                item.style.display = data.includes(texto) ? 'flex' : 'none';
+            });
+        }
+
+        function seleccionarSocioCobro(elemento) {
+            document.querySelectorAll('.item-socio-cobro').forEach(el => {
+                el.classList.remove('border-emerald-500', 'bg-emerald-950/20');
+                el.classList.add('border-slate-800');
+            });
+            elemento.classList.remove('border-slate-800');
+            elemento.classList.add('border-emerald-500', 'bg-emerald-950/20');
+
+            const id = elemento.getAttribute('data-id');
+            const nombre = elemento.getAttribute('data-nombre');
+            const dni = elemento.getAttribute('data-dni');
+            const alDia = elemento.getAttribute('data-aldia') === 'true';
+            const vence = elemento.getAttribute('data-vence');
+            const anotadoEn = elemento.getAttribute('data-anotado');
+
+            document.getElementById('inputSocioIdAdmin').value = id;
+            document.getElementById('resumenSocioSeleccionado').classList.remove('hidden');
+            document.getElementById('lblSocioNombre').innerText = `${nombre} (DNI: ${dni})`;
+            document.getElementById('lblSocioInscripciones').innerText = anotadoEn ? `Actualmente anotado en: ${anotadoEn}` : 'Sin actividades o planes vigentes';
+            
+            const lblEstado = document.getElementById('lblSocioEstado');
+            if (alDia) {
+                lblEstado.innerHTML = `<span class="text-emerald-400">🟢 Al Día (Vence ${vence})</span>`;
+            } else {
+                lblEstado.innerHTML = `<span class="text-rose-400">🔴 Cuota Vencida</span>`;
+            }
+        }
+
+        function actualizarTotalAdmin() {
+            const selPlan = document.getElementById('selectPlanAdmin');
+            const selAct = document.getElementById('selectActAdmin');
+            const precioPlan = parseFloat(selPlan.options[selPlan.selectedIndex]?.getAttribute('data-precio') || 0);
+            const precioAct = parseFloat(selAct.options[selAct.selectedIndex]?.getAttribute('data-precio') || 0);
+            const total = precioPlan + precioAct;
+            document.getElementById('lblTotalCobroAdmin').innerText = '$' + total.toLocaleString('es-AR');
+        }
+    </script>
 
 </body>
 </html>

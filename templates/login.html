@@ -73,8 +73,8 @@
                             <i class="fa-solid fa-user"></i>
                         </span>
                         <input type="text" name="username" required autofocus placeholder="Ingresá tu usuario" 
-                               value="{{ form.username.value|default:'' }}"
-                               class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
+                                value="{{ form.username.value|default:'' }}"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
                     </div>
                 </div>
 
@@ -84,8 +84,8 @@
                         <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">
                             Contraseña
                         </label>
-                        <!-- Enlace ¿Olvidaste tu contraseña? -->
-                        <a href="https://wa.me/543411234567?text=Hola,%20olvidé%20mi%20contraseña%20en%20GymTrack" target="_blank" class="text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition">
+                        <!-- Enlace ¿Olvidaste tu contraseña? conectado al sistema -->
+                        <a href="{% url 'recuperar_password' %}" class="text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition">
                             ¿Olvidaste tu contraseña?
                         </a>
                     </div>
@@ -94,7 +94,7 @@
                             <i class="fa-solid fa-lock"></i>
                         </span>
                         <input type="password" id="passwordInput" name="password" required placeholder="••••••••" 
-                               class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-10 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-10 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
                         
                         <!-- Botón Ojo -->
                         <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-500 hover:text-slate-300 transition">
@@ -102,7 +102,6 @@
                         </button>
                     </div>
                 </div>
-
                 <!-- Botón de Ingreso -->
                 <button type="submit" class="w-full py-2.5 mt-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 hover:shadow-blue-500/40 transition active:scale-[0.99]">
                     Ingresar
@@ -144,3 +143,5 @@
     </script>
 </body>
 </html>
+
+type="password"

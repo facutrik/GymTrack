@@ -8,6 +8,11 @@ from django.utils import timezone
 from usuarios.models import Usuario
 from socios.models import Socio
 
+
+try:
+    from membresias.models import MembresiaSocio
+except ImportError:
+    MembresiaSocio = None
 # ==========================================================
 # 🛡️ 1. MÓDULO ADMINISTRADOR: GESTIÓN DE SOCIOS
 # ==========================================================
@@ -20,6 +25,7 @@ def admin_socios(request):
     hoy = timezone.localdate()
     limite_3_meses = hoy - timedelta(days=90)
 
+    # 1. PROCESAR ACCIONES POST (Alta o Baja / Reactivación)
     if request.method == 'POST':
         accion = request.POST.get('accion')
 
@@ -33,12 +39,13 @@ def admin_socios(request):
             messages.success(request, f'Socio {socio_user.username} ahora está {estado}.')
             return redirect('admin_socios')
 
-        # ALTA DE SOCIO (ADMIN)
+        # ALTA DE SOCIO (ADMIN) — Usuario y Contraseña = DNI
         elif accion == 'alta':
             dni = request.POST.get('dni', '').strip()
             nombre = request.POST.get('nombre', '').strip()
             apellido = request.POST.get('apellido', '').strip()
             email = request.POST.get('email', '').strip()
+            telefono = request.POST.get('telefono', '').strip()
 
             if Usuario.objects.filter(username=dni).exists():
                 messages.error(request, f'Ya existe un socio con DNI {dni}.')
@@ -46,7 +53,7 @@ def admin_socios(request):
                 nuevo_user = Usuario.objects.create_user(
                     username=dni,
                     email=email,
-                    password='123',
+                    password=dni,
                     first_name=nombre,
                     last_name=apellido
                 )
@@ -54,11 +61,15 @@ def admin_socios(request):
                 nuevo_user.is_active = True
                 if hasattr(nuevo_user, 'dni'):
                     nuevo_user.dni = dni
+                if hasattr(nuevo_user, 'telefono'):
+                    nuevo_user.telefono = telefono
                 nuevo_user.save()
 
                 socio_kwargs = {'usuario': nuevo_user}
                 if hasattr(Socio, 'dni'):
                     socio_kwargs['dni'] = dni
+                if hasattr(Socio, 'telefono'):
+                    socio_kwargs['telefono'] = telefono
                 if hasattr(Socio, 'estado_cuenta'):
                     socio_kwargs['estado_cuenta'] = 'ROJO'
                 
@@ -66,10 +77,11 @@ def admin_socios(request):
 
                 messages.success(
                     request, 
-                    f'Socio {nombre} {apellido} registrado con éxito. Acceso habilitado: Usuario: {dni} | Contraseña: 123'
+                    f'Socio {nombre} {apellido} registrado con éxito. Acceso habilitado: Usuario: {dni} | Contraseña: {dni}'
                 )
             return redirect('admin_socios')
 
+    # 2. BÚSQUEDA Y FILTRADO
     query = request.GET.get('q', '').strip()
     filtro_estado = request.GET.get('estado', 'todos')
 
@@ -88,20 +100,44 @@ def admin_socios(request):
     elif filtro_estado == 'inactivos':
         socios_qs = socios_qs.filter(is_active=False)
 
+    # 3. ENRIQUECER DATOS (Estado real de cuota y baja automática a los 90 días)
     socios_lista = []
     for s in socios_qs:
-        if s.date_joined.date() < limite_3_meses and s.is_active:
-            s.is_active = False
-            s.save()
+        socio_obj = Socio.objects.filter(usuario=s).first()
+        ultimo_vencimiento = None
+        tiene_membresia_vigente = False
 
-        socio_profile = Socio.objects.filter(usuario=s).first()
-        estado_cuota = getattr(socio_profile, 'estado_cuenta', 'ROJO') if socio_profile else 'ROJO'
+        if MembresiaSocio and socio_obj:
+            ultima_memb = MembresiaSocio.objects.filter(socio=socio_obj).order_by('-fecha_fin').first()
+            if ultima_memb:
+                ultimo_vencimiento = ultima_memb.fecha_fin
+                if ultima_memb.fecha_fin >= hoy and ultima_memb.activa:
+                    tiene_membresia_vigente = True
+                elif ultima_memb.fecha_fin < limite_3_meses and s.is_active:
+                    # Baja automática si superó los 90 días vencido
+                    s.is_active = False
+                    s.save()
+            else:
+                if s.date_joined.date() < limite_3_meses and s.is_active:
+                    s.is_active = False
+                    s.save()
+
+        es_verde = tiene_membresia_vigente or (
+            socio_obj and getattr(socio_obj, 'estado_cuenta', '') == 'VERDE'
+        )
+        estado_cuota = 'VERDE' if es_verde else 'ROJO'
+
+        # Solo guardar si el campo existe físicamente en el modelo Socio
+        if socio_obj and 'estado_cuenta' in [f.name for f in socio_obj._meta.get_fields()]:
+            if socio_obj.estado_cuenta != estado_cuota:
+                socio_obj.estado_cuenta = estado_cuota
+                socio_obj.save(update_fields=['estado_cuenta'])
 
         socios_lista.append({
             'usuario': s,
+            'socio': socio_obj,
             'estado_cuota': estado_cuota,
-            'ultimo_vencimiento': None,
-            'medio_pago': 'Efectivo / Transferencia',
+            'ultimo_vencimiento': ultimo_vencimiento,
         })
 
     context = {

@@ -48,7 +48,96 @@ def dashboard(request):
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 1. ADMINISTRADOR
+    # 1. ADMINISTRADOR
     if user.is_superuser or getattr(user, 'rol', None) == 'admin':
+        # ==========================================================
+        # 💵 PROCESAR COBRO DIRECTO DESDE PANEL ADMIN
+        # ==========================================================
+        if request.method == 'POST' and request.POST.get('accion') == 'cobrar_desde_admin':
+            socio_id = request.POST.get('socio_id')
+            plan_id = request.POST.get('plan_id')
+            actividad_id = request.POST.get('actividad_id')
+            metodo = request.POST.get('metodo_pago', 'efectivo')
+
+            socio_obj = Socio.objects.filter(id=socio_id).first()
+            plan_obj = Plan.objects.filter(id=plan_id).first() if plan_id else None
+            act_obj = Actividad.objects.filter(id=actividad_id).first() if actividad_id else None
+
+            if not socio_obj:
+                messages.error(request, "Debe seleccionar un socio de la lista.")
+            elif not plan_obj and not act_obj:
+                messages.error(request, "Debe seleccionar una membresía o una actividad para cobrar.")
+            else:
+                hoy_cobro = timezone.localdate()
+                monto_total = 0
+                conceptos = []
+
+                # 1. Si eligió Membresía / Plan
+                nueva_memb = None
+                if plan_obj:
+                    monto_total += getattr(plan_obj, 'precio', 0)
+                    conceptos.append(plan_obj.nombre)
+
+                    # Regla de mora (1 a 7 días descuenta X de 30)
+                    memb_previa = MembresiaSocio.objects.filter(socio=socio_obj).order_by('-fecha_fin').first()
+                    dias_vigencia = getattr(plan_obj, 'duracion_dias', 30)
+                    if memb_previa and memb_previa.fecha_fin < hoy_cobro:
+                        dias_atraso = (hoy_cobro - memb_previa.fecha_fin).days
+                        if 1 <= dias_atraso <= 7:
+                            dias_vigencia = max(1, 30 - dias_atraso)
+
+                    # Desactivar membresías anteriores para evitar conflictos
+                    MembresiaSocio.objects.filter(socio=socio_obj).update(activa=False)
+
+                    nueva_memb = MembresiaSocio.objects.create(
+                        socio=socio_obj,
+                        plan=plan_obj,
+                        fecha_inicio=hoy_cobro,
+                        fecha_fin=hoy_cobro + timedelta(days=dias_vigencia),
+                        activa=True
+                    )
+
+                # 2. Si eligió Actividad puntual
+                if act_obj:
+                    monto_total += getattr(act_obj, 'precio', 0)
+                    conceptos.append(act_obj.nombre)
+                    if Reserva and hasattr(Reserva, 'actividad'):
+                        Reserva.objects.get_or_create(
+                            socio=socio_obj,
+                            actividad=act_obj,
+                            defaults={'fecha': hoy_cobro, 'estado': 'confirmada'}
+                        )
+
+                # 3. Registrar el Pago en caja
+                pago_kwargs = {
+                    'socio': socio_obj,
+                    'monto': monto_total,
+                    'metodo_pago': metodo,
+                }
+                if nueva_memb and hasattr(Pago, 'membresia'):
+                    pago_kwargs['membresia'] = nueva_memb
+                if hasattr(Pago, 'fecha_pago'):
+                    pago_kwargs['fecha_pago'] = timezone.now()
+                elif hasattr(Pago, 'fecha'):
+                    pago_kwargs['fecha'] = hoy_cobro
+
+                Pago.objects.create(**pago_kwargs)
+
+                # 4. Actualizar semáforo a VERDE
+                if hasattr(socio_obj, 'estado_cuenta'):
+                    socio_obj.estado_cuenta = 'VERDE'
+                    socio_obj.save()
+
+                nombre_socio = f"{socio_obj.usuario.first_name} {socio_obj.usuario.last_name}".strip() or socio_obj.usuario.username
+                messages.success(
+                    request,
+                    f"Cobro registrado por ${monto_total:,.0f} ({metodo.capitalize()}) a {nombre_socio} — Concepto: {', '.join(conceptos)}."
+                )
+            return redirect('dashboard')
+
+        # ==========================================================
+        # 📊 MÉTRICAS DEL DASHBOARD ADMIN
+        # ==========================================================
         inicio_mes = timezone.make_aware(
             datetime(hoy.year, hoy.month, 1, 0, 0, 0)
         )
@@ -74,12 +163,13 @@ def dashboard(request):
                 )
             else:
                 primer_dia_prox_mes = hoy.replace(month=hoy.month + 1, day=1)
-                filtro_rango = {
-                    'fecha__gte': primer_dia_mes,
-                    'fecha__lt': primer_dia_prox_mes,
+            filtro_rango = {
+                'fecha__gte': primer_dia_mes,
+                'fecha__lt': primer_dia_prox_mes,
             }
         else:
             filtro_rango = {}
+
         total_mes = (
             Pago.objects.filter(**filtro_rango).aggregate(total=Sum('monto'))[
                 'total'
@@ -89,21 +179,53 @@ def dashboard(request):
         if total_mes == 0:
             total_mes = Pago.objects.aggregate(total=Sum('monto'))['total'] or 0
         ingresos_mes_formateado = f'{int(total_mes):,}'.replace(',', '.')
+
+        # ==========================================================
+        # 🔍 LISTADO ENRIQUECIDO DE SOCIOS PARA EL MODAL DE COBRO
+        # ==========================================================
+        socios_para_cobro = []
+        for s in Socio.objects.select_related('usuario').filter(usuario__is_active=True).order_by('usuario__last_name', 'usuario__first_name'):
+            memb_activa = MembresiaSocio.objects.filter(
+                socio=s, activa=True, fecha_fin__gte=hoy
+            ).select_related('plan').order_by('-fecha_fin').first()
+
+            anotado_en = []
+            for m in MembresiaSocio.objects.filter(socio=s, activa=True, fecha_fin__gte=hoy).select_related('plan'):
+                if m.plan:
+                    anotado_en.append(m.plan.nombre)
+
+            if Reserva and hasattr(Reserva, 'actividad'):
+                for r in Reserva.objects.filter(socio=s, estado__in=['confirmada', 'activa']).select_related('actividad'):
+                    if r.actividad and r.actividad.nombre not in anotado_en:
+                        anotado_en.append(r.actividad.nombre)
+
+            socios_para_cobro.append({
+                'id': s.id,
+                'nombre': f"{s.usuario.first_name} {s.usuario.last_name}".strip() or s.usuario.username,
+                'dni': getattr(s.usuario, 'dni', '') or s.usuario.username,
+                'al_dia': bool(memb_activa),
+                'vence': memb_activa.fecha_fin.strftime('%d/%m/%Y') if memb_activa else None,
+                'anotado_en': anotado_en,
+            })
+
         context = {
             'total_socios': Usuario.objects.filter(rol='socio').count(),
             'total_empleados': Usuario.objects.filter(
                 rol__in=['recepcion', 'entrenador', 'empleado']
             ).count(),
-            # Contar únicamente las disciplinas activas que se ofrecen actualmente
             'total_actividades': Actividad.objects.filter(activa=True).count(),
             'ingresos_mes': ingresos_mes_formateado,
             'socios_select': Usuario.objects.filter(
                 rol='socio', is_active=True
             ).order_by('first_name'),
             'planes_select': Plan.objects.all().order_by('precio'),
+            # Datos para el modal interactivo de cobro:
+            'socios_para_cobro': socios_para_cobro,
+            'planes_disponibles': Plan.objects.all().order_by('precio'),
+            'actividades_disponibles': Actividad.objects.filter(activa=True).order_by('nombre'),
         }
-        return render(request, 'admin/dashboard.html', context)
 
+        return render(request, 'admin/dashboard.html', context)
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 2. EMPLEADO / RECEPCIÓN / ENTRENADOR
@@ -338,40 +460,58 @@ def dashboard(request):
                 {'dias': 'Viernes', 'horario': '16:00 a 18:00 hs', 'profesor': 'Andrea Adalid'},
             ],
         }
+        # Traer siempre las actividades activas reales cargadas por el admin
+        actividades_db = Actividad.objects.all()
+        total_actividades = actividades_db.count()
+
         disciplinas_detalle = []
-        actividades_bd = Actividad.objects.all().order_by('nombre')
-        for act in actividades_bd:
-            reservas_totales = 0
-            if Reserva:
-                try:
-                    reservas_totales = Reserva.objects.filter(
-                        horario__actividad=act,
-                        estado__in=['confirmada', 'activa']
-                    ).count()
-                except Exception:
-                    reservas_totales = 0
+        for act in actividades_db:
+            horarios_lista = []
+            
+            # Obtiene las clases/horarios usando la relación inversa ('clases' o 'clase_set')
+            clases_rel = getattr(act, 'clases', None) or getattr(act, 'clase_set', None)
+            clases_qs = clases_rel.all() if clases_rel else []
+
+            for h in clases_qs:
+                dias_str = getattr(h, 'dias', 'Lunes a Viernes')
+                hora_str = f"{h.hora_inicio.strftime('%H:%M')} a {h.hora_fin.strftime('%H:%M')}" if hasattr(h, 'hora_inicio') and h.hora_inicio else 'Consultar horario'
+                profe_str = f"{h.profesor.first_name} {h.profesor.last_name}" if getattr(h, 'profesor', None) else 'A designar'
+                horarios_lista.append({
+                    'dias': dias_str,
+                    'horario': hora_str,
+                    'profesor': profe_str
+                })
+            
+            # Conteo de inscriptos o reservas vigentes en la actividad
+            total_res = 0
+            if hasattr(act, 'reservas'):
+                total_res = act.reservas.filter(fecha=hoy, estado__in=['confirmada', 'activa']).count()
+
             disciplinas_detalle.append({
                 'actividad': act,
-                'horarios': CRONOGRAMA_ACTIVIDADES.get(act.nombre, [{'dias': 'Días a coordinar', 'horario': 'Ver cartelera', 'profesor': 'Staff GymTrack'}]),
-                'total_reservas': reservas_totales,
-                'requiere_reserva': getattr(act, 'requiere_reserva', True),
+                'requiere_reserva': getattr(act, 'requiere_reserva', False),
+                'horarios': horarios_lista,
+                'total_reservas': total_res
             })
+
         # F. ASISTENCIAS (Conteo de hoy y lista de las últimas 10)
         total_asistencias_hoy = Asistencia.objects.filter(fecha_hora__range=(inicio_dia, fin_dia)).count()
         ultimas_asistencias = Asistencia.objects.select_related('socio__usuario').order_by('-fecha_hora')[:10]
+
         # G. ÚLTIMOS COBROS PARA LA CAJA DE MOSTRADOR
         ultimos_cobros = Pago.objects.select_related('socio__usuario', 'membresia__plan').order_by('-id')[:10]
         perfil_socio_acceso = request.session.pop('ultimo_socio_acceso', None)
+
         context = {
             'asistencias_hoy': total_asistencias_hoy,
             'ultimas_asistencias': ultimas_asistencias,
             'total_socios': Usuario.objects.filter(rol='socio').count(),
-            'total_actividades': actividades_bd.count(),
+            'total_actividades': total_actividades,  # <- Corregido
             'disciplinas_detalle': disciplinas_detalle,
             'profesores_cards': profesores_cards,
             'planes_select': Plan.objects.all().order_by('precio'),
             'ultimos_cobros': ultimos_cobros,
-            'perfil_socio_acceso': perfil_socio_acceso,  # <- Mini perfil inyectado
+            'perfil_socio_acceso': perfil_socio_acceso,
         }
         return render(request, 'empleado/dashboard.html', context)
 
@@ -382,26 +522,43 @@ def dashboard(request):
         hoy = timezone.localdate()
         socio_obj = Socio.objects.filter(usuario=user).first()
         # Membresías activas vigentes
+        # Membresía activa vigente del socio
         membresia_actual = None
         if socio_obj:
             membresia_actual = (
                 MembresiaSocio.objects.filter(
-                    socio=socio_obj, activa=True, fecha_fin__gte=hoy
+                    socio=socio_obj, 
+                    activa=True, 
+                    fecha_fin__gte=hoy
                 )
+                .select_related('plan')
                 .order_by('-fecha_fin')
                 .first()
             )
-        # Todas las actividades que ofrece el gimnasio
-        todas_actividades = Actividad.objects.all().order_by('nombre')
-        # Reservas activas del socio
+
+        # Solo las actividades activas del gimnasio
+        todas_actividades = Actividad.objects.filter(activa=True).order_by('nombre')
+
+        # Reservas activas y futuras del socio
         reservas_socio = []
         if Reserva and socio_obj:
             try:
+                # Intentamos traer con la relación al horario y actividad
                 reservas_socio = Reserva.objects.filter(
-                    socio=socio_obj, fecha__gte=hoy, estado__in=['confirmada', 'activa']
+                    socio=socio_obj, 
+                    fecha__gte=hoy, 
+                    estado__in=['confirmada', 'activa']
                 ).select_related('horario__actividad')
             except Exception:
-                reservas_socio = []
+                try:
+                    # Alternativa por si el modelo Reserva apunta directo a 'actividad'
+                    reservas_socio = Reserva.objects.filter(
+                        socio=socio_obj, 
+                        fecha__gte=hoy, 
+                        estado__in=['confirmada', 'activa']
+                    ).select_related('actividad')
+                except Exception:
+                    reservas_socio = []
 
         # ---------------------------------------------------------
         # A. LÓGICA DE RUTINAS
