@@ -14,7 +14,6 @@ from pagos.models import Pago
 from rutinas.models import Rutina, DiaEntrenamiento, Ejercicio
 
 
-
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 try:
     from reservas.models import Reserva
@@ -27,7 +26,6 @@ except ImportError:
 def inicio_publico(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
-        return redirect('/dashboard/?tab=custom')
     
     actividades = Actividad.objects.all().order_by('nombre')
     planes = Plan.objects.all().order_by('precio')
@@ -48,7 +46,6 @@ def dashboard(request):
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 1. ADMINISTRADOR
-    # 1. ADMINISTRADOR
     if user.is_superuser or getattr(user, 'rol', None) == 'admin':
         # ==========================================================
         # 💵 PROCESAR COBRO DIRECTO DESDE PANEL ADMIN
@@ -219,7 +216,6 @@ def dashboard(request):
                 rol='socio', is_active=True
             ).order_by('first_name'),
             'planes_select': Plan.objects.all().order_by('precio'),
-            # Datos para el modal interactivo de cobro:
             'socios_para_cobro': socios_para_cobro,
             'planes_disponibles': Plan.objects.all().order_by('precio'),
             'actividades_disponibles': Actividad.objects.filter(activa=True).order_by('nombre'),
@@ -227,22 +223,20 @@ def dashboard(request):
 
         return render(request, 'admin/dashboard.html', context)
 
+
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 2. EMPLEADO / RECEPCIÓN / ENTRENADOR
     elif getattr(user, 'rol', None) in ('recepcion', 'entrenador', 'empleado'):
-        # Rango exacto de 24 horas locales para compatibilidad absoluta con SQLite
+        # Rango exacto de 24 horas locales para compatibilidad absoluta con SQLite/MySQL
         inicio_dia = timezone.make_aware(datetime.combine(hoy, time.min))
         fin_dia = timezone.make_aware(datetime.combine(hoy, time.max))
 
         # A. REGISTRAR COBRO PRESENCIAL DE MEMBRESÍA
-        if request.method == 'POST' and request.POST.get('accion') == 'cobrar_membresia_empleado':
+        if request.method == 'POST' and request.POST.get('accion') in ('cobrar_membresia_empleado', 'registrar_pago_empleado'):
             dni_socio = request.POST.get('dni_socio', '').strip()
             plan_id = request.POST.get('plan_id')
             metodo = request.POST.get('metodo_pago', 'efectivo')
-            # --- OPCIÓN FUTURA: Validar tarjeta cuando se habilite ---
-            # METODOS_PERMITIDOS = ['efectivo', 'transferencia', 'tarjeta']
-            # if metodo not in METODOS_PERMITIDOS:
-            #     metodo = 'efectivo'
+
             socio_user = Usuario.objects.filter(username=dni_socio, rol='socio').first() or Usuario.objects.filter(username=dni_socio).first()
             plan_obj = Plan.objects.filter(id=plan_id).first() if plan_id else None
             if not socio_user:
@@ -251,10 +245,15 @@ def dashboard(request):
                 messages.error(request, "Debe seleccionar un plan de membresía válido.")
             else:
                 socio_obj, _ = Socio.objects.get_or_create(usuario=socio_user)
+                socio_user.is_active = True
+                socio_user.save()
+
                 monto_cobrado = plan_obj.precio
                 duracion = getattr(plan_obj, 'duracion_dias', 30)
+
                 # Desactivar membresías previas
                 MembresiaSocio.objects.filter(socio=socio_obj).update(activa=False)
+
                 # 1. Crear primero la MembresiaSocio
                 membresia_creada = MembresiaSocio.objects.create(
                     socio=socio_obj,
@@ -263,6 +262,7 @@ def dashboard(request):
                     fecha_fin=hoy + timedelta(days=duracion),
                     activa=True
                 )
+
                 # 2. Registrar el Pago asociándole la instancia de MembresiaSocio
                 pago_data = {
                     'socio': socio_obj,
@@ -275,29 +275,30 @@ def dashboard(request):
                 elif hasattr(Pago, 'fecha'):
                     pago_data['fecha'] = hoy
                 Pago.objects.create(**pago_data)
+
                 # 3. Poner semáforo en VERDE
                 if hasattr(socio_obj, 'estado_cuenta'):
                     socio_obj.estado_cuenta = 'VERDE'
                     socio_obj.save()
+
                 messages.success(
                     request, 
                     f"¡Cobro exitoso! Se registró el pago de ${monto_cobrado:,.0f} ({metodo.capitalize()}) para {socio_user.first_name} {socio_user.last_name}. Membresía vigente hasta el {membresia_creada.fecha_fin.strftime('%d/%m/%Y')}."
                 )
             return redirect('dashboard')
 
-        # B. REGISTRAR ASISTENCIA DE SOCIO (LÓGICA DUAL + MINI PERFIL)
+        # B. REGISTRAR ASISTENCIA DE SOCIO (LÓGICA DUAL + FICHA DE PERFIL COMPLETA)
         if request.method == 'POST' and request.POST.get('accion') == 'registrar_asistencia':
             dni = request.POST.get('dni', '').strip()
             usuario_socio = Usuario.objects.filter(username=dni, rol='socio').first() or Usuario.objects.filter(username=dni).first()
             if not usuario_socio:
                 messages.error(request, f"No se encontró ningún socio registrado con el DNI {dni}.")
                 return redirect('dashboard')
-            # Buscar el socio asociado al usuario o por su DNI
+
             socio = (
                 Socio.objects.filter(usuario=usuario_socio).first()
                 or Socio.objects.filter(dni=dni).first()
             )
-            # Si no existe, crearlo asegurando pasar el campo 'dni'
             if not socio:
                 socio_kwargs = {'usuario': usuario_socio}
                 if hasattr(Socio, 'dni'):
@@ -309,20 +310,44 @@ def dashboard(request):
                 socio=socio, activa=True, fecha_fin__gte=hoy
             ).order_by('-fecha_fin').first()
             ultima_membresia = membresia_vigente or MembresiaSocio.objects.filter(socio=socio).order_by('-fecha_fin').first()
-            # Determinar estado de cuota
+
             esta_al_dia = bool(membresia_vigente) and getattr(socio, 'estado_cuenta', 'VERDE') not in ['ROJO', 'VENCIDO']
-            # Preparar datos del mini perfil para la sesión
+
+            # Actividades inscriptas del socio
+            actividades_socio = []
+            if Reserva:
+                try:
+                    reservas_qs = Reserva.objects.filter(socio=socio).select_related('horario__actividad')
+                    for r in reservas_qs:
+                        nombre_act = r.horario.actividad.nombre if getattr(r, 'horario', None) else getattr(getattr(r, 'actividad', None), 'nombre', None)
+                        if nombre_act and nombre_act not in actividades_socio:
+                            actividades_socio.append(nombre_act)
+                except Exception:
+                    pass
+
+            # Historial de últimas 5 asistencias previas
+            historial_asistencias = [
+                timezone.localtime(a.fecha_hora).strftime('%d/%m/%Y %H:%M hs')
+                for a in Asistencia.objects.filter(socio=socio).order_by('-fecha_hora')[:5]
+            ]
+
             datos_perfil = {
-                'nombre_completo': f"{usuario_socio.first_name} {usuario_socio.last_name}",
+                'nombre_completo': f"{usuario_socio.first_name} {usuario_socio.last_name}".strip() or usuario_socio.username,
+                'iniciales': f"{usuario_socio.first_name[:1]}{usuario_socio.last_name[:1]}".upper() or usuario_socio.username[:2].upper(),
+                'foto_url': socio.foto.url if getattr(socio, 'foto', None) else None,
                 'dni': usuario_socio.username,
                 'email': usuario_socio.email or 'Sin email',
                 'plan_nombre': ultima_membresia.plan.nombre if (ultima_membresia and hasattr(ultima_membresia, 'plan')) else "Sin Plan Asignado",
                 'fecha_vencimiento': ultima_membresia.fecha_fin.strftime("%d/%m/%Y") if ultima_membresia else "N/A",
                 'al_dia': esta_al_dia,
                 'estado_texto': "AL DÍA" if esta_al_dia else "CUOTA VENCIDA",
+                'tipo_acceso': "Acceso Libre (Musculación / Gimnasio)",
+                'actividades': actividades_socio,
+                'historial_asistencias': historial_asistencias,
                 'acceso_permitido': False,
                 'motivo': ''
             }
+
             if not esta_al_dia:
                 datos_perfil['motivo'] = "Cuota Vencida. Regularizar pago en caja."
                 request.session['ultimo_socio_acceso'] = datos_perfil
@@ -347,7 +372,8 @@ def dashboard(request):
 
             # CASO 1: Primer ingreso (Libre)
             if cant_ingresos_hoy == 0:
-                Asistencia.objects.create(socio=socio, fecha_hora=timezone.now())
+                nueva_asist = Asistencia.objects.create(socio=socio, fecha_hora=timezone.now())
+                datos_perfil['historial_asistencias'].insert(0, timezone.localtime(nueva_asist.fecha_hora).strftime('%d/%m/%Y %H:%M hs'))
                 datos_perfil['acceso_permitido'] = True
                 datos_perfil['tipo_acceso'] = "Acceso Libre (Musculación / Gimnasio)"
                 datos_perfil['motivo'] = "Primer ingreso del día registrado con éxito."
@@ -356,7 +382,8 @@ def dashboard(request):
             # CASO 2: Segundo ingreso (Con reserva)
             elif cant_ingresos_hoy == 1:
                 if reserva_hoy:
-                    Asistencia.objects.create(socio=socio, fecha_hora=timezone.now())
+                    nueva_asist = Asistencia.objects.create(socio=socio, fecha_hora=timezone.now())
+                    datos_perfil['historial_asistencias'].insert(0, timezone.localtime(nueva_asist.fecha_hora).strftime('%d/%m/%Y %H:%M hs'))
                     if hasattr(reserva_hoy, 'estado'):
                         reserva_hoy.estado = 'asistida'
                         reserva_hoy.save()
@@ -376,7 +403,7 @@ def dashboard(request):
                 datos_perfil['acceso_permitido'] = False
                 datos_perfil['motivo'] = "Límite diario alcanzado (Ingreso libre + Clase reservada completados)."
                 messages.warning(request, f"Acceso Denegado: {usuario_socio.first_name} ya completó los ingresos permitidos de hoy.")
-            # Guardar en sesión para mostrar el mini perfil al recargar
+
             request.session['ultimo_socio_acceso'] = datos_perfil
             return redirect('dashboard')
 
@@ -444,31 +471,12 @@ def dashboard(request):
                 })
 
         # E. DISCIPLINAS ACTIVAS, HORARIOS Y RESERVAS
-        CRONOGRAMA_ACTIVIDADES = {
-            'Musculación': [
-                {'dias': 'Lunes a Viernes', 'horario': '07:00 a 22:00 hs', 'profesor': 'Imanol / Silvina / Joaquín / Matías'},
-                {'dias': 'Sábados', 'horario': '09:00 a 13:00 hs', 'profesor': 'Imanol Uzuriaga'},
-            ],
-            'Funcional': [{'dias': 'Lunes, Miércoles y Viernes', 'horario': '18:00 hs', 'profesor': 'Imanol Uzuriaga'}],
-            'Funcional + Cardio': [{'dias': 'Martes y Jueves', 'horario': '18:00 hs', 'profesor': 'Imanol Uzuriaga'}],
-            'Spinning': [{'dias': 'Lunes, Miércoles y Viernes', 'horario': '19:00 hs', 'profesor': 'Julia Tramonti'}],
-            'Abdominales': [{'dias': 'Lunes, Miércoles y Viernes', 'horario': '20:00 hs', 'profesor': 'Julia Tramonti'}],
-            'Zumba': [{'dias': 'Lunes, Martes y Jueves', 'horario': '19:00 hs', 'profesor': 'Victoria Bargas'}],
-            'Pilates': [
-                {'dias': 'Lunes', 'horario': '09:00 a 11:00 hs', 'profesor': 'Andrea Adalid'},
-                {'dias': 'Miércoles', 'horario': '11:00 a 13:00 hs', 'profesor': 'Andrea Adalid'},
-                {'dias': 'Viernes', 'horario': '16:00 a 18:00 hs', 'profesor': 'Andrea Adalid'},
-            ],
-        }
-        # Traer siempre las actividades activas reales cargadas por el admin
         actividades_db = Actividad.objects.all()
         total_actividades = actividades_db.count()
 
         disciplinas_detalle = []
         for act in actividades_db:
             horarios_lista = []
-            
-            # Obtiene las clases/horarios usando la relación inversa ('clases' o 'clase_set')
             clases_rel = getattr(act, 'clases', None) or getattr(act, 'clase_set', None)
             clases_qs = clases_rel.all() if clases_rel else []
 
@@ -482,7 +490,6 @@ def dashboard(request):
                     'profesor': profe_str
                 })
             
-            # Conteo de inscriptos o reservas vigentes en la actividad
             total_res = 0
             if hasattr(act, 'reservas'):
                 total_res = act.reservas.filter(fecha=hoy, estado__in=['confirmada', 'activa']).count()
@@ -494,9 +501,31 @@ def dashboard(request):
                 'total_reservas': total_res
             })
 
-        # F. ASISTENCIAS (Conteo de hoy y lista de las últimas 10)
+        # F. ASISTENCIAS (Conteo de hoy, últimas 10 e historial completo por meses)
         total_asistencias_hoy = Asistencia.objects.filter(fecha_hora__range=(inicio_dia, fin_dia)).count()
         ultimas_asistencias = Asistencia.objects.select_related('socio__usuario').order_by('-fecha_hora')[:10]
+
+        MESES_ES = {
+            1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
+            5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
+            9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
+        }
+        historial_asistencias_completo = []
+        meses_vistos = {}
+        for a in Asistencia.objects.select_related('socio__usuario').order_by('-fecha_hora')[:300]:
+            dt_local = timezone.localtime(a.fecha_hora)
+            clave_mes = dt_local.strftime('%Y-%m')
+            if clave_mes not in meses_vistos:
+                meses_vistos[clave_mes] = f"{MESES_ES[dt_local.month]} {dt_local.year}"
+            historial_asistencias_completo.append({
+                'fecha_str': dt_local.strftime('%d/%m/%Y'),
+                'hora_str': dt_local.strftime('%H:%M'),
+                'es_hoy': dt_local.date() == hoy,
+                'mes_anio': clave_mes,
+                'socio_nombre': f"{a.socio.usuario.first_name} {a.socio.usuario.last_name}".strip() or a.socio.usuario.username,
+                'dni': a.socio.usuario.username,
+            })
+        meses_asistencias = [{'valor': k, 'etiqueta': v} for k, v in meses_vistos.items()]
 
         # G. ÚLTIMOS COBROS PARA LA CAJA DE MOSTRADOR
         ultimos_cobros = Pago.objects.select_related('socio__usuario', 'membresia__plan').order_by('-id')[:10]
@@ -505,8 +534,10 @@ def dashboard(request):
         context = {
             'asistencias_hoy': total_asistencias_hoy,
             'ultimas_asistencias': ultimas_asistencias,
+            'historial_asistencias_completo': historial_asistencias_completo,
+            'meses_asistencias': meses_asistencias,
             'total_socios': Usuario.objects.filter(rol='socio').count(),
-            'total_actividades': total_actividades,  # <- Corregido
+            'total_actividades': total_actividades,
             'disciplinas_detalle': disciplinas_detalle,
             'profesores_cards': profesores_cards,
             'planes_select': Plan.objects.all().order_by('precio'),
@@ -521,8 +552,6 @@ def dashboard(request):
     else:
         hoy = timezone.localdate()
         socio_obj = Socio.objects.filter(usuario=user).first()
-        # Membresías activas vigentes
-        # Membresía activa vigente del socio
         membresia_actual = None
         if socio_obj:
             membresia_actual = (
@@ -536,14 +565,11 @@ def dashboard(request):
                 .first()
             )
 
-        # Solo las actividades activas del gimnasio
         todas_actividades = Actividad.objects.filter(activa=True).order_by('nombre')
 
-        # Reservas activas y futuras del socio
         reservas_socio = []
         if Reserva and socio_obj:
             try:
-                # Intentamos traer con la relación al horario y actividad
                 reservas_socio = Reserva.objects.filter(
                     socio=socio_obj, 
                     fecha__gte=hoy, 
@@ -551,7 +577,6 @@ def dashboard(request):
                 ).select_related('horario__actividad')
             except Exception:
                 try:
-                    # Alternativa por si el modelo Reserva apunta directo a 'actividad'
                     reservas_socio = Reserva.objects.filter(
                         socio=socio_obj, 
                         fecha__gte=hoy, 
@@ -563,11 +588,9 @@ def dashboard(request):
         # ---------------------------------------------------------
         # A. LÓGICA DE RUTINAS
         # ---------------------------------------------------------
-        # 1. Buscamos las rutinas del socio (con doble guión bajo __)
         rutina_gym = Rutina.objects.filter(socio=user, tipo='gimnasio').prefetch_related('dias__ejercicios').first()
         rutina_propia = Rutina.objects.filter(socio=user, tipo='personalizada').prefetch_related('dias__ejercicios').first()
 
-        # 2. Guardar ejercicio cuando se envía el formulario
         if request.method == 'POST' and request.POST.get('accion') == 'agregar_ejercicio_custom':
             if not rutina_propia:
                 rutina_propia = Rutina.objects.create(socio=user, tipo='personalizada', nombre='Mi Rutina Propia')
@@ -592,14 +615,12 @@ def dashboard(request):
             )
             return redirect('/dashboard/?tab=custom')
 
-        # 3. Eliminar ejercicio de la rutina
         if request.method == 'POST' and request.POST.get('accion') == 'eliminar_ejercicio_custom':
             ej_id = request.POST.get('ejercicio_id')
             if ej_id:
                 Ejercicio.objects.filter(id=ej_id, dia__rutina__socio=user).delete()
             return redirect('/dashboard/?tab=custom')
 
-        # 4. Agrupar ejercicios por día para la grilla semanal
         dias_claves = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
         rutina_semanal = {d: [] for d in dias_claves}
 
@@ -642,19 +663,15 @@ def dashboard(request):
                 if not socio_obj:
                     socio_obj = Socio.objects.create(usuario=user)
 
-            # Unimos los nombres de las clases seleccionadas (Ej: "Musculación (Pase Libre) + Pilates (2 veces/semana)")
                 detalle_items = " + ".join(nombres_items)
 
-                # Buscamos o creamos el plan con el nombre combinado real
                 plan_obj, _ = Plan.objects.get_or_create(
                     nombre=detalle_items,
                     defaults={'precio': total_a_pagar, 'duracion_dias': 30}
                 )
 
-                # Desactivar membresías previas del socio
                 MembresiaSocio.objects.filter(socio=socio_obj).update(activa=False)
 
-                # 1. Crear MembresiaSocio por 30 días con el plan combinado exacto
                 nueva_membresia = MembresiaSocio.objects.create(
                     socio=socio_obj,
                     plan=plan_obj,
@@ -663,7 +680,6 @@ def dashboard(request):
                     activa=True
                 )
 
-                # 2. Registrar el pago con el modelo oficial
                 Pago.objects.create(
                     socio=socio_obj,
                     membresia=nueva_membresia,
@@ -672,7 +688,6 @@ def dashboard(request):
                     fecha_pago=timezone.now()
                 )
 
-                # 3. Regularizar semáforo a VERDE
                 if hasattr(socio_obj, 'estado_cuenta'):
                     socio_obj.estado_cuenta = 'VERDE'
                     socio_obj.save()
@@ -692,8 +707,6 @@ def dashboard(request):
         # ---------------------------------------------------------
         # C. RESPUESTA GET / RENDER
         # ---------------------------------------------------------
-
-        # Traer los pagos reales del socio para la tabla de historial
         historial_pagos = Pago.objects.filter(socio=socio_obj).order_by('-fecha_pago') if socio_obj else []
         
         context = {

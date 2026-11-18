@@ -8,13 +8,29 @@ from django.utils import timezone
 from usuarios.models import Usuario
 from socios.models import Socio
 
-
 try:
-    from membresias.models import MembresiaSocio
+    from membresias.models import MembresiaSocio, Plan
 except ImportError:
     MembresiaSocio = None
+    Plan = None
+
+try:
+    from actividades.models import Actividad, Reserva
+except ImportError:
+    try:
+        from actividades.models import Actividad
+    except ImportError:
+        Actividad = None
+    Reserva = None
+
+try:
+    from pagos.models import Pago
+except ImportError:
+    Pago = None
+
+
 # ==========================================================
-# 🛡️ 1. MÓDULO ADMINISTRADOR: GESTIÓN DE SOCIOS
+# 1. MÓDULO ADMINISTRADOR: GESTIÓN DE SOCIOS
 # ==========================================================
 @login_required
 def admin_socios(request):
@@ -39,13 +55,15 @@ def admin_socios(request):
             messages.success(request, f'Socio {socio_user.username} ahora está {estado}.')
             return redirect('admin_socios')
 
-        # ALTA DE SOCIO (ADMIN) — Usuario y Contraseña = DNI
+        # ALTA DE SOCIO + COBRO / INSCRIPCIÓN INICIAL OPCIONAL
         elif accion == 'alta':
             dni = request.POST.get('dni', '').strip()
             nombre = request.POST.get('nombre', '').strip()
             apellido = request.POST.get('apellido', '').strip()
             email = request.POST.get('email', '').strip()
-            telefono = request.POST.get('telefono', '').strip()
+            plan_id = request.POST.get('plan_id')
+            actividad_id = request.POST.get('actividad_id')
+            metodo_pago = request.POST.get('metodo_pago', 'efectivo')
 
             if Usuario.objects.filter(username=dni).exists():
                 messages.error(request, f'Ya existe un socio con DNI {dni}.')
@@ -61,24 +79,73 @@ def admin_socios(request):
                 nuevo_user.is_active = True
                 if hasattr(nuevo_user, 'dni'):
                     nuevo_user.dni = dni
-                if hasattr(nuevo_user, 'telefono'):
-                    nuevo_user.telefono = telefono
                 nuevo_user.save()
 
                 socio_kwargs = {'usuario': nuevo_user}
                 if hasattr(Socio, 'dni'):
                     socio_kwargs['dni'] = dni
-                if hasattr(Socio, 'telefono'):
-                    socio_kwargs['telefono'] = telefono
-                if hasattr(Socio, 'estado_cuenta'):
-                    socio_kwargs['estado_cuenta'] = 'ROJO'
-                
-                Socio.objects.get_or_create(**socio_kwargs)
+                socio_obj, _ = Socio.objects.get_or_create(**socio_kwargs)
 
-                messages.success(
-                    request, 
-                    f'Socio {nombre} {apellido} registrado con éxito. Acceso habilitado: Usuario: {dni} | Contraseña: {dni}'
-                )
+                plan_obj = Plan.objects.filter(id=plan_id).first() if (plan_id and Plan) else None
+                act_obj = Actividad.objects.filter(id=actividad_id).first() if (actividad_id and Actividad) else None
+
+                if plan_obj or act_obj:
+                    monto_total = 0
+                    nueva_memb = None
+
+                    if plan_obj and MembresiaSocio:
+                        monto_total += getattr(plan_obj, 'precio', 0)
+                        dias_vigencia = getattr(plan_obj, 'duracion_dias', 30)
+                        nueva_memb = MembresiaSocio.objects.create(
+                            socio=socio_obj,
+                            plan=plan_obj,
+                            fecha_inicio=hoy,
+                            fecha_fin=hoy + timedelta(days=dias_vigencia),
+                            activa=True
+                        )
+
+                    if act_obj:
+                        monto_total += getattr(act_obj, 'precio', 0)
+                        if Reserva and hasattr(Reserva, 'actividad'):
+                            Reserva.objects.get_or_create(
+                                socio=socio_obj,
+                                actividad=act_obj,
+                                defaults={'fecha': hoy, 'estado': 'confirmada'}
+                            )
+                        if not nueva_memb and MembresiaSocio and Plan:
+                            plan_base = Plan.objects.first()
+                            if plan_base:
+                                nueva_memb = MembresiaSocio.objects.create(
+                                    socio=socio_obj,
+                                    plan=plan_base,
+                                    fecha_inicio=hoy,
+                                    fecha_fin=hoy + timedelta(days=30),
+                                    activa=True
+                                )
+
+                    if Pago and monto_total > 0:
+                        pago_kwargs = {
+                            'socio': socio_obj,
+                            'monto': monto_total,
+                            'metodo_pago': metodo_pago,
+                        }
+                        if nueva_memb and hasattr(Pago, 'membresia'):
+                            pago_kwargs['membresia'] = nueva_memb
+                        if hasattr(Pago, 'fecha_pago'):
+                            pago_kwargs['fecha_pago'] = timezone.now()
+                        elif hasattr(Pago, 'fecha'):
+                            pago_kwargs['fecha'] = hoy
+                        Pago.objects.create(**pago_kwargs)
+
+                    messages.success(
+                        request,
+                        f'Socio {nombre} {apellido} creado y cobrado (${monto_total:,.0f} - {metodo_pago.capitalize()}). Usuario y clave: {dni}'
+                    )
+                else:
+                    messages.success(
+                        request,
+                        f'Socio {nombre} {apellido} registrado con éxito (Sin pago inicial). Usuario y clave: {dni}'
+                    )
             return redirect('admin_socios')
 
     # 2. BÚSQUEDA Y FILTRADO
@@ -114,7 +181,6 @@ def admin_socios(request):
                 if ultima_memb.fecha_fin >= hoy and ultima_memb.activa:
                     tiene_membresia_vigente = True
                 elif ultima_memb.fecha_fin < limite_3_meses and s.is_active:
-                    # Baja automática si superó los 90 días vencido
                     s.is_active = False
                     s.save()
             else:
@@ -127,7 +193,6 @@ def admin_socios(request):
         )
         estado_cuota = 'VERDE' if es_verde else 'ROJO'
 
-        # Solo guardar si el campo existe físicamente en el modelo Socio
         if socio_obj and 'estado_cuenta' in [f.name for f in socio_obj._meta.get_fields()]:
             if socio_obj.estado_cuenta != estado_cuota:
                 socio_obj.estado_cuenta = estado_cuota
@@ -145,12 +210,14 @@ def admin_socios(request):
         'query': query,
         'filtro_estado': filtro_estado,
         'total_socios': len(socios_lista),
+        'planes_disponibles': Plan.objects.all().order_by('precio') if Plan else [],
+        'actividades_disponibles': Actividad.objects.filter(activa=True).order_by('nombre') if Actividad else [],
     }
     return render(request, 'admin/socios.html', context)
 
 
 # ==========================================================
-# 📋 2. MÓDULO EMPLEADO: PADRÓN OPERATIVO Y CRUD MOSTRADOR
+# 2. MÓDULO EMPLEADO: PADRÓN OPERATIVO Y CRUD MOSTRADOR
 # ==========================================================
 @login_required
 def padron_socios_empleado(request):
@@ -158,16 +225,21 @@ def padron_socios_empleado(request):
     if not (user.is_superuser or getattr(user, 'rol', None) in ('recepcion', 'entrenador', 'empleado', 'admin')):
         return redirect('dashboard')
 
+    hoy = timezone.localdate()
+
     if request.method == 'POST':
         accion = request.POST.get('accion')
 
-        # ALTA DE SOCIO
+        # ALTA DE SOCIO + COBRO / INSCRIPCIÓN INICIAL OPCIONAL (MOSTRADOR)
         if accion == 'alta':
             dni = request.POST.get('dni', '').strip()
             nombre = request.POST.get('nombre', '').strip()
             apellido = request.POST.get('apellido', '').strip()
             email = request.POST.get('email', '').strip()
             telefono = request.POST.get('telefono', '').strip()
+            plan_id = request.POST.get('plan_id')
+            actividad_id = request.POST.get('actividad_id')
+            metodo_pago = request.POST.get('metodo_pago', 'efectivo')
 
             if Usuario.objects.filter(username=dni).exists():
                 messages.error(request, f'El DNI {dni} ya está registrado en el sistema.')
@@ -195,12 +267,73 @@ def padron_socios_empleado(request):
                 if hasattr(Socio, 'estado_cuenta'):
                     socio_kwargs['estado_cuenta'] = 'ROJO'
 
-                Socio.objects.get_or_create(**socio_kwargs)
+                socio_obj, _ = Socio.objects.get_or_create(**socio_kwargs)
 
-                messages.success(
-                    request, 
-                    f'¡Socio {nombre} {apellido} registrado con éxito! Cuenta habilitada (Usuario: {dni} | Contraseña: 123).'
-                )
+                # Procesar membresía y/o actividad inicial si el recepcionista las eligió
+                plan_obj = Plan.objects.filter(id=plan_id).first() if (plan_id and Plan) else None
+                act_obj = Actividad.objects.filter(id=actividad_id).first() if (actividad_id and Actividad) else None
+
+                if plan_obj or act_obj:
+                    monto_total = 0
+                    nueva_memb = None
+
+                    if plan_obj and MembresiaSocio:
+                        monto_total += getattr(plan_obj, 'precio', 0)
+                        dias_vigencia = getattr(plan_obj, 'duracion_dias', 30)
+                        nueva_memb = MembresiaSocio.objects.create(
+                            socio=socio_obj,
+                            plan=plan_obj,
+                            fecha_inicio=hoy,
+                            fecha_fin=hoy + timedelta(days=dias_vigencia),
+                            activa=True
+                        )
+
+                    if act_obj:
+                        monto_total += getattr(act_obj, 'precio', 0)
+                        if Reserva and hasattr(Reserva, 'actividad'):
+                            Reserva.objects.get_or_create(
+                                socio=socio_obj,
+                                actividad=act_obj,
+                                defaults={'fecha': hoy, 'estado': 'confirmada'}
+                            )
+                        if not nueva_memb and MembresiaSocio and Plan:
+                            plan_base = Plan.objects.first()
+                            if plan_base:
+                                nueva_memb = MembresiaSocio.objects.create(
+                                    socio=socio_obj,
+                                    plan=plan_base,
+                                    fecha_inicio=hoy,
+                                    fecha_fin=hoy + timedelta(days=30),
+                                    activa=True
+                                )
+
+                    if Pago and monto_total > 0:
+                        pago_kwargs = {
+                            'socio': socio_obj,
+                            'monto': monto_total,
+                            'metodo_pago': metodo_pago,
+                        }
+                        if nueva_memb and hasattr(Pago, 'membresia'):
+                            pago_kwargs['membresia'] = nueva_memb
+                        if hasattr(Pago, 'fecha_pago'):
+                            pago_kwargs['fecha_pago'] = timezone.now()
+                        elif hasattr(Pago, 'fecha'):
+                            pago_kwargs['fecha'] = hoy
+                        Pago.objects.create(**pago_kwargs)
+
+                    if hasattr(socio_obj, 'estado_cuenta'):
+                        socio_obj.estado_cuenta = 'VERDE'
+                        socio_obj.save(update_fields=['estado_cuenta'])
+
+                    messages.success(
+                        request,
+                        f'¡Socio {nombre} {apellido} dado de alta y cobrado (${monto_total:,.0f} - {metodo_pago.capitalize()})! Usuario: {dni} | Clave: 123'
+                    )
+                else:
+                    messages.success(
+                        request,
+                        f'¡Socio {nombre} {apellido} registrado con éxito (sin cobro inicial)! Usuario: {dni} | Clave: 123'
+                    )
             return redirect('padron_socios_empleado')
 
         # EDITAR SOCIO
@@ -248,5 +381,7 @@ def padron_socios_empleado(request):
         'socios': socios,
         'query': query,
         'total_socios': socios.count(),
+        'planes_disponibles': Plan.objects.all().order_by('precio') if Plan else [],
+        'actividades_disponibles': Actividad.objects.all().order_by('nombre') if Actividad else [],
     }
     return render(request, 'empleado/socios.html', context)

@@ -2,153 +2,411 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>GymTrack - Socios</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymTrack - Padrón de Socios (Recepción)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>body { background-color: #0b1120; }</style>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }</style>
 </head>
-<body class="text-slate-100 min-h-screen p-6 font-sans">
-    <div class="max-w-7xl mx-auto space-y-6">
+<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-        <!-- CABECERA -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-            <div>
-                <a href="{% url 'dashboard' %}" class="text-xs text-blue-400 hover:underline flex items-center gap-1 mb-1">
-                    <i class="fa-solid fa-arrow-left"></i> Volver al Panel
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <a href="{% url 'dashboard' %}" class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white text-lg shadow-md shadow-blue-600/30 hover:bg-blue-500 transition">
+                        🏋️‍♂️
+                    </a>
+                    <div class="flex items-baseline gap-2">
+                        <a href="{% url 'dashboard' %}" class="text-xl font-extrabold tracking-tight text-white">GymTrack</a>
+                        <span class="text-xs font-light text-slate-500">×</span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">Bodynamic</span>
+                    </div>
+                </div>
+                <a href="{% url 'dashboard' %}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left text-[10px]"></i> Volver al Panel
                 </a>
-                <h1 class="text-2xl font-bold text-white">Padrón de Socios</h1>
-                <p class="text-xs text-slate-400">Control de miembros, altas, modificaciones y estado de cuotas.</p>
             </div>
-            <button onclick="document.getElementById('modalAlta').classList.remove('hidden')" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-2">
-                <i class="fa-solid fa-user-plus"></i> Registrar Socio
+        </div>
+    </nav>
+
+    <!-- MENSAJES FLOTANTES -->
+    {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
+            {% for message in messages %}
+                <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% elif message.tags == 'warning' %}bg-amber-950/60 border border-amber-500/40 text-amber-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
+                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+        
+        <!-- CABECERA -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-extrabold text-white tracking-tight">Padrón de Socios 📋</h1>
+                <p class="text-xs text-slate-400 mt-1">Alta rápida en mostrador con cobro inicial, edición de datos y control de acceso.</p>
+            </div>
+            <button type="button" onclick="document.getElementById('modalAltaSocio').classList.remove('hidden')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 w-fit cursor-pointer">
+                <i class="fa-solid fa-user-plus"></i> Registrar Nuevo Socio
             </button>
         </div>
 
         <!-- BUSCADOR -->
-        <form method="GET" class="bg-slate-900/60 p-4 border border-slate-800 rounded-2xl flex gap-3">
-            <input type="text" name="q" value="{{ query }}" placeholder="Buscar por DNI, nombre o apellido..." 
-                   class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button type="submit" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl">Buscar</button>
-        </form>
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
+            <form method="GET" class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 text-xs">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" name="q" value="{{ query }}" placeholder="Buscar por DNI, nombre o apellido..."
+                           class="w-full pl-9 pr-4 py-2.5 bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl text-xs text-white">
+                </div>
+                <button type="submit" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition cursor-pointer">
+                    Buscar
+                </button>
+                {% if query %}
+                    <a href="{% url 'padron_socios_empleado' %}" class="px-4 py-2.5 bg-slate-950 hover:bg-slate-800 text-slate-400 border border-slate-800 font-semibold text-xs rounded-xl transition text-center">
+                        Limpiar
+                    </a>
+                {% endif %}
+            </form>
+        </div>
 
         <!-- TABLA DE SOCIOS -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
-                    <tr>
-                        <th class="py-3 px-4">DNI</th>
-                        <th class="py-3 px-4">Socio</th>
-                        <th class="py-3 px-4">Email</th>
-                        <th class="py-3 px-4">Estado</th>
-                        <th class="py-3 px-4 text-right">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-800 text-slate-300">
-                    {% for socio in socios %}
-                    <tr class="hover:bg-slate-800/30 transition {% if not socio.is_active %}opacity-50{% endif %}">
-                        <td class="py-3 px-4 font-mono text-white">{{ socio.username }}</td>
-                        <td class="py-3 px-4 font-semibold text-white">{{ socio.first_name }} {{ socio.last_name }}</td>
-                        <td class="py-3 px-4 text-slate-400">{{ socio.email|default:"Sin email" }}</td>
-                        <td class="py-3 px-4">
-                            {% if socio.is_active %}
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Activo</span>
-                            {% else %}
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">De Baja</span>
-                            {% endif %}
-                        </td>
-                        <td class="py-3 px-4 text-right flex items-center justify-end gap-2">
-                            <!-- Botón Editar -->
-                            <button onclick="abrirEdicion('{{ socio.id }}', '{{ socio.first_name }}', '{{ socio.last_name }}', '{{ socio.email }}')" 
-                                    class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white" title="Editar">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <!-- Formulario Baja / Reactivación -->
-                            <form method="POST" class="inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="accion" value="toggle_baja">
-                                <input type="hidden" name="socio_id" value="{{ socio.id }}">
-                                <button type="submit" class="p-2 rounded-lg {% if socio.is_active %}bg-rose-500/10 text-rose-400 hover:bg-rose-500/20{% else %}bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20{% endif %}" title="Dar de baja / Reactivar">
-                                    <i class="fa-solid {% if socio.is_active %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="py-6 text-center text-slate-500">No se encontraron socios.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="py-3.5 px-4">Socio</th>
+                            <th class="py-3.5 px-4">DNI / Usuario</th>
+                            <th class="py-3.5 px-4">Contacto</th>
+                            <th class="py-3.5 px-4">Estado</th>
+                            <th class="py-3.5 px-4 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                        {% for s in socios %}
+                            <tr class="hover:bg-slate-800/30 transition">
+                                <td class="py-3.5 px-4 font-bold text-white">{{ s.first_name }} {{ s.last_name }}</td>
+                                <td class="py-3.5 px-4 font-mono text-slate-300">{{ s.username }}</td>
+                                <td class="py-3.5 px-4 text-slate-400">
+                                    <div>{{ s.email|default:"Sin email" }}</div>
+                                    {% if s.telefono %}<div class="text-[11px] text-slate-500">{{ s.telefono }}</div>{% endif %}
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    {% if s.is_active %}
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Activo</span>
+                                    {% else %}
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-4 text-right space-x-2">
+                                    <button type="button"
+                                            data-id="{{ s.id }}"
+                                            data-nombre="{{ s.first_name|default:'' }}"
+                                            data-apellido="{{ s.last_name|default:'' }}"
+                                            data-email="{{ s.email|default:'' }}"
+                                            data-telefono="{{ s.telefono|default:'' }}"
+                                            onclick="abrirModalEditarDesdeBoton(this)"
+                                            class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-blue-400 font-semibold rounded-lg transition cursor-pointer">
+                                        <i class="fa-solid fa-pen-to-square"></i> Editar
+                                    </button>
+                                    <form method="POST" class="inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="accion" value="toggle_baja">
+                                        <input type="hidden" name="socio_id" value="{{ s.id }}">
+                                        <button type="submit" class="px-3 py-1.5 {% if s.is_active %}bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20{% else %}bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20{% endif %} font-semibold rounded-lg transition cursor-pointer">
+                                            {% if s.is_active %}Dar de baja{% else %}Reactivar{% endif %}
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-slate-500 text-xs">No se encontraron socios registrados.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+    </main>
 
-    <!-- MODAL ALTA -->
-    <div id="modalAlta" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
-            <h3 class="text-base font-bold text-white mb-4">Registrar Nuevo Socio</h3>
-            <form method="POST" class="space-y-3">
+    <!-- ============================================================== -->
+    <!-- MODAL: REGISTRAR NUEVO SOCIO (CON PASE INTELIGENTE + ACTIVIDAD)-->
+    <!-- ============================================================== -->
+    <div id="modalAltaSocio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-lg font-extrabold text-white">Registrar Nuevo Socio</h3>
+                <button type="button" onclick="document.getElementById('modalAltaSocio').classList.add('hidden')" class="text-slate-400 hover:text-white transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form method="POST" class="space-y-3.5 text-xs">
                 {% csrf_token %}
                 <input type="hidden" name="accion" value="alta">
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">DNI</label>
-                    <input type="text" name="dni" required class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
+                <!-- Campo oculto que envía el ID real del Plan en la base de datos -->
+                <input type="hidden" name="plan_id" id="inputPlanIdAltaEmpleado">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">DNI</label>
+                        <input type="text" name="dni" required placeholder="Ej: 40123456" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Teléfono</label>
+                        <input type="text" name="telefono" placeholder="341..." class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Nombre</label>
-                    <input type="text" name="nombre" required class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre</label>
+                        <input type="text" name="nombre" required placeholder="Ej: Juan" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Apellido</label>
+                        <input type="text" name="apellido" required placeholder="Ej: Pérez" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                    </div>
                 </div>
+
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Apellido</label>
-                    <input type="text" name="apellido" required class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Email</label>
+                    <input type="email" name="email" placeholder="correo@ejemplo.com" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
                 </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Email</label>
-                    <input type="email" name="email" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
+
+                <!-- ==================================================== -->
+                <!-- SECCIÓN COBRO DE MEMBRESÍA + ACTIVIDAD (OPCIONAL)    -->
+                <!-- ==================================================== -->
+                <div class="pt-3 border-t border-slate-800 space-y-3">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                        Membresía y Cobro Inicial (Opcional)
+                    </p>
+
+                    <!-- SELECTOR DE PASE (LAS 4 CATEGORÍAS LIMPIAS) -->
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Plan a Contratar:</label>
+                        <select id="selectCategoriaPaseAlta" onchange="actualizarOpcionesPaseAlta()"
+                                class="w-full bg-slate-950 border border-emerald-500/50 focus:border-emerald-400 focus:outline-none rounded-xl px-3.5 py-2.5 text-white font-semibold">
+                            <option value="">-- Sin cobro por ahora --</option>
+                            <option value="clases">Pase Clases — $45.000 (30 días)</option>
+                            <option value="musculacion">Pase Musculación — $60.000 (30 días)</option>
+                            <option value="familiar">Plan Familiar — $50.000 c/u (30 días)</option>
+                            <option value="pilates">Pilates (Elegir días por semana)</option>
+                        </select>
+                    </div>
+
+                    <!-- SUB-SELECTOR CONDICIONAL PARA PILATES -->
+                    <div id="bloqueDiasPilatesAlta" class="hidden p-3 rounded-xl bg-slate-950 border border-blue-500/40 space-y-1.5">
+                        <label class="block text-blue-400 uppercase text-[10px] font-bold">
+                            <i class="fa-solid fa-calendar-week mr-1"></i> Frecuencia semanal de Pilates:
+                        </label>
+                        <select id="selectDiasPilatesAlta" onchange="sincronizarPlanRealAlta()"
+                                class="w-full bg-slate-900 border border-slate-700 focus:border-blue-500 focus:outline-none rounded-xl px-3 py-2 text-white font-semibold">
+                            <option value="pilates_1">1 vez por semana — $35.000 / mes</option>
+                            <option value="pilates_2">2 veces por semana — $42.000 / mes</option>
+                            <option value="pilates_3">3 veces por semana — $50.000 / mes</option>
+                        </select>
+                    </div>
+
+                    <!-- TARJETA DINÁMICA CON DESCRIPCIÓN DE QUÉ INCLUYE -->
+                    <div id="tarjetaInfoPaseAlta" class="hidden p-3 rounded-xl bg-slate-950/90 border border-slate-800 space-y-1.5">
+                        <span id="tituloInfoPaseAlta" class="font-bold text-emerald-400 text-xs block"></span>
+                        <div id="detalleInfoPaseAlta" class="text-[11px] text-slate-300 leading-relaxed"></div>
+                        <p class="text-[10px] text-slate-500 pt-1 border-t border-slate-800/80">
+                            <i class="fa-regular fa-clock mr-1"></i> Horario del gimnasio: Lun a Vie 07:00 a 22:00 hs • Sáb 09:00 a 13:00 hs
+                        </p>
+                    </div>
+
+                    <!-- CATÁLOGO OCULTO CON LOS IDS REALES DE LA BD -->
+                    <div id="catalogoPlanesAltaBD" class="hidden">
+                        {% for plan in planes_disponibles %}
+                            <span data-id="{{ plan.id }}" data-nombre="{{ plan.nombre|lower }}"></span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- DESPLEGABLE APARTE PARA ANOTAR EN ACTIVIDAD -->
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Anotar en Actividad (Opcional):</label>
+                        <select name="actividad_id" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-xs text-white">
+                            <option value="">-- Ninguna / Incluida en el pase --</option>
+                            {% for act in actividades_disponibles %}
+                                <option value="{{ act.id }}">{{ act.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- MÉTODO DE PAGO -->
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Método de Pago:</label>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <label class="flex items-center justify-center gap-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 text-xs">
+                                <input type="radio" name="metodo_pago" value="efectivo" checked class="text-emerald-500">
+                                <span class="font-bold text-slate-200">💵 Efectivo</span>
+                            </label>
+                            <label class="flex items-center justify-center gap-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 text-xs">
+                                <input type="radio" name="metodo_pago" value="transferencia" class="text-emerald-500">
+                                <span class="font-bold text-slate-200">📱 Transferencia</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="document.getElementById('modalAlta').classList.add('hidden')" class="flex-1 py-2 bg-slate-800 text-slate-300 font-bold text-xs rounded-xl">Cancelar</button>
-                    <button type="submit" class="flex-1 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl shadow">Guardar</button>
+
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="document.getElementById('modalAltaSocio').classList.add('hidden')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition cursor-pointer">
+                        Guardar
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL EDICIÓN -->
-    <div id="modalEdicion" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
-            <h3 class="text-base font-bold text-white mb-4">Editar Socio</h3>
-            <form method="POST" class="space-y-3">
+    <!-- MODAL EDITAR SOCIO -->
+    <div id="modalEditarSocio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-lg font-extrabold text-white">Editar Datos del Socio</h3>
+                <button type="button" onclick="document.getElementById('modalEditarSocio').classList.add('hidden')" class="text-slate-400 hover:text-white transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form method="POST" class="space-y-3.5 text-xs">
                 {% csrf_token %}
                 <input type="hidden" name="accion" value="editar">
                 <input type="hidden" name="socio_id" id="editSocioId">
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Nombre</label>
-                    <input type="text" name="nombre" id="editNombre" required class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre</label>
+                    <input type="text" name="nombre" id="editNombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Apellido</label>
-                    <input type="text" name="apellido" id="editApellido" required class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Apellido</label>
+                    <input type="text" name="apellido" id="editApellido" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Email</label>
-                    <input type="email" name="email" id="editEmail" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Email</label>
+                    <input type="email" name="email" id="editEmail" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white">
                 </div>
-                <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="document.getElementById('modalEdicion').classList.add('hidden')" class="flex-1 py-2 bg-slate-800 text-slate-300 font-bold text-xs rounded-xl">Cancelar</button>
-                    <button type="submit" class="flex-1 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl shadow">Actualizar</button>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Teléfono</label>
+                    <input type="text" name="telefono" id="editTelefono" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button type="button" onclick="document.getElementById('modalEditarSocio').classList.add('hidden')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">Cancelar</button>
+                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition cursor-pointer">Guardar Cambios</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        function abrirEdicion(id, nombre, apellido, email) {
-            document.getElementById('editSocioId').value = id;
-            document.getElementById('editNombre').value = nombre;
-            document.getElementById('editApellido').value = apellido;
-            document.getElementById('editEmail').value = email;
-            document.getElementById('modalEdicion').classList.remove('hidden');
+        const INFO_PASES_ALTA = {
+            clases: {
+                titulo: "Pase Clases",
+                detalle: `
+                    <p class="mb-1 text-slate-300">Incluye acceso a todas las clases grupales:</p>
+                    <ul class="list-disc list-inside space-y-0.5 text-slate-400">
+                        <li><strong class="text-slate-200">Lun, Mié y Vie:</strong> 18hs Funcional • 19hs Spinning • 20hs Abdominales</li>
+                        <li><strong class="text-slate-200">Mar y Jue:</strong> 18hs Funcional + Cardio</li>
+                        <li><strong class="text-slate-200">Lun, Mar y Jue:</strong> 19hs Zumba</li>
+                    </ul>
+                `,
+                buscarPalabras: ["clase"]
+            },
+            musculacion: {
+                titulo: "Pase Musculación",
+                detalle: `<p>Acceso libre a sala de <strong class="text-white">Musculación + todas las Clases grupales</strong> incluidas durante 30 días.</p>`,
+                buscarPalabras: ["musculacion", "musculación", "completo"]
+            },
+            familiar: {
+                titulo: "Plan Familiar",
+                detalle: `<p>Válido a partir de <strong class="text-white">3 personas del grupo familiar</strong> abonando el mismo día.</p>`,
+                buscarPalabras: ["familiar"]
+            },
+            pilates_1: {
+                titulo: "Pilates — 1 vez por semana",
+                detalle: `<p>1 clase semanal de Pilates con reserva de turno (Lun 9-11hs, Mié 11-13hs o Vie 16-18hs).</p>`,
+                buscarPalabras: ["pilates", "1"]
+            },
+            pilates_2: {
+                titulo: "Pilates — 2 veces por semana",
+                detalle: `<p>2 clases semanales de Pilates con reserva de turno (Lun 9-11hs, Mié 11-13hs o Vie 16-18hs).</p>`,
+                buscarPalabras: ["pilates", "2"]
+            },
+            pilates_3: {
+                titulo: "Pilates — 3 veces por semana",
+                detalle: `<p>3 clases semanales de Pilates con reserva de turno (Lun 9-11hs, Mié 11-13hs o Vie 16-18hs).</p>`,
+                buscarPalabras: ["pilates", "3"]
+            }
+        };
+
+        function actualizarOpcionesPaseAlta() {
+            const categoria = document.getElementById('selectCategoriaPaseAlta').value;
+            const bloquePilates = document.getElementById('bloqueDiasPilatesAlta');
+            const tarjetaInfo = document.getElementById('tarjetaInfoPaseAlta');
+
+            if (!categoria) {
+                bloquePilates.classList.add('hidden');
+                tarjetaInfo.classList.add('hidden');
+                document.getElementById('inputPlanIdAltaEmpleado').value = '';
+                return;
+            }
+
+            if (categoria === 'pilates') {
+                bloquePilates.classList.remove('hidden');
+            } else {
+                bloquePilates.classList.add('hidden');
+            }
+
+            sincronizarPlanRealAlta();
+        }
+
+        function sincronizarPlanRealAlta() {
+            const categoria = document.getElementById('selectCategoriaPaseAlta').value;
+            const clave = (categoria === 'pilates')
+                ? document.getElementById('selectDiasPilatesAlta').value
+                : categoria;
+
+            const info = INFO_PASES_ALTA[clave];
+            if (!info) return;
+
+            document.getElementById('tarjetaInfoPaseAlta').classList.remove('hidden');
+            document.getElementById('tituloInfoPaseAlta').innerText = info.titulo;
+            document.getElementById('detalleInfoPaseAlta').innerHTML = info.detalle;
+
+            const spansPlanes = document.querySelectorAll('#catalogoPlanesAltaBD span');
+            let idEncontrado = '';
+
+            spansPlanes.forEach(span => {
+                const nombreBD = span.getAttribute('data-nombre');
+                const coincideTodo = info.buscarPalabras.every(palabra => nombreBD.includes(palabra));
+                if (coincideTodo && !idEncontrado) {
+                    idEncontrado = span.getAttribute('data-id');
+                }
+            });
+
+            document.getElementById('inputPlanIdAltaEmpleado').value = idEncontrado;
+        }
+
+        function abrirModalEditarDesdeBoton(btn) {
+            document.getElementById('editSocioId').value = btn.getAttribute('data-id');
+            document.getElementById('editNombre').value = btn.getAttribute('data-nombre');
+            document.getElementById('editApellido').value = btn.getAttribute('data-apellido');
+            document.getElementById('editEmail').value = btn.getAttribute('data-email');
+            document.getElementById('editTelefono').value = btn.getAttribute('data-telefono');
+            document.getElementById('modalEditarSocio').classList.remove('hidden');
         }
     </script>
 </body>
