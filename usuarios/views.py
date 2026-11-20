@@ -470,14 +470,14 @@ def dashboard(request):
                     'total_turnos': historial_turnos.count(),
                 })
 
-        # E. DISCIPLINAS ACTIVAS, HORARIOS Y RESERVAS
-        actividades_db = Actividad.objects.all()
+        # E. DISCIPLINAS ACTIVAS, HORARIOS Y CONTEO REAL DE ANOTADOS
+        actividades_db = Actividad.objects.filter(activa=True).order_by('nombre')
         total_actividades = actividades_db.count()
 
         disciplinas_detalle = []
         for act in actividades_db:
             horarios_lista = []
-            clases_rel = getattr(act, 'clases', None) or getattr(act, 'clase_set', None)
+            clases_rel = getattr(act, 'clases', None) or getattr(act, 'clase_set', None) or getattr(act, 'horarios', None)
             clases_qs = clases_rel.all() if clases_rel else []
 
             for h in clases_qs:
@@ -489,16 +489,32 @@ def dashboard(request):
                     'horario': hora_str,
                     'profesor': profe_str
                 })
-            
-            total_res = 0
-            if hasattr(act, 'reservas'):
-                total_res = act.reservas.filter(fecha=hoy, estado__in=['confirmada', 'activa']).count()
+
+            # Contar gente anotada en la actividad (socios únicos con reserva confirmada/activa)
+            anotados_count = 0
+            if Reserva:
+                try:
+                    anotados_count = Reserva.objects.filter(
+                        Q(horario__actividad=act) | Q(actividad=act),
+                        estado__in=['confirmada', 'activa', 'Confirmada', 'Activa']
+                    ).values('socio').distinct().count()
+                except Exception:
+                    try:
+                        anotados_count = Reserva.objects.filter(
+                            horario__actividad=act,
+                            estado__in=['confirmada', 'activa', 'Confirmada', 'Activa']
+                        ).values('socio').distinct().count()
+                    except Exception:
+                        anotados_count = 0
+            elif hasattr(act, 'reservas'):
+                anotados_count = act.reservas.filter(estado__in=['confirmada', 'activa']).values('socio').distinct().count()
 
             disciplinas_detalle.append({
                 'actividad': act,
                 'requiere_reserva': getattr(act, 'requiere_reserva', False),
                 'horarios': horarios_lista,
-                'total_reservas': total_res
+                'anotados': anotados_count,
+                'cupo_maximo': getattr(act, 'cupo_maximo', None) or getattr(act, 'cupo', None),
             })
 
         # F. ASISTENCIAS (Conteo de hoy, últimas 10 e historial completo por meses)
