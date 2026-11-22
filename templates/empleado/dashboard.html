@@ -10,7 +10,7 @@
     <style>body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }</style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
-
+Contador
     <!-- NAVBAR -->
     <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -790,10 +790,10 @@
                                     </span>
                                 {% endif %}
                             </div>
-
+                        
                             <!-- Contador de gente anotada a la derecha de todo -->
                             <div class="shrink-0">
-                                {% if item.actividad.nombre == 'Musculación' or not item.requiere_reserva %}
+                                {% if item.actividad.nombre|lower == 'musculación' or item.actividad.nombre|lower == 'musculacion' %}
                                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                                         <i class="fa-solid fa-infinity text-[10px]"></i> Cupo libre
                                     </span>

@@ -11,7 +11,7 @@
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-    <!-- NAVBAR (Original y limpio) -->
+    <!-- NAVBAR UNIFICADO CON EMPLEADO (GymTrack × BODYDYNAMIC) -->
     <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -20,7 +20,7 @@
                     <div class="flex items-baseline gap-2">
                         <span class="text-2xl font-extrabold tracking-tight text-white">GymTrack</span>
                         <span class="text-xs font-light text-slate-500">×</span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2.5 py-0.5 rounded-md">Portal Socio</span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">BODYDYNAMIC</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
@@ -29,8 +29,8 @@
                             {{ user.first_name|slice:":1"|default:"S"|upper }}
                         </div>
                         <div class="hidden sm:block text-left leading-tight">
-                            <p class="text-xs font-bold text-white">{{ user.first_name }} {{ user.last_name }}</p>
-                            <p class="text-[10px] text-slate-400 font-mono">DNI: {{ user.username }}</p>
+                            <p class="text-xs font-bold text-white">{{ user.first_name|default:user.username }} {{ user.last_name }}</p>
+                            <p class="text-[10px] text-blue-400 font-semibold font-mono">Portal Socio • DNI: {{ user.username }}</p>
                         </div>
                     </div>
 
@@ -42,7 +42,7 @@
 
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
-                        <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition" title="Cerrar sesión">
+                        <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition cursor-pointer" title="Cerrar sesión">
                             <i class="fa-solid fa-arrow-right-from-bracket text-base"></i>
                         </button>
                     </form>
@@ -88,17 +88,17 @@
             </div>
         </div>
 
-    <!-- MENSAJES DE ALERTA -->
-    {% if messages %}
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-            {% for message in messages %}
-                <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
-                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+        <!-- MENSAJES DE ALERTA -->
+        {% if messages %}
+            <div class="w-full space-y-2">
+                {% for message in messages %}
+                    <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% elif message.tags == 'warning' or message.tags == 'info' %}bg-amber-950/60 border border-amber-500/40 text-amber-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
+                        <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
 
         <!-- ========================================================= -->
         <!-- 🔘 LOS 3 BOTONES EN GRANDE                              -->
@@ -106,9 +106,9 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             <!-- 1er Botón: Mi Rutina -->
-            <button onclick="switchTab('rutina')" id="tab-rutina" class="main-btn active p-6 rounded-3xl bg-slate-900/60 border-2 border-blue-500 transition text-left w-full cursor-pointer">
+            <button onclick="switchTab('rutina')" id="tab-rutina" class="main-btn active p-6 rounded-3xl bg-slate-900/90 border-2 border-blue-500 transition text-left w-full cursor-pointer shadow-lg shadow-blue-500/10">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-14 h-14 rounded-2xl bg-blue-600/10 text-blue-400 flex items-center justify-center text-2xl group-hover:scale-110 transition">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-600/10 text-blue-400 flex items-center justify-center text-2xl transition">
                         <i class="fa-solid fa-dumbbell"></i>
                     </div>
                     <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2.5 py-1 rounded-full">
@@ -124,7 +124,7 @@
             <!-- 2do Botón: Actividades -->
             <button onclick="switchTab('actividades')" id="tab-actividades" class="main-btn p-6 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition text-left w-full cursor-pointer">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-14 h-14 rounded-2xl bg-emerald-600/10 text-emerald-400 flex items-center justify-center text-2xl group-hover:scale-110 transition">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-600/10 text-emerald-400 flex items-center justify-center text-2xl transition">
                         <i class="fa-solid fa-heart-pulse"></i>
                     </div>
                     <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
@@ -140,7 +140,7 @@
             <!-- 3er Botón: Mi Perfil -->
             <button onclick="switchTab('perfil')" id="tab-perfil" class="main-btn p-6 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition text-left w-full cursor-pointer">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-14 h-14 rounded-2xl bg-indigo-600/10 text-indigo-400 flex items-center justify-center text-2xl group-hover:scale-110 transition">
+                    <div class="w-14 h-14 rounded-2xl bg-indigo-600/10 text-indigo-400 flex items-center justify-center text-2xl transition">
                         <i class="fa-solid fa-user-gear"></i>
                     </div>
                     <span class="text-xs font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-full">
@@ -156,7 +156,7 @@
         </div>
 
         <!-- ============================================================== -->
-        <!-- SECCIÓN PRINCIPAL: MI RUTINA (Contenedor con id="seccion-rutina") -->
+        <!-- SECCIÓN 1: MI RUTINA                                           -->
         <!-- ============================================================== -->
         <div id="seccion-rutina" class="seccion-contenido mt-8 space-y-6">
 
@@ -168,45 +168,41 @@
                 </div>
 
                 <div class="flex flex-wrap items-center gap-3">
-                    <!-- Selector entre las 2 sub-pestañas -->
                     <div class="bg-slate-900/90 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
                         <button type="button" onclick="cambiarSubTabRutina('gym')" id="subtab-btn-gym" 
-                                class="px-4 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow">
+                                class="px-4 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow cursor-pointer">
                             Rutinas del Gimnasio
                         </button>
                         <button type="button" onclick="cambiarSubTabRutina('custom')" id="subtab-btn-custom" 
-                                class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
+                                class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer">
                             + Mi Rutina Propia (7 Días)
                         </button>
                     </div>
 
-                    <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700/80 rounded-xl text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-2 transition">
+                    <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700/80 rounded-xl text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-2 transition cursor-pointer">
                         <i class="fa-regular fa-file-pdf text-blue-400"></i> Descargar Rutina (PDF)
                     </button>
                 </div>
             </div>
 
-            <!-- ======================================================= -->
-            <!-- SUB-PESTAÑA 1: 4 RUTINAS BÁSICAS INSTITUCIONALES        -->
-            <!-- ======================================================= -->
+            <!-- SUB-PESTAÑA 1: 4 RUTINAS BÁSICAS INSTITUCIONALES -->
             <div id="subpanel-gym" class="space-y-6">
                 
-                <!-- Botones de las 4 Categorías -->
                 <div class="flex flex-wrap gap-2">
                     <button onclick="seleccionarRutinaGym('hipertrofia')" id="btn-cat-hip" 
-                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 transition">
+                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 transition cursor-pointer">
                         💪 Hipertrofia
                     </button>
                     <button onclick="seleccionarRutinaGym('fuerza')" id="btn-cat-fue" 
-                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition">
+                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
                         🏋️ Fuerza
                     </button>
                     <button onclick="seleccionarRutinaGym('spinning')" id="btn-cat-spi" 
-                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition">
+                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
                         🚴 Spinning
                     </button>
                     <button onclick="seleccionarRutinaGym('profe')" id="btn-cat-pro" 
-                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition">
+                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
                         📋 Profesor Personalizado
                     </button>
                 </div>
@@ -443,12 +439,9 @@
 
             </div>
 
-            <!-- ======================================================= -->
-            <!-- SUB-PESTAÑA 2: MI RUTINA PROPIA (PERSISTIDA EN BD)      -->
-            <!-- ======================================================= -->
+            <!-- SUB-PESTAÑA 2: MI RUTINA PROPIA (PERSISTIDA EN BD) -->
             <div id="subpanel-custom" class="space-y-6 hidden">
                 
-                <!-- Formulario que guarda en MySQL -->
                 <div class="bg-slate-900/80 border border-blue-500/30 rounded-2xl p-5 space-y-4">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                         <h4 class="font-bold text-white text-sm flex items-center gap-2">
@@ -457,26 +450,22 @@
                         <span class="text-[11px] text-slate-400">Se guarda directamente en tu cuenta</span>
                     </div>
 
-                    <!-- Formulario que guarda en MySQL -->
                     <form method="POST" action="{% url 'dashboard' %}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
                         {% csrf_token %}
                         <input type="hidden" name="accion" value="agregar_ejercicio_custom">
 
-                        <!-- Nombre del Ejercicio -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre del Ejercicio</label>
                             <input type="text" name="nombre_ejercicio" required placeholder="Ej: Press de Banca" 
                                 class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
                         </div>
 
-                        <!-- Series y Repeticiones -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 mb-1">Series y Repeticiones</label>
                             <input type="text" name="repeticiones" required placeholder="Ej: 4 series x 10 reps" 
                                 class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
                         </div>
 
-                        <!-- Selector de Día -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 mb-1">Día de la Semana</label>
                             <select name="dia" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
@@ -490,7 +479,6 @@
                             </select>
                         </div>
 
-                        <!-- Botón -->
                         <div>
                             <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
                                 <i class="fa-solid fa-plus text-xs"></i> Guardar Ejercicio
@@ -501,7 +489,6 @@
 
                 <!-- Grilla de los 7 Días -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    
                     <!-- Lunes -->
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
                         <div>
@@ -520,7 +507,7 @@
                                             {% csrf_token %}
                                             <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
                                             <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
                                                 <i class="fa-solid fa-trash-can"></i>
                                             </button>
                                         </form>
@@ -550,7 +537,7 @@
                                             {% csrf_token %}
                                             <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
                                             <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
                                                 <i class="fa-solid fa-trash-can"></i>
                                             </button>
                                         </form>
@@ -580,7 +567,7 @@
                                             {% csrf_token %}
                                             <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
                                             <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
                                                 <i class="fa-solid fa-trash-can"></i>
                                             </button>
                                         </form>
@@ -610,7 +597,7 @@
                                             {% csrf_token %}
                                             <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
                                             <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
                                                 <i class="fa-solid fa-trash-can"></i>
                                             </button>
                                         </form>
@@ -640,7 +627,7 @@
                                             {% csrf_token %}
                                             <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
                                             <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
                                                 <i class="fa-solid fa-trash-can"></i>
                                             </button>
                                         </form>
@@ -670,7 +657,7 @@
                                             {% csrf_token %}
                                             <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
                                             <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
                                                 <i class="fa-solid fa-trash-can"></i>
                                             </button>
                                         </form>
@@ -700,7 +687,7 @@
                                             {% csrf_token %}
                                             <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
                                             <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition" title="Eliminar">
+                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
                                                 <i class="fa-solid fa-trash-can"></i>
                                             </button>
                                         </form>
@@ -711,88 +698,14 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
 
             </div>
 
         </div>
 
-        <!-- ============================================================== -->
-        <!-- SCRIPTS DE NAVEGACIÓN TOTAL (Pestañas Superiores y Sub-Pestañas) -->
-        <!-- ============================================================== -->
-        <script>
-            // 1. Navegación entre las 3 TARJETAS PRINCIPALES (Mi Rutina, Actividades, Mi Perfil)
-            function switchTab(tabId) {
-                const secRutina = document.getElementById('seccion-rutina');
-                const secActividades = document.getElementById('seccion-actividades');
-                const secPerfil = document.getElementById('seccion-perfil');
-
-                // 1. Ocultar todos los paneles sin depender de clases CSS
-                if (secRutina) secRutina.style.display = 'none';
-                if (secActividades) secActividades.style.display = 'none';
-                if (secPerfil) secPerfil.style.display = 'none';
-
-                // 2. Resetear estilos de las 3 tarjetas de arriba
-                const tabRutina = document.getElementById('tab-rutina');
-                const tabActividades = document.getElementById('tab-actividades');
-                const tabPerfil = document.getElementById('tab-perfil');
-
-                const inactivo = "bg-slate-900/60 border border-slate-800 rounded-2xl p-5 cursor-pointer hover:border-slate-700 transition";
-                const activo = "bg-slate-900/90 border-2 border-blue-500 rounded-2xl p-5 cursor-pointer shadow-lg shadow-blue-500/10 transition";
-
-                if (tabRutina) tabRutina.className = inactivo;
-                if (tabActividades) tabActividades.className = inactivo;
-                if (tabPerfil) tabPerfil.className = inactivo;
-
-                // 3. Mostrar SOLO la elegida
-                if (tabId === 'rutina') {
-                    if (secRutina) secRutina.style.display = 'block';
-                    if (tabRutina) tabRutina.className = activo;
-                } else if (tabId === 'actividades') {
-                    if (secActividades) secActividades.style.display = 'block';
-                    if (tabActividades) tabActividades.className = activo;
-                } else if (tabId === 'perfil') {
-                    if (secPerfil) secPerfil.style.display = 'block';
-                    if (tabPerfil) tabPerfil.className = activo;
-                }
-            }
-
-            // 2. Alternar entre "Rutinas del Gimnasio" y "Mi Rutina Propia"
-            function cambiarSubTabRutina(tipo) {
-                const panelGym = document.getElementById('subpanel-gym');
-                const panelCustom = document.getElementById('subpanel-custom');
-                const btnGym = document.getElementById('subtab-btn-gym');
-                const btnCustom = document.getElementById('subtab-btn-custom');
-
-                if (tipo === 'gym') {
-                    panelGym.classList.remove('hidden');
-                    panelCustom.classList.add('hidden');
-                    btnGym.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow";
-                    btnCustom.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition";
-                } else {
-                    panelGym.classList.add('hidden');
-                    panelCustom.classList.remove('hidden');
-                    btnCustom.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow";
-                    btnGym.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition";
-                }
-            }
-
-            // 3. Alternar entre las 4 categorías institucionales
-            function seleccionarRutinaGym(cat) {
-                document.querySelectorAll('.panel-rutina-gym').forEach(p => p.classList.add('hidden'));
-                document.querySelectorAll('.btn-rutina-cat').forEach(b => {
-                    b.className = "btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition";
-                });
-
-                document.getElementById('rutina-' + cat).classList.remove('hidden');
-                const idMap = { 'hipertrofia': 'btn-cat-hip', 'fuerza': 'btn-cat-fue', 'spinning': 'btn-cat-spi', 'profe': 'btn-cat-pro' };
-                document.getElementById(idMap[cat]).className = "btn-rutina-cat px-4 py-2 rounded-xl text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 transition";
-            }
-        </script>
-
         <!-- ========================================================= -->
-        <!-- 🧘‍♀️ SECCIÓN 2: ACTIVIDADES                                -->
+        <!-- 🧘‍♀️ SECCIÓN 2: ACTIVIDADES (CON INSCRIPCIÓN REAL)          -->
         <!-- ========================================================= -->
         <section id="seccion-actividades" class="seccion-bloque hidden space-y-8">
             
@@ -804,59 +717,104 @@
                     </div>
                     <div>
                         <h2 class="text-lg font-extrabold text-white">Mis Clases Inscriptas</h2>
-                        <p class="text-xs text-slate-400">Disciplinas a las que estás suscripto actualmente con tu cuota.</p>
+                        <p class="text-xs text-slate-400">Disciplinas en las que estás anotado actualmente.</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {% for act in actividades_anotadas %}
-                        <div class="p-6 rounded-2xl bg-slate-900/80 border-2 border-emerald-500/40 shadow-lg shadow-emerald-950/10 space-y-4">
-                            <div class="flex justify-between items-start">
-                                <span class="text-2xl">🏋️‍♂️</span>
-                                <span class="text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
-                                    Inscripto
-                                </span>
+                        <div class="p-6 rounded-2xl bg-slate-900/80 border-2 border-emerald-500/40 shadow-lg shadow-emerald-950/10 flex flex-col justify-between space-y-4">
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-2xl">🏋️‍♂️</span>
+                                    <span class="text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                                        Inscripto
+                                    </span>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-base text-white">{{ act.nombre }}</h3>
+                                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">{{ act.descripcion|default:"Acceso habilitado según el cronograma semanal del gimnasio." }}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 class="font-bold text-base text-white">{{ act.nombre }}</h3>
-                                <p class="text-xs text-slate-400 mt-1 leading-relaxed">{{ act.descripcion|default:"Acceso habilitado según el horario del gimnasio." }}</p>
-                            </div>
+
+                            <form method="POST" action="{% url 'dashboard' %}" class="pt-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="cancelar_actividad">
+                                <input type="hidden" name="actividad_id" value="{{ act.id }}">
+                                <button type="submit" onclick="return confirm('¿Deseás darte de baja de {{ act.nombre }}?')" class="w-full py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold text-xs rounded-xl transition cursor-pointer">
+                                    <i class="fa-solid fa-xmark mr-1"></i> Cancelar Inscripción
+                                </button>
+                            </form>
                         </div>
                     {% empty %}
                         <div class="col-span-3 p-6 bg-slate-900/40 border border-slate-800 rounded-2xl text-center text-xs text-slate-400">
-                            Actualmente no estás inscripto en ninguna clase con reserva previa.
+                            Actualmente no estás inscripto en ninguna disciplina. Elegí una clase abajo para anotarte.
                         </div>
                     {% endfor %}
                 </div>
             </div>
 
-            <!-- ABAJO: Otras actividades disponibles -->
+            <!-- ABAJO: Todas las disciplinas disponibles del gimnasio -->
             <div class="space-y-4 border-t border-slate-800 pt-8">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
-                        <i class="fa-solid fa-compass"></i>
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-compass"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-extrabold text-white">Disciplinas Disponibles en el Gimnasio</h2>
+                            <p class="text-xs text-slate-400">Anotate directamente desde acá con tu membresía activa.</p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 class="text-lg font-extrabold text-white">Otras Disciplinas Disponibles</h2>
-                        <p class="text-xs text-slate-400">Clases que podés sumar a tu membresía.</p>
-                    </div>
+                    {% if not cuota_al_dia %}
+                        <span class="text-[11px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-1 rounded-full">
+                            <i class="fa-solid fa-lock mr-1"></i> Regularizá tu cuota para anotarte
+                        </span>
+                    {% endif %}
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {% for act in actividades_disponibles %}
                         <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition">
                             <div class="space-y-3">
-                                <span class="text-2xl">🧘‍♀️</span>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-2xl">🔥</span>
+                                    {% if act.requiere_reserva %}
+                                        <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
+                                            Con Reserva
+                                        </span>
+                                    {% else %}
+                                        <span class="text-[10px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2.5 py-0.5 rounded-full">
+                                            Pase Libre
+                                        </span>
+                                    {% endif %}
+                                </div>
                                 <h3 class="font-bold text-base text-white">{{ act.nombre }}</h3>
-                                <p class="text-xs text-slate-400 leading-relaxed">{{ act.descripcion|default:"Consultá en recepción para sumarte a los horarios de esta disciplina." }}</p>
+                                <p class="text-xs text-slate-400 leading-relaxed">{{ act.descripcion|default:"Actividad disponible en la grilla horaria del gimnasio." }}</p>
                             </div>
-                            <button onclick="alert('Solicitá tu inscripción a {{ act.nombre }} en mostrador o con tu profesor.')" class="mt-4 w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition cursor-pointer">
-                                Consultar Disponibilidad
-                            </button>
+
+                            <form method="POST" action="{% url 'dashboard' %}" class="mt-4">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="inscribir_actividad">
+                                <input type="hidden" name="actividad_id" value="{{ act.id }}">
+                                {% if cuota_al_dia %}
+                                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                        <i class="fa-solid fa-plus text-[10px]"></i> Anotarme a {{ act.nombre }}
+                                    </button>
+                                {% else %}
+                                    <button type="button" onclick="switchTab('perfil'); abrirModalPagoSocio();" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/30 font-bold text-xs rounded-xl transition cursor-pointer">
+                                        <i class="fa-solid fa-lock mr-1"></i> Cuota Vencida (Abonar)
+                                    </button>
+                                {% endif %}
+                            </form>
                         </div>
                     {% empty %}
                         <div class="col-span-3 p-6 bg-slate-900/40 border border-slate-800 rounded-2xl text-center text-xs text-slate-400">
-                            No hay más actividades secundarias disponibles en este momento.
+                            {% if actividades_anotadas %}
+                                ¡Ya estás anotado en todas las disciplinas activas del gimnasio!
+                            {% else %}
+                                No hay disciplinas activas cargadas en este momento.
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
@@ -881,7 +839,7 @@
                             <p class="text-xs text-slate-400">Modificá tus vías de contacto registradas.</p>
                         </div>
 
-                        <form method="POST" class="space-y-3 text-xs">
+                        <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
                             {% csrf_token %}
                             <input type="hidden" name="accion" value="actualizar_perfil">
 
@@ -912,14 +870,14 @@
                             </div>
 
                             <div class="pt-2 flex justify-end">
-                                <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition">
+                                <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">
                                     Guardar Datos
                                 </button>
                             </div>
                         </form>
                     </div>
 
-                    <!-- Formulario: Cambiar Contraseña -->
+                    <!-- Formulario: Cambiar Contraseña con Reglas de Seguridad -->
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm">
@@ -931,7 +889,7 @@
                             </div>
                         </div>
 
-                        <form method="POST" class="space-y-3 text-xs">
+                        <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
                             {% csrf_token %}
                             <input type="hidden" name="accion" value="cambiar_password">
 
@@ -943,16 +901,25 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nueva Contraseña</label>
-                                    <input type="password" name="pass_nueva" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                    <input type="password" name="pass_nueva" required minlength="8"
+                                           pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}"
+                                           title="Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo."
+                                           placeholder="••••••••"
+                                           class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
                                 </div>
                                 <div>
                                     <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Confirmar Nueva</label>
-                                    <input type="password" name="pass_confirmar" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                    <input type="password" name="pass_confirmar" required minlength="8" placeholder="••••••••"
+                                           class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
                                 </div>
                             </div>
 
+                            <p class="text-[11px] text-slate-400 leading-relaxed">
+                                Requisitos: mínimo <strong class="text-slate-200">8 caracteres</strong>, con al menos <strong class="text-slate-200">1 mayúscula</strong>, <strong class="text-slate-200">1 minúscula</strong>, <strong class="text-slate-200">1 número</strong> y <strong class="text-slate-200">1 símbolo</strong> (ej. <code class="text-amber-400">Gym2026!</code>).
+                            </p>
+
                             <div class="pt-2 flex justify-end">
-                                <button type="submit" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow transition">
+                                <button type="submit" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">
                                     Actualizar Contraseña
                                 </button>
                             </div>
@@ -972,10 +939,9 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="text-base font-bold text-white">Pase Mensual Activo</h3>
-                                    <p class="text-xs text-slate-400 mt-0.5">Acceso a: {{ membresia_actual.plan.nombre|default:"Musculación (Pase Completo)" }}</p>
+                                    <p class="text-xs text-slate-400 mt-0.5">Acceso a: {{ membresia_actual.plan.nombre|default:"Sin pase activo" }}</p>
                                 </div>
 
-                                <!-- 🟢 UN SOLO BADGE DINÁMICO -->
                                 <div>
                                     {% if cuota_al_dia and membresia_actual %}
                                         <span class="px-3 py-1 rounded-full text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-1.5">
@@ -991,7 +957,7 @@
                                 </div>
                             </div>
 
-                            <!-- BANNER Y BOTÓN: PAGAR CUOTA (RENOVACIÓN MENSUAL) -->
+                            <!-- BANNER Y BOTÓN: PAGAR CUOTA -->
                             <div class="mt-6 p-5 rounded-2xl bg-gradient-to-r from-blue-900/30 to-emerald-900/30 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
                                 <div class="flex items-center gap-3.5">
                                     <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl font-bold border border-emerald-500/20">
@@ -1028,43 +994,28 @@
                                 <thead class="text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
                                     <tr>
                                         <th class="pb-3 px-2">Fecha</th>
+                                        <th class="pb-3 px-2">Concepto</th>
                                         <th class="pb-3 px-2">Monto</th>
                                         <th class="pb-3 px-2">Medio</th>
                                         <th class="pb-3 px-2 text-right">Recibo</th>
                                     </tr>
                                 </thead>
-                                    <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                                <tbody class="divide-y divide-slate-800/60 text-slate-300">
                                     {% for pago in historial_pagos %}
                                         <tr class="hover:bg-slate-800/30 transition">
-                                            <!-- 1. Fecha del pago -->
-                                            <td class="py-3 px-3 font-mono text-slate-400">
-                                                {{ pago.fecha_pago|date:"d/m/Y" }}
-                                            </td>
-
-                                            <!-- 2. Concepto / Nombre del Plan o Clases -->
-                                            <td class="py-3 px-3 text-white font-medium">
-                                                {{ pago.membresia.plan.nombre|default:"Cuota Mensual" }}
-                                            </td>
-
-                                            <!-- 3. Monto cobrado -->
-                                            <td class="py-3 px-3 font-mono font-bold text-emerald-400">
-                                                ${{ pago.monto|floatformat:0 }}
-                                            </td>
-
-                                            <!-- 4. Medio de pago con badge de color -->
-                                            <td class="py-3 px-3">
+                                            <td class="py-3 px-2 font-mono text-slate-400">{{ pago.fecha_pago|date:"d/m/Y" }}</td>
+                                            <td class="py-3 px-2 text-white font-medium">{{ pago.membresia.plan.nombre|default:"Cuota Mensual" }}</td>
+                                            <td class="py-3 px-2 font-mono font-bold text-emerald-400">${{ pago.monto|floatformat:0 }}</td>
+                                            <td class="py-3 px-2">
                                                 <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase {% if pago.metodo_pago == 'efectivo' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% else %}bg-blue-500/10 text-blue-400 border border-blue-500/20{% endif %}">
                                                     {{ pago.metodo_pago }}
                                                 </span>
                                             </td>
-
-                                            <!-- 5. Número de Recibo -->
-                                            <td class="py-3 px-3 text-right">
+                                            <td class="py-3 px-2 text-right">
                                                 <span class="text-blue-400 font-mono text-[11px]">#REC-{{ pago.id }}</span>
                                             </td>
                                         </tr>
                                     {% empty %}
-                                        <!-- Mensaje que sale únicamente si el socio no tiene ningún pago hecho -->
                                         <tr>
                                             <td colspan="5" class="py-6 text-center text-slate-500 text-xs">
                                                 No hay registros de cobros anteriores.
@@ -1084,277 +1035,235 @@
 
     </main>
 
-<!-- ============================================================== -->
-<!-- 💳 MODAL: AUTOGESTIÓN DE PAGO / RENOVACIÓN (SOCIO)            -->
-<!-- ============================================================== -->
-<div id="modalPagoSocio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl overflow-y-auto max-h-[90vh]">
-        
-        <!-- Cabecera -->
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-            <div class="flex items-center gap-2.5">
-                <span class="text-xl">💳</span>
-                <div>
-                    <h3 class="font-extrabold text-white text-base">Abonar Cuota / Clases</h3>
-                    <p class="text-[11px] text-slate-400">Podés marcar una o varias disciplinas</p>
+    <!-- ============================================================== -->
+    <!-- 💳 MODAL: AUTOGESTIÓN DE PAGO / RENOVACIÓN (SOCIO)            -->
+    <!-- ============================================================== -->
+    <div id="modalPagoSocio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl overflow-y-auto max-h-[90vh]">
+            
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-xl">💳</span>
+                    <div>
+                        <h3 class="font-extrabold text-white text-base">Abonar Cuota / Clases</h3>
+                        <p class="text-[11px] text-slate-400">Podés marcar una o varias disciplinas</p>
+                    </div>
                 </div>
-            </div>
-            <button type="button" onclick="cerrarModalPagoSocio()" class="text-slate-400 hover:text-white transition cursor-pointer p-1">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-        </div>
-
-        <form action="{% url 'dashboard' %}" method="POST" class="space-y-4 text-xs">
-            {% csrf_token %}
-            <input type="hidden" name="accion" value="pagar_cuota_socio">
-
-            <!-- 1. SELECCIÓN DE CLASES (MULTICHECK) -->
-            <div>
-                <label class="block text-slate-400 font-bold uppercase text-[10px] mb-2 tracking-wider">
-                    ¿Qué disciplinas vas a abonar?
-                </label>
-                <div class="space-y-2">
-                    <!-- Musculación -->
-                    <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" name="servicios" value="musculacion" data-precio="60000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
-                            <div>
-                                <span class="font-bold text-white block">🏋️‍♂️ Musculación (Pase Libre)</span>
-                                <span class="text-[10px] text-slate-400">Acceso a máquinas y todas las áreas</span>
-                            </div>
-                        </div>
-                        <span class="font-mono font-bold text-blue-400 text-sm">$60.000</span>
-                    </label>
-
-                    <!-- Clases Grupales -->
-                    <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" name="servicios" value="clases" data-precio="45000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
-                            <div>
-                                <span class="font-bold text-white block">🧘 Clases Grupales</span>
-                                <span class="text-[10px] text-slate-400">Funcional, Spinning, Zumba, Cardio</span>
-                            </div>
-                        </div>
-                        <span class="font-mono font-bold text-blue-400 text-sm">$45.000</span>
-                    </label>
-
-                    <!-- Pilates 1 vez -->
-                    <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" name="servicios" value="pilates_1" data-precio="35000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
-                            <div>
-                                <span class="font-bold text-white block">🤸 Pilates (1 vez por semana)</span>
-                                <span class="text-[10px] text-slate-400">1 turno semanal reservado</span>
-                            </div>
-                        </div>
-                        <span class="font-mono font-bold text-blue-400 text-sm">$35.000</span>
-                    </label>
-
-                    <!-- Pilates 2 veces -->
-                    <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" name="servicios" value="pilates_2" data-precio="42000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
-                            <div>
-                                <span class="font-bold text-white block">🤸 Pilates (2 veces por semana)</span>
-                                <span class="text-[10px] text-slate-400">2 turnos semanales reservados</span>
-                            </div>
-                        </div>
-                        <span class="font-mono font-bold text-blue-400 text-sm">$42.000</span>
-                    </label>
-
-                    <!-- Pilates 3 veces -->
-                    <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" name="servicios" value="pilates_3" data-precio="50000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
-                            <div>
-                                <span class="font-bold text-white block">🤸 Pilates (3 veces por semana)</span>
-                                <span class="text-[10px] text-slate-400">3 turnos semanales reservados</span>
-                            </div>
-                        </div>
-                        <span class="font-mono font-bold text-blue-400 text-sm">$50.000</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- TOTAL DINÁMICO CALCULADO -->
-            <div class="p-3.5 rounded-xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-between">
-                <span class="text-xs font-bold text-slate-300">Total a abonar:</span>
-                <span id="labelTotalPagoSocio" class="text-xl font-black text-blue-400 font-mono">$0</span>
-            </div>
-
-            <!-- 2. MÉTODO DE PAGO (EFECTIVO Y TRANSFERENCIA) -->
-            <div>
-                <label class="block text-slate-400 font-bold uppercase text-[10px] mb-1.5 tracking-wider">Método de Pago:</label>
-                <div class="grid grid-cols-2 gap-3">
-                    <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
-                        <input type="radio" name="metodo_pago" value="transferencia" checked class="text-emerald-500 focus:ring-0">
-                        <span class="font-bold text-slate-200">📱 Transferencia</span>
-                    </label>
-                    <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
-                        <input type="radio" name="metodo_pago" value="efectivo" class="text-emerald-500 focus:ring-0">
-                        <span class="font-bold text-slate-200">💵 En Recepción</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Datos para la Transferencia -->
-            <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
-                <p class="font-bold text-slate-300">📌 Datos para transferencia inmediata:</p>
-                <p>Alias: <span class="text-white font-mono font-bold">GYMTRACK.BODYMIC.MP</span></p>
-                <p>CBU: <span class="text-white font-mono">0000003100012345678901</span></p>
-            </div>
-
-            <!-- Botones -->
-            <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
-                <button type="button" onclick="cerrarModalPagoSocio()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
-                    Cancelar
-                </button>
-                <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition cursor-pointer">
-                    Confirmar Renovación
+                <button type="button" onclick="cerrarModalPagoSocio()" class="text-slate-400 hover:text-white transition cursor-pointer p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-        </form>
-    </div>
-</div>
 
-    <!-- MODAL DE NOVEDADES (SOLO LECTURA) -->
-<div id="modal-novedades" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-5">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-bullhorn"></i>
-                </div>
+            <form action="{% url 'dashboard' %}" method="POST" class="space-y-4 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="pagar_cuota_socio">
+
                 <div>
-                    <h3 class="text-base font-bold text-white">Tablón de Novedades</h3>
-                    <p class="text-xs text-slate-400">Avisos importantes de GymTrack</p>
+                    <label class="block text-slate-400 font-bold uppercase text-[10px] mb-2 tracking-wider">
+                        ¿Qué disciplinas vas a abonar?
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" name="servicios" value="musculacion" data-precio="60000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
+                                <div>
+                                    <span class="font-bold text-white block">🏋️‍♂️ Musculación (Pase Libre)</span>
+                                    <span class="text-[10px] text-slate-400">Acceso a máquinas y todas las áreas</span>
+                                </div>
+                            </div>
+                            <span class="font-mono font-bold text-blue-400 text-sm">$60.000</span>
+                        </label>
+
+                        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" name="servicios" value="clases" data-precio="45000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
+                                <div>
+                                    <span class="font-bold text-white block">🧘 Clases Grupales</span>
+                                    <span class="text-[10px] text-slate-400">Funcional, Spinning, Zumba, Cardio</span>
+                                </div>
+                            </div>
+                            <span class="font-mono font-bold text-blue-400 text-sm">$45.000</span>
+                        </label>
+
+                        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" name="servicios" value="pilates_1" data-precio="35000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
+                                <div>
+                                    <span class="font-bold text-white block">🤸 Pilates (1 vez por semana)</span>
+                                    <span class="text-[10px] text-slate-400">1 turno semanal reservado</span>
+                                </div>
+                            </div>
+                            <span class="font-mono font-bold text-blue-400 text-sm">$35.000</span>
+                        </label>
+
+                        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" name="servicios" value="pilates_2" data-precio="42000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
+                                <div>
+                                    <span class="font-bold text-white block">🤸 Pilates (2 veces por semana)</span>
+                                    <span class="text-[10px] text-slate-400">2 turnos semanales reservados</span>
+                                </div>
+                            </div>
+                            <span class="font-mono font-bold text-blue-400 text-sm">$42.000</span>
+                        </label>
+
+                        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" name="servicios" value="pilates_3" data-precio="50000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
+                                <div>
+                                    <span class="font-bold text-white block">🤸 Pilates (3 veces por semana)</span>
+                                    <span class="text-[10px] text-slate-400">3 turnos semanales reservados</span>
+                                </div>
+                            </div>
+                            <span class="font-mono font-bold text-blue-400 text-sm">$50.000</span>
+                        </label>
+                    </div>
                 </div>
-            </div>
-            <button type="button" onclick="toggleModalNovedades()" class="text-slate-400 hover:text-white text-lg p-1 transition cursor-pointer">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
 
-        <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
-            <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-1.5">
-                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">Institucional</span>
-                <h4 class="text-xs font-bold text-white">Mantenimiento en Sala de Musculación</h4>
-                <p class="text-[11px] text-slate-400 leading-relaxed">Este sábado se realizarán tareas preventivas en poleas y cintas. El resto de las áreas funcionará con normalidad.</p>
-            </div>
-        </div>
+                <div class="p-3.5 rounded-xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-300">Total a abonar:</span>
+                    <span id="labelTotalPagoSocio" class="text-xl font-black text-blue-400 font-mono">$0</span>
+                </div>
 
-        <div class="pt-2 border-t border-slate-800 flex justify-end">
-            <button type="button" onclick="toggleModalNovedades()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition cursor-pointer">
-                Entendido
-            </button>
+                <div>
+                    <label class="block text-slate-400 font-bold uppercase text-[10px] mb-1.5 tracking-wider">Método de Pago:</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
+                            <input type="radio" name="metodo_pago" value="transferencia" checked class="text-emerald-500 focus:ring-0">
+                            <span class="font-bold text-slate-200">📱 Transferencia</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
+                            <input type="radio" name="metodo_pago" value="efectivo" class="text-emerald-500 focus:ring-0">
+                            <span class="font-bold text-slate-200">💵 En Recepción</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                    <p class="font-bold text-slate-300">📌 Datos para transferencia inmediata:</p>
+                    <p>Alias: <span class="text-white font-mono font-bold">GYMTRACK.BODYMIC.MP</span></p>
+                    <p>CBU: <span class="text-white font-mono">0000003100012345678901</span></p>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="cerrarModalPagoSocio()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition cursor-pointer">
+                        Confirmar Renovación
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-</div>
 
-<script>
-    function toggleModalNovedades() {
-        const modal = document.getElementById('modal-novedades');
-        if (modal) {
-            modal.classList.toggle('hidden');
-        }
-    }
-</script>
+    <!-- MODAL DE NOVEDADES -->
+    <div id="modal-novedades" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-bullhorn"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Tablón de Novedades</h3>
+                        <p class="text-xs text-slate-400">Avisos importantes de GymTrack</p>
+                    </div>
+                </div>
+                <button type="button" onclick="toggleModalNovedades()" class="text-slate-400 hover:text-white text-lg p-1 transition cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
+                <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-1.5">
+                    <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">Institucional</span>
+                    <h4 class="text-xs font-bold text-white">Mantenimiento en Sala de Musculación</h4>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">Este sábado se realizarán tareas preventivas en poleas y cintas. El resto de las áreas funcionará con normalidad.</p>
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-800 flex justify-end">
+                <button type="button" onclick="toggleModalNovedades()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition cursor-pointer">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- FOOTER UNIFICADO -->
     <footer class="bg-slate-900 border-t border-slate-800 text-slate-500 py-6 text-xs text-center mt-auto">
         <p>© 2026 GymTrack — Portal de Autogestión para Socios.</p>
     </footer>
 
-    <!-- JS PARA ALTERNAR SECCIONES Y SUBRUTINAS -->
+    <!-- SCRIPTS UNIFICADOS -->
     <script>
-        function mostrarSeccion(seccionId) {
-            // Ocultar todas las secciones
-            document.querySelectorAll('.seccion-bloque').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.main-btn').forEach(btn => btn.classList.remove('active'));
+        function switchTab(tabId) {
+            const secRutina = document.getElementById('seccion-rutina');
+            const secActividades = document.getElementById('seccion-actividades');
+            const secPerfil = document.getElementById('seccion-perfil');
 
-            // Activar la seleccionada
-            const seccion = document.getElementById('seccion-' + seccionId);
-            const boton = document.getElementById('btn-' + seccionId);
+            if (secRutina) secRutina.style.display = 'none';
+            if (secActividades) secActividades.style.display = 'none';
+            if (secPerfil) secPerfil.style.display = 'none';
 
-            if (seccion) seccion.classList.remove('hidden');
-            if (boton) boton.classList.add('active');
+            const tabRutina = document.getElementById('tab-rutina');
+            const tabActividades = document.getElementById('tab-actividades');
+            const tabPerfil = document.getElementById('tab-perfil');
+
+            const inactivo = "main-btn p-6 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition text-left w-full cursor-pointer";
+            const activo = "main-btn active p-6 rounded-3xl bg-slate-900/90 border-2 border-blue-500 transition text-left w-full cursor-pointer shadow-lg shadow-blue-500/10";
+
+            if (tabRutina) tabRutina.className = inactivo;
+            if (tabActividades) tabActividades.className = inactivo;
+            if (tabPerfil) tabPerfil.className = inactivo;
+
+            if (tabId === 'rutina') {
+                if (secRutina) secRutina.style.display = 'block';
+                if (tabRutina) tabRutina.className = activo;
+            } else if (tabId === 'actividades') {
+                if (secActividades) secActividades.style.display = 'block';
+                if (tabActividades) tabActividades.className = activo;
+            } else if (tabId === 'perfil') {
+                if (secPerfil) secPerfil.style.display = 'block';
+                if (tabPerfil) tabPerfil.className = activo;
+            }
         }
 
-        function verSubRutina(tipo) {
-            const pre = document.getElementById('sub-preestablecida');
-            const propia = document.getElementById('sub-propia');
-            const btnPre = document.getElementById('btn-sub-pre');
-            const btnPropia = document.getElementById('btn-sub-propia');
+        function cambiarSubTabRutina(tipo) {
+            const panelGym = document.getElementById('subpanel-gym');
+            const panelCustom = document.getElementById('subpanel-custom');
+            const btnGym = document.getElementById('subtab-btn-gym');
+            const btnCustom = document.getElementById('subtab-btn-custom');
 
-            if (tipo === 'preestablecida') {
-                pre.classList.remove('hidden');
-                propia.classList.add('hidden');
-                btnPre.className = "px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl shadow transition";
-                btnPropia.className = "px-4 py-2 text-slate-400 hover:text-white font-bold text-xs rounded-xl transition";
+            if (tipo === 'gym') {
+                panelGym.classList.remove('hidden');
+                panelCustom.classList.add('hidden');
+                btnGym.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow cursor-pointer";
+                btnCustom.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer";
             } else {
-                propia.classList.remove('hidden');
-                pre.classList.add('hidden');
-                btnPropia.className = "px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl shadow transition";
-                btnPre.className = "px-4 py-2 text-slate-400 hover:text-white font-bold text-xs rounded-xl transition";
+                panelGym.classList.add('hidden');
+                panelCustom.classList.remove('hidden');
+                btnCustom.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow cursor-pointer";
+                btnGym.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer";
             }
         }
 
-        function agregarEjercicioCustom() {
-            const nombre = document.getElementById('custom-nombre').value;
-            const grupo = document.getElementById('custom-grupo').value;
-            const series = document.getElementById('custom-series').value;
+        function seleccionarRutinaGym(cat) {
+            document.querySelectorAll('.panel-rutina-gym').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.btn-rutina-cat').forEach(b => {
+                b.className = "btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer";
+            });
 
-            const lista = document.getElementById('lista-custom');
-            const item = document.createElement('div');
-            item.className = "p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center animate-in fade-in";
-            item.innerHTML = `
-                <div>
-                    <span class="font-bold text-white">${nombre}</span>
-                    <span class="text-slate-400 ml-2">• ${series} (${grupo})</span>
-                </div>
-                <span class="text-xs text-blue-400 font-bold">Personalizado</span>
-            `;
-            lista.appendChild(item);
-
-            document.getElementById('custom-nombre').value = '';
-            document.getElementById('custom-series').value = '';
+            document.getElementById('rutina-' + cat).classList.remove('hidden');
+            const idMap = { 'hipertrofia': 'btn-cat-hip', 'fuerza': 'btn-cat-fue', 'spinning': 'btn-cat-spi', 'profe': 'btn-cat-pro' };
+            document.getElementById(idMap[cat]).className = "btn-rutina-cat px-4 py-2 rounded-xl text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 transition cursor-pointer";
         }
 
-        // Al terminar de cargar la página, verificar si venimos de guardar un ejercicio
-        document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-
-            // Si la URL contiene "?tab=custom"
-            if (urlParams.get('tab') === 'custom') {
-                // 1. Nos aseguramos de que el panel general de "Mi Rutina" esté visible
-                if (typeof switchTab === 'function') {
-                    switchTab('rutina');
-                }
-
-                // 2. Activamos la sub-pestaña de la rutina personalizada y ocultamos las 4 del gym
-                if (typeof cambiarSubTabRutina === 'function') {
-                    cambiarSubTabRutina('custom');
-                } else {
-                    const panelGym = document.getElementById('subpanel-gym');
-                    const panelCustom = document.getElementById('subpanel-custom');
-                    const btnGym = document.getElementById('subtab-btn-gym');
-                    const btnCustom = document.getElementById('subtab-btn-custom');
-
-                    if (panelGym) panelGym.classList.add('hidden');
-                    if (panelCustom) panelCustom.classList.remove('hidden');
-
-                    if (btnCustom) {
-                        btnCustom.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow";
-                    }
-                    if (btnGym) {
-                        btnGym.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition";
-                    }
-                }
-
-                // 3. (Opcional) Limpia la URL sin recargar para que quede limpia
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        });
+        function toggleModalNovedades() {
+            const modal = document.getElementById('modal-novedades');
+            if (modal) modal.classList.toggle('hidden');
+        }
 
         function abrirModalPagoSocio() {
             const modal = document.getElementById('modalPagoSocio');
@@ -1378,6 +1287,22 @@
             }
         }
 
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+
+            if (tab === 'custom') {
+                switchTab('rutina');
+                cambiarSubTabRutina('custom');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else if (tab === 'actividades') {
+                switchTab('actividades');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else if (tab === 'perfil') {
+                switchTab('perfil');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
     </script>
 </body>
 </html>
