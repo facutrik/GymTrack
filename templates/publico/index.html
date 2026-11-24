@@ -5,11 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GymTrack - Tu entrenamiento inteligente</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts (Plus Jakarta Sans + Barlow Condensed para la marca) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -31,13 +28,12 @@
     </style>
 </head>
 
-<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-    <!-- NAVBAR FIXED -->
+<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+<!-- NAVBAR -->
     <nav class="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 text-white transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- NAVBAR: Isotipo GT + GYMtrack -->
                 <div class="flex items-center gap-3.5">
                     <img src="{% static 'img/logo-gymtrack.svg' %}"
                         alt="Logo GymTrack"
@@ -48,8 +44,6 @@
                         </span>
                     </div>
                 </div>
-
-                <!-- Navigation Links & Login -->
                 <div class="flex items-center gap-6">
                     <a href="#sobre-nosotros" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Experiencia Digital</a>
                     <a href="#actividades-membresias" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Funcionalidades</a>
@@ -64,9 +58,10 @@
         </div>
     </nav>
 
-    <!-- SECCIÓN 1: HERO CON CARRUSEL DE FONDO (INTACTO) -->
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+<!-- SECCION 1: CARRUSEL -->
     <section class="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden bg-slate-950">
-        <!-- Carrusel Img Backgrounds -->
         <div class="absolute inset-0 z-0">
             <div class="carousel-slide active absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1920&auto=format&fit=crop');">
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/40"></div>
@@ -78,8 +73,6 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/40"></div>
             </div>
         </div>
-
-        <!-- Overlaid Content -->
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
             <div class="max-w-2xl">
                 <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-6 backdrop-blur-md">
@@ -92,11 +85,9 @@
                         <span class="text-[#3f51d6] drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">GYM</span><span class="text-white">track</span>
                     </h1>
                 </div>
-
                 <p class="w-fit pr-4 text-xl text-slate-300 font-light leading-relaxed mb-8 border-l-4 border-blue-600 pl-3 bg-slate-900/40 py-1 rounded-r-lg backdrop-blur-sm">
                     El espacio ideal para entrenar, superar tus límites <br> y transformar tu rutina diaria.
                 </p>
-
                 <div class="flex flex-wrap gap-4">
                     <a href="#actividades-membresias" class="px-7 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 transition duration-200 flex items-center gap-2">
                         Conocer Plataforma <i class="fa-solid fa-arrow-down text-sm"></i>
@@ -107,8 +98,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Carousel Indicators -->
         <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
             <button onclick="setSlide(0)" class="carousel-dot w-8 h-2 rounded-full bg-white transition-all duration-300"></button>
             <button onclick="setSlide(1)" class="carousel-dot w-2 h-2 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300"></button>
@@ -116,7 +105,9 @@
         </div>
     </section>
 
-    <!-- SECCIÓN 2: EXPERIENCIA DIGITAL & MOCKUP DEL SOCIO (INTACTO COMO TU CAPTURA 2) -->
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+<!-- SECCION 2: EXPERIENCIA DIGITAL & MOCKUP DEL SOCIO-->
     <section id="sobre-nosotros" class="py-20 bg-slate-950 text-white relative overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -151,6 +142,7 @@
                         </div>
                     </div>
                 </div>
+
 <!-- Columna Derecha: Contenido y Beneficios -->
                 <div class="lg:col-span-7 space-y-6">
                     <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">EXPERIENCIA DIGITAL</span>
@@ -193,7 +185,9 @@
         </div>
     </section>
 
-    <!-- SECCIÓN 3: TRES COLUMNAS (MÓDULOS DEL SISTEMA) -->
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+<!-- SECCION 3: MODULOS DEL SISTEMA -->
     <section id="actividades-membresias" class="py-20 bg-slate-900 border-y border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-14">
@@ -313,9 +307,9 @@
     </section>
 
 
-<!-- SECCIÓN 4: PLANES DE SUSCRIPCIÓN SAAS B2B -->
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+<!-- SECCIÓN 4: PLANES DE SUSCRIPCIÓN -->
     <section id="planes-saas" class="relative py-20 bg-slate-900 border-t border-slate-800">
-<!-- MARCA DE AGUA GT -->
         <img src="{% static 'img/logo-gymtrack.svg' %}"
             alt=""
             aria-hidden="true"
@@ -394,12 +388,12 @@
                         Armar Plan a Medida
                     </a>
                 </div>
-
             </div>
         </div>
     </section>
 
 
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 <!-- SECCIÓN 5: GIMNASIOS QUE TRABAJAN CON NOSOTROS -->
 <section id="clientes" class="py-20 bg-slate-950 border-t border-slate-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

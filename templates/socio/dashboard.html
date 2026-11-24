@@ -21,13 +21,14 @@
         .font-brand { font-family: 'Barlow Condensed', sans-serif; }
     </style>
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-    <!-- NAVBAR UNIFICADO -->
+
+<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+<!-- NAVBAR -->
     <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- LOGO -->
+<!-- LOGO -->
                 <div class="flex items-center gap-3.5">
                     <img src="{% static 'img/logo-gymtrack.svg' %}"
                         alt="Logo GymTrack"
@@ -56,12 +57,10 @@
                             <p class="text-[10px] text-blue-400 font-semibold font-mono">Portal Socio • DNI: {{ user.username }}</p>
                         </div>
                     </div>
-
                     <button type="button" onclick="toggleModalNovedades()" class="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition cursor-pointer" title="Novedades y Anuncios">
                         <i class="fa-solid fa-bell text-sm"></i>
                         <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
                     </button>
-
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
                         <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition cursor-pointer" title="Cerrar sesión">
@@ -74,10 +73,9 @@
         </div>
     </nav>
 
-    <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
 
-        <!-- CABECERA -->
+<!-- CABECERA -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2">
@@ -87,7 +85,6 @@
                 <h1 class="text-3xl font-extrabold text-white tracking-tight">Hola, {{ user.first_name|default:user.username }} 👋</h1>
                 <p class="text-slate-400 text-sm mt-1">Elegí una sección para gestionar tus entrenamientos, clases y perfil.</p>
             </div>
-
             <div class="sm:self-end">
                 {% if cuota_al_dia and membresia_actual %}
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl px-5 py-3.5 flex items-center gap-3.5 shadow-sm">
@@ -110,7 +107,7 @@
             </div>
         </div>
 
-        <!-- MENSAJES -->
+<!-- MENSAJES -->
         {% if messages %}
             <div class="w-full space-y-2">
                 {% for message in messages %}
@@ -122,7 +119,6 @@
             </div>
         {% endif %}
 
-        <!-- LOS 3 BOTONES EN GRANDE -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <button onclick="switchTab('rutina')" id="tab-rutina" class="main-btn active p-6 rounded-3xl bg-slate-900/90 border-2 border-blue-500 transition text-left w-full cursor-pointer shadow-lg shadow-blue-500/10">
                 <div class="flex items-center justify-between mb-4">
@@ -139,7 +135,6 @@
                     3 planes básicos, rutina del profesor o tu propia rutina con registro de series, kg y descanso.
                 </p>
             </button>
-
             <button onclick="switchTab('actividades')" id="tab-actividades" class="main-btn p-6 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition text-left w-full cursor-pointer">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-14 h-14 rounded-2xl bg-emerald-600/10 text-emerald-400 flex items-center justify-center text-2xl transition">
@@ -155,7 +150,6 @@
                     Tus clases inscriptas arriba y el catálogo completo de disciplinas disponibles abajo.
                 </p>
             </button>
-
             <button onclick="switchTab('perfil')" id="tab-perfil" class="main-btn p-6 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition text-left w-full cursor-pointer">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-14 h-14 rounded-2xl bg-indigo-600/10 text-indigo-400 flex items-center justify-center text-2xl transition">
@@ -173,12 +167,9 @@
             </button>
         </div>
 
-        <!-- ============================================================== -->
-        <!-- SECCIÓN 1: MI RUTINA (ESTILO HEVY TRACKER UNIFICADO)           -->
-        <!-- ============================================================== -->
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+<!-- SECCION 1: MI RUTINA -->
         <div id="seccion-rutina" class="seccion-contenido mt-8 space-y-6">
-
-            <!-- BARRA SUPERIOR DE SESIÓN ESTILO HEVY -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-xl">
                 <div class="flex flex-wrap items-center gap-6">
                     <div>
@@ -204,7 +195,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="flex items-center gap-2.5">
                     <button type="button" onclick="reiniciarChecksHevy()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-semibold text-slate-300 transition cursor-pointer">
                         <i class="fa-solid fa-rotate-left mr-1"></i> Reiniciar Sesión
@@ -214,36 +204,32 @@
                     </button>
                 </div>
             </div>
-
-            <!-- SELECTOR DE LAS 5 RUTINAS -->
             <div class="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-4">
                 <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mr-1">3 Básicos:</span>
                 <button type="button" onclick="seleccionarModoRutina('adaptacion')" id="btn-rutina-adaptacion"
                         class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md shadow-blue-600/20 transition cursor-pointer">
-                    🌱 Adaptación
+                    Adaptación
                 </button>
                 <button type="button" onclick="seleccionarModoRutina('hipertrofia')" id="btn-rutina-hipertrofia"
                         class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
-                    💪 Hipertrofia
+                    Hipertrofia
                 </button>
                 <button type="button" onclick="seleccionarModoRutina('fuerza')" id="btn-rutina-fuerza"
                         class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
-                    🏋️ Fuerza
+                    Fuerza
                 </button>
-
                 <div class="h-6 w-px bg-slate-800 mx-1 hidden sm:block"></div>
-
                 <button type="button" onclick="seleccionarModoRutina('profe')" id="btn-rutina-profe"
                         class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
-                    📋 Personalizada por Profesor
+                    Personalizada por Profesor
                 </button>
                 <button type="button" onclick="seleccionarModoRutina('custom')" id="btn-rutina-custom"
                         class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
-                    ✍️ Mi Propia Rutina (7 Días)
+                    Mi Propia Rutina (7 Días)
                 </button>
             </div>
 
-            <!-- 1. BÁSICO 1: ADAPTACIÓN -->
+<!-- 1. BÁSICO 1: ADAPTACIÓN -->
             <div id="panel-rutina-adaptacion" class="panel-modo-rutina space-y-5">
                 <div class="flex items-center justify-between">
                     <div>
@@ -252,7 +238,6 @@
                     </div>
                     <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">3 Días / Semana</span>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {% for dia in rutina_adaptacion.dias.all %}
                         <button type="button"
@@ -267,7 +252,6 @@
                         </button>
                     {% endfor %}
                 </div>
-
                 {% for dia in rutina_adaptacion.dias.all %}
                     <div id="contenido-dia-adaptacion-{{ forloop.counter }}"
                         class="contenido-dia-adaptacion {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
@@ -278,7 +262,6 @@
                             </div>
                             <span class="text-xs font-semibold text-blue-400">Descanso: 60–90s</span>
                         </div>
-
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {% for ej in dia.ejercicios.all %}
                                 <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
@@ -314,7 +297,7 @@
                 {% endfor %}
             </div>
 
-            <!-- 2. BÁSICO 2: HIPERTROFIA -->
+<!-- 2. BÁSICO 2: HIPERTROFIA -->
             <div id="panel-rutina-hipertrofia" class="panel-modo-rutina hidden space-y-5">
                 <div class="flex items-center justify-between">
                     <div>
@@ -323,7 +306,6 @@
                     </div>
                     <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">Split 3 Días</span>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {% for dia in rutina_hipertrofia.dias.all %}
                         <button type="button"
@@ -338,10 +320,9 @@
                         </button>
                     {% endfor %}
                 </div>
-
                 {% for dia in rutina_hipertrofia.dias.all %}
                     <div id="contenido-dia-hipertrofia-{{ forloop.counter }}"
-                         class="contenido-dia-hipertrofia {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        class="contenido-dia-hipertrofia {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                             <div>
                                 <span class="text-[10px] font-bold text-blue-400 uppercase block">HIPERTROFIA • DÍA {{ forloop.counter }}</span>
@@ -349,7 +330,6 @@
                             </div>
                             <span class="text-xs font-semibold text-blue-400">Descanso: 90–120s</span>
                         </div>
-
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {% for ej in dia.ejercicios.all %}
                                 <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
@@ -385,7 +365,7 @@
                 {% endfor %}
             </div>
 
-            <!-- 3. BÁSICO 3: FUERZA -->
+<!-- 3. BÁSICO 3: FUERZA -->
             <div id="panel-rutina-fuerza" class="panel-modo-rutina hidden space-y-5">
                 <div class="flex items-center justify-between">
                     <div>
@@ -394,7 +374,6 @@
                     </div>
                     <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">Descanso 150-180s</span>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {% for dia in rutina_fuerza.dias.all %}
                         <button type="button"
@@ -409,7 +388,6 @@
                         </button>
                     {% endfor %}
                 </div>
-
                 {% for dia in rutina_fuerza.dias.all %}
                     <div id="contenido-dia-fuerza-{{ forloop.counter }}"
                         class="contenido-dia-fuerza {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
@@ -420,7 +398,6 @@
                             </div>
                             <span class="text-xs font-semibold text-blue-400">Descanso: 150–180s</span>
                         </div>
-
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {% for ej in dia.ejercicios.all %}
                                 <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
@@ -456,7 +433,7 @@
                 {% endfor %}
             </div>
 
-            <!-- 4. PERSONALIZADA POR PROFESOR -->
+<!-- 4. PERSONALIZADA POR PROFESOR -->
             <div id="panel-rutina-profe" class="panel-modo-rutina hidden space-y-5">
                 <div class="flex items-center justify-between">
                     <div>
@@ -465,7 +442,6 @@
                     </div>
                     <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">Supervisada</span>
                 </div>
-
                 {% if rutina_gym and rutina_gym.dias.all %}
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {% for dia in rutina_gym.dias.all %}
@@ -481,10 +457,9 @@
                             </button>
                         {% endfor %}
                     </div>
-
                     {% for dia in rutina_gym.dias.all %}
                         <div id="contenido-dia-profe-{{ forloop.counter }}"
-                             class="contenido-dia-profe {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+                            class="contenido-dia-profe {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
                             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                                 <div>
                                     <span class="text-[10px] font-bold text-blue-400 uppercase block">PROFESOR • DÍA {{ forloop.counter }}</span>
@@ -492,7 +467,6 @@
                                 </div>
                                 <span class="text-xs font-semibold text-blue-400">Plan Personalizado</span>
                             </div>
-
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {% for ej in dia.ejercicios.all %}
                                     <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
@@ -531,7 +505,7 @@
                 {% endif %}
             </div>
 
-            <!-- 5. MI PROPIA RUTINA (CON CATÁLOGO COMPLETO HEVY + 7 DÍAS) -->
+<!-- 5. MI RUTINA -->
             <div id="panel-rutina-custom" class="panel-modo-rutina hidden space-y-6">
                 <div class="bg-slate-900/90 border border-blue-500/30 rounded-3xl p-6 space-y-5">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
@@ -545,8 +519,6 @@
                             Catálogo Hevy Integrado
                         </span>
                     </div>
-
-                    <!-- Buscador y filtros -->
                     <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3">
                         <div class="flex flex-col sm:flex-row gap-2.5">
                             <div class="relative flex-1">
@@ -557,7 +529,6 @@
                             </div>
                             <span id="contadorCatalogoHevy" class="text-[11px] font-mono text-slate-400 self-center px-2"></span>
                         </div>
-
                         <div class="flex flex-wrap gap-1.5" id="filtrosGrupoHevy">
                             <button type="button" onclick="seleccionarGrupoHevy('todos', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-blue-600 text-white font-bold text-[11px] cursor-pointer">Todos</button>
                             <button type="button" onclick="seleccionarGrupoHevy('pecho', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Pecho</button>
@@ -569,27 +540,21 @@
                             <button type="button" onclick="seleccionarGrupoHevy('core', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Abdomen / Core</button>
                             <button type="button" onclick="seleccionarGrupoHevy('cardio', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Cardio / Funcional</button>
                         </div>
-
                         <div id="gridCatalogoHevy" class="max-h-48 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pr-1 pt-1"></div>
                     </div>
-
-                    <!-- Formulario Agregar -->
                     <form method="POST" action="{% url 'dashboard' %}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
                         {% csrf_token %}
                         <input type="hidden" name="accion" value="agregar_ejercicio_custom">
-
                         <div class="lg:col-span-2">
                             <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Ejercicio Seleccionado o Libre</label>
                             <input type="text" name="nombre_ejercicio" id="inputCustomNombreEj" required placeholder="Elegí arriba o escribí uno..." 
                                 class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
                         </div>
-
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Series</label>
                             <input type="number" name="series" id="inputCustomSeries" value="3" min="1" max="8" required
                                 class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-blue-500">
                         </div>
-
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Reps / Kg</label>
                             <div class="grid grid-cols-2 gap-1.5">
@@ -599,7 +564,6 @@
                                     class="w-full px-2.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-blue-500">
                             </div>
                         </div>
-
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Día</label>
                             <select name="dia" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
@@ -612,7 +576,6 @@
                                 <option value="domingo">Domingo</option>
                             </select>
                         </div>
-
                         <div>
                             <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
                                 <i class="fa-solid fa-plus text-xs"></i> Agregar
@@ -620,8 +583,6 @@
                         </div>
                     </form>
                 </div>
-
-                <!-- Botones horizontales de los 7 Días -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
                     {% for dia_clave, ejercicios_dia in rutina_semanal.items %}
                         <button type="button"
@@ -633,8 +594,6 @@
                         </button>
                     {% endfor %}
                 </div>
-
-                <!-- Panel desplegable del día seleccionado en Mi Propia Rutina -->
                 {% for dia_clave, ejercicios_dia in rutina_semanal.items %}
                     <div id="contenido-dia-custom-{{ dia_clave }}"
                         class="contenido-dia-custom {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
@@ -645,7 +604,6 @@
                             </div>
                             <span class="text-xs font-semibold text-blue-400">{{ ejercicios_dia|length }} ejercicio(s)</span>
                         </div>
-
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {% for ej in ejercicios_dia %}
                                 <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
@@ -668,7 +626,6 @@
                                             </form>
                                         </div>
                                     </div>
-
                                     <div class="grid grid-cols-4 gap-1.5 text-[9px] font-bold text-slate-500 uppercase px-2">
                                         <span>Serie</span><span>KG</span><span>Reps</span><span class="text-right">Listo</span>
                                     </div>
@@ -696,13 +653,11 @@
                     </div>
                 {% endfor %}
             </div>
-
         </div>
 
-        <!-- ========================================================= -->
-        <!-- 🧘‍♀️ SECCIÓN 2: ACTIVIDADES (CON INSCRIPCIÓN REAL)          -->
-        <!-- 🧘‍♀️ SECCIÓN 2: ACTIVIDADES (CON INSCRIPCIÓN REAL)          -->
-        <!-- ========================================================= -->
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+<!-- SECCION 2: ACTIVIDADES -->
         <section id="seccion-actividades" class="seccion-bloque hidden space-y-8">
             <div class="space-y-4">
                 <div class="flex items-center gap-3">
@@ -715,7 +670,6 @@
                         <p class="text-xs text-slate-400">Disciplinas en las que estás anotado actualmente.</p>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {% for act in actividades_anotadas %}
                         <div class="p-6 rounded-2xl bg-slate-900/80 border-2 border-emerald-500/40 shadow-lg shadow-emerald-950/10 flex flex-col justify-between space-y-4">
@@ -731,7 +685,6 @@
                                     <p class="text-xs text-slate-400 mt-1 leading-relaxed">{{ act.descripcion|default:"Acceso habilitado según el cronograma semanal del gimnasio." }}</p>
                                 </div>
                             </div>
-
                             <form method="POST" action="{% url 'dashboard' %}" class="pt-2">
                                 {% csrf_token %}
                                 <input type="hidden" name="accion" value="cancelar_actividad">
@@ -753,7 +706,6 @@
                                     <p class="text-xs text-slate-400 mt-1 leading-relaxed">{{ act.descripcion|default:"Acceso habilitado según el cronograma semanal del gimnasio." }}</p>
                                 </div>
                             </div>
-
                             <form method="POST" action="{% url 'dashboard' %}" class="pt-2">
                                 {% csrf_token %}
                                 <input type="hidden" name="accion" value="cancelar_actividad">
@@ -771,8 +723,6 @@
                     {% endfor %}
                 </div>
             </div>
-
-            <!-- ABAJO: Otras actividades disponibles -->
             <div class="space-y-4 border-t border-slate-800 pt-8">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                     <div class="flex items-center gap-3">
@@ -805,7 +755,6 @@
                         </span>
                     {% endif %}
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {% for act in actividades_disponibles %}
                         <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition">
@@ -838,7 +787,6 @@
                                 <p class="text-xs text-slate-400 leading-relaxed">{{ act.descripcion|default:"Actividad disponible en la grilla horaria del gimnasio." }}</p>
                                 <p class="text-xs text-slate-400 leading-relaxed">{{ act.descripcion|default:"Actividad disponible en la grilla horaria del gimnasio." }}</p>
                             </div>
-
                             <form method="POST" action="{% url 'dashboard' %}" class="mt-4">
                                 {% csrf_token %}
                                 <input type="hidden" name="accion" value="inscribir_actividad">
@@ -853,7 +801,6 @@
                                     </button>
                                 {% endif %}
                             </form>
-
                             <form method="POST" action="{% url 'dashboard' %}" class="mt-4">
                                 {% csrf_token %}
                                 <input type="hidden" name="accion" value="inscribir_actividad">
@@ -887,9 +834,9 @@
             </div>
         </section>
 
-        <!-- ========================================================= -->
-        <!-- 👤 SECCIÓN 3: MI PERFIL + CONTRASEÑA + ESTADO DE CUENTA    -->
-        <!-- ========================================================= -->
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+<!-- SECCIÓN 3: MI PERFIL + CONTRASEÑA + ESTADO DE CUENTA -->
         <section id="seccion-perfil" class="seccion-bloque hidden space-y-8">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div class="lg:col-span-6 space-y-6">
@@ -898,12 +845,10 @@
                             <h3 class="text-base font-bold text-white">Mis Datos Personales</h3>
                             <p class="text-xs text-slate-400">Modificá tus vías de contacto registradas.</p>
                         </div>
-
                         <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
                         <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
                             {% csrf_token %}
                             <input type="hidden" name="accion" value="actualizar_perfil">
-
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre</label>
@@ -914,22 +859,18 @@
                                     <input type="text" name="last_name" value="{{ user.last_name }}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
                                 </div>
                             </div>
-
                             <div>
                                 <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">DNI (No editable)</label>
                                 <input type="text" disabled value="{{ user.username }}" class="w-full bg-slate-950/50 border border-slate-800/60 rounded-xl px-3 py-2.5 text-slate-500 cursor-not-allowed font-mono">
                             </div>
-
                             <div>
                                 <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Correo Electrónico</label>
                                 <input type="email" name="email" value="{{ user.email }}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
                             </div>
-
                             <div>
                                 <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Teléfono</label>
                                 <input type="text" name="telefono" value="{{ user.telefono|default:'' }}" placeholder="+54 9 341..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
                             </div>
-
                             <div class="pt-2 flex justify-end">
                                 <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">
                                 <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">
@@ -938,7 +879,6 @@
                             </div>
                         </form>
                     </div>
-
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm">
@@ -949,17 +889,14 @@
                                 <p class="text-xs text-slate-400">Actualizá tu clave de acceso al portal.</p>
                             </div>
                         </div>
-
                         <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
                         <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
                             {% csrf_token %}
                             <input type="hidden" name="accion" value="cambiar_password">
-
                             <div>
                                 <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Contraseña Actual</label>
                                 <input type="password" name="pass_actual" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
                             </div>
-
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nueva Contraseña</label>
@@ -975,15 +912,12 @@
                                         class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
                                 </div>
                             </div>
-
                             <p class="text-[11px] text-slate-400 leading-relaxed">
                                 Requisitos: mínimo <strong class="text-slate-200">8 caracteres</strong>, con al menos <strong class="text-slate-200">1 mayúscula</strong>, <strong class="text-slate-200">1 minúscula</strong>, <strong class="text-slate-200">1 número</strong> y <strong class="text-slate-200">1 símbolo</strong> (ej. <code class="text-amber-400">Gym2026!</code>).
                             </p>
-
                             <p class="text-[11px] text-slate-400 leading-relaxed">
                                 Requisitos: mínimo <strong class="text-slate-200">8 caracteres</strong>, con al menos <strong class="text-slate-200">1 mayúscula</strong>, <strong class="text-slate-200">1 minúscula</strong>, <strong class="text-slate-200">1 número</strong> y <strong class="text-slate-200">1 símbolo</strong> (ej. <code class="text-amber-400">Gym2026!</code>).
                             </p>
-
                             <div class="pt-2 flex justify-end">
                                 <button type="submit" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">
                                 <button type="submit" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">
@@ -993,11 +927,9 @@
                         </form>
                     </div>
                 </div>
-
                 <div class="lg:col-span-6 space-y-6">
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
                         <h3 class="text-base font-bold text-white">Estado de Cuenta</h3>
-                        
                         <div class="p-5 rounded-2xl bg-gradient-to-br from-blue-900/30 to-indigo-900/30 border border-blue-500/30 space-y-3">
                             <div class="flex items-center justify-between">
                                 <div>
@@ -1005,7 +937,6 @@
                                     <p class="text-xs text-slate-400 mt-0.5">Acceso a: {{ membresia_actual.plan.nombre|default:"Sin pase activo" }}</p>
                                     <p class="text-xs text-slate-400 mt-0.5">Acceso a: {{ membresia_actual.plan.nombre|default:"Sin pase activo" }}</p>
                                 </div>
-
                                 <div>
                                     {% if cuota_al_dia and membresia_actual %}
                                         <span class="px-3 py-1 rounded-full text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-1.5">
@@ -1020,7 +951,6 @@
                                     {% endif %}
                                 </div>
                             </div>
-
                             <div class="mt-6 p-5 rounded-2xl bg-gradient-to-r from-blue-900/30 to-emerald-900/30 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
                                 <div class="flex items-center gap-3.5">
                                     <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl font-bold border border-emerald-500/20">
@@ -1044,13 +974,11 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
                         <div class="flex items-center justify-between">
                             <h3 class="text-base font-bold text-white">Historial de Pagos</h3>
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Comprobantes</span>
                         </div>
-
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
                                 <thead class="text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
@@ -1098,10 +1026,9 @@
                 </div>
             </div>
         </section>
-
     </main>
 
-    <!-- MODAL EDITAR EJERCICIO PROPIO -->
+<!-- EDITAR EJERCICIO  -->
     <div id="modalEditarEjercicio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -1114,7 +1041,6 @@
                 {% csrf_token %}
                 <input type="hidden" name="accion" value="editar_ejercicio_custom">
                 <input type="hidden" name="ejercicio_id" id="editEjId">
-
                 <div>
                     <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre del Ejercicio</label>
                     <input type="text" name="nombre_ejercicio" id="editEjNombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
@@ -1131,7 +1057,7 @@
         </div>
     </div>
 
-    <!-- MODAL: AUTOGESTIÓN DE PAGO / RENOVACIÓN (SOCIO) -->
+<!-- MODAL: AUTOGESTIÓN DE PAGO / RENOVACIÓN (SOCIO) -->
     <div id="modalPagoSocio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -1146,11 +1072,9 @@
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-
             <form action="{% url 'dashboard' %}" method="POST" class="space-y-4 text-xs">
                 {% csrf_token %}
                 <input type="hidden" name="accion" value="pagar_cuota_socio">
-
                 <div>
                     <label class="block text-slate-400 font-bold uppercase text-[10px] mb-2 tracking-wider">¿Qué disciplinas vas a abonar?</label>
                     <div class="space-y-2">
@@ -1164,7 +1088,6 @@
                             </div>
                             <span class="font-mono font-bold text-blue-400 text-sm">$60.000</span>
                         </label>
-
                         <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
                             <div class="flex items-center gap-3">
                                 <input type="checkbox" name="servicios" value="clases" data-precio="45000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
@@ -1185,7 +1108,6 @@
                             </div>
                             <span class="font-mono font-bold text-blue-400 text-sm">$45.000</span>
                         </label>
-
                         <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
                             <div class="flex items-center gap-3">
                                 <input type="checkbox" name="servicios" value="pilates_1" data-precio="35000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
@@ -1196,7 +1118,6 @@
                             </div>
                             <span class="font-mono font-bold text-blue-400 text-sm">$35.000</span>
                         </label>
-
                         <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
                             <div class="flex items-center gap-3">
                                 <input type="checkbox" name="servicios" value="pilates_2" data-precio="42000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
@@ -1217,7 +1138,6 @@
                             </div>
                             <span class="font-mono font-bold text-blue-400 text-sm">$42.000</span>
                         </label>
-
                         <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
                             <div class="flex items-center gap-3">
                                 <input type="checkbox" name="servicios" value="pilates_3" data-precio="50000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
@@ -1242,7 +1162,6 @@
                         </label>
                     </div>
                 </div>
-
                 <div class="p-3.5 rounded-xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-between">
                     <span class="text-xs font-bold text-slate-300">Total a abonar:</span>
                     <span id="labelTotalPagoSocio" class="text-xl font-black text-blue-400 font-mono">$0</span>
@@ -1251,7 +1170,6 @@
                     <span class="text-xs font-bold text-slate-300">Total a abonar:</span>
                     <span id="labelTotalPagoSocio" class="text-xl font-black text-blue-400 font-mono">$0</span>
                 </div>
-
                 <div>
                     <label class="block text-slate-400 font-bold uppercase text-[10px] mb-1.5 tracking-wider">Método de Pago:</label>
                     <div class="grid grid-cols-2 gap-3">
@@ -1278,7 +1196,6 @@
                         </label>
                     </div>
                 </div>
-
                 <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
                     <p class="font-bold text-slate-300">📌 Datos para transferencia inmediata:</p>
                     <p>Alias: <span class="text-white font-mono font-bold">GYMTRACK.BODYMIC.MP</span></p>
@@ -1289,7 +1206,6 @@
                     <p>Alias: <span class="text-white font-mono font-bold">GYMTRACK.BODYMIC.MP</span></p>
                     <p>CBU: <span class="text-white font-mono">0000003100012345678901</span></p>
                 </div>
-
                 <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
                     <button type="button" onclick="cerrarModalPagoSocio()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">Cancelar</button>
                     <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition cursor-pointer">Confirmar Renovación</button>
@@ -1298,7 +1214,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE NOVEDADES -->
+<!-- MODAL DE NOVEDADES -->
     <div id="modal-novedades" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-5">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -1330,7 +1246,6 @@
 
 {% include 'includes/footer.html' %}
 
-    <!-- SCRIPTS COMPLETOS -->
     <script>
         const CATALOGO_HEVY = [
             // PECHO
@@ -1453,7 +1368,6 @@
             { nombre: "Battle Rope (Sogas de batalla)", grupo: "cardio", equipo: "Accesorio", s: 4, r: "30s", kg: 0 },
             { nombre: "Paseo del granjero (Farmer Walk)", grupo: "cardio", equipo: "Mancuernas", s: 3, r: "30 m", kg: 24 }
         ];
-
         let grupoHevyActual = 'todos';
 
         function seleccionarGrupoHevy(grupo, btn) {
@@ -1470,17 +1384,14 @@
         function filtrarCatalogoHevy() {
             const grid = document.getElementById('gridCatalogoHevy');
             if (!grid) return;
-
             const query = (document.getElementById('buscadorCatalogoHevy')?.value || '').toLowerCase().trim();
             const filtrados = CATALOGO_HEVY.filter(item => {
                 const okGrupo = (grupoHevyActual === 'todos') || (item.grupo === grupoHevyActual);
                 const okTexto = !query || item.nombre.toLowerCase().includes(query) || item.equipo.toLowerCase().includes(query);
                 return okGrupo && okTexto;
             });
-
             const contador = document.getElementById('contadorCatalogoHevy');
             if (contador) contador.textContent = `${filtrados.length} ejercicios`;
-
             grid.innerHTML = filtrados.map(ej => `
                 <button type="button"
                         onclick="autocompletarEjercicioHevy('${ej.nombre.replace(/'/g, "\\'")}', ${ej.s}, '${ej.r}', ${ej.kg})"
@@ -1498,22 +1409,17 @@
             const secRutina = document.getElementById('seccion-rutina');
             const secActividades = document.getElementById('seccion-actividades');
             const secPerfil = document.getElementById('seccion-perfil');
-
             if (secRutina) secRutina.style.display = 'none';
             if (secActividades) secActividades.style.display = 'none';
             if (secPerfil) secPerfil.style.display = 'none';
-
             const tabRutina = document.getElementById('tab-rutina');
             const tabActividades = document.getElementById('tab-actividades');
             const tabPerfil = document.getElementById('tab-perfil');
-
             const inactivo = "main-btn p-6 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition text-left w-full cursor-pointer";
             const activo = "main-btn active p-6 rounded-3xl bg-slate-900/90 border-2 border-blue-500 transition text-left w-full cursor-pointer shadow-lg shadow-blue-500/10";
-
             if (tabRutina) tabRutina.className = inactivo;
             if (tabActividades) tabActividades.className = inactivo;
             if (tabPerfil) tabPerfil.className = inactivo;
-
             if (tabId === 'rutina') {
                 if (secRutina) secRutina.style.display = 'block';
                 if (tabRutina) tabRutina.className = activo;
@@ -1531,7 +1437,6 @@
             document.querySelectorAll('.btn-modo-rutina').forEach(b => {
                 b.className = "btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer";
             });
-
             const panel = document.getElementById('panel-rutina-' + modo);
             const btn = document.getElementById('btn-rutina-' + modo);
             if (panel) panel.classList.remove('hidden');
@@ -1543,7 +1448,6 @@
             document.querySelectorAll('.btn-dia-' + plan).forEach(btn => {
                 btn.className = `btn-dia-${plan} ${plan === 'custom' ? 'p-3.5' : 'p-4'} rounded-2xl border text-left transition cursor-pointer bg-slate-900/60 border-slate-800 hover:border-slate-700`;
             });
-
             const contenidoActivo = document.getElementById(`contenido-dia-${plan}-${idDia}`);
             const btnActivo = document.getElementById(`btn-dia-${plan}-${idDia}`);
 
@@ -1602,7 +1506,6 @@
             actualizarDisplayTimerHevy();
             const display = document.getElementById('hevyTimerDisplay');
             display.classList.add('text-blue-400');
-
             hevyIntervalo = setInterval(() => {
                 if (hevySegundos > 0) {
                     hevySegundos--;
@@ -1670,7 +1573,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             const tab = urlParams.get('tab');
             const diaParam = urlParams.get('dia');
-
             if (tab === 'custom') {
                 switchTab('rutina');
                 seleccionarModoRutina('custom');
@@ -1685,6 +1587,5 @@
             }
         });
     </script>
-
 </body>
 </html>

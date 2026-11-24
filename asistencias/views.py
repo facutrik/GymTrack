@@ -1,10 +1,8 @@
-# asistencias/views.py
 from datetime import datetime, time
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-
 from usuarios.models import Usuario
 from socios.models import Socio
 from asistencias.models import Asistencia
@@ -18,7 +16,6 @@ def validar_ingreso_socio(request, dni):
     hoy = timezone.localdate()
     inicio_dia = timezone.make_aware(datetime.combine(hoy, time.min))
     fin_dia = timezone.make_aware(datetime.combine(hoy, time.max))
-
     try:
         usuario_socio = Usuario.objects.get(username=dni, rol='socio')
         socio = getattr(usuario_socio, 'perfil_socio', None) or Socio.objects.get(
@@ -27,8 +24,7 @@ def validar_ingreso_socio(request, dni):
     except (Usuario.DoesNotExist, Exception):
         messages.error(request, f'No existe ningún socio con DNI {dni}.')
         return redirect('dashboard')
-
-    # 1. Semáforo financiero obligatorio
+# 1. Semáforo
     if getattr(socio, 'estado_cuenta', 'VERDE').upper() != 'VERDE':
         messages.error(
             request,
@@ -36,11 +32,10 @@ def validar_ingreso_socio(request, dni):
         )
         return redirect('dashboard')
 
-    # 2. Consultar si ya tiene ingresos hoy
+# 2. Consultar ingresos hoy
     asistencias_hoy = Asistencia.objects.filter(
         socio=socio, fecha_hora__range=(inicio_dia, fin_dia)
     )
-
     if not asistencias_hoy.exists():
         # Primer ingreso del día: Libre (Musculación / Sala)
         Asistencia.objects.create(socio=socio, fecha_hora=timezone.now())
@@ -50,7 +45,7 @@ def validar_ingreso_socio(request, dni):
         )
         return redirect('dashboard')
 
-    # 3. Si ya ingresó hoy, verificar reservas para turnos/clases
+# 3. Si ya ingresó, verificar reservas para turnos/clases
     reserva_hoy = None
     if Reserva:
         reserva_hoy = (
@@ -60,22 +55,17 @@ def validar_ingreso_socio(request, dni):
             .select_related('horario__actividad')
             .first()
         )
-
-    # Permitir si la cantidad de ingresos es menor al cupo de accesos válidos del día (1 libre + 1 por reserva)
+# Permitir si la cantidad de ingresos es menor al cupo de accesos válidos del día (1 libre + 1 por reserva)
     total_accesos_permitidos = 1 + (1 if reserva_hoy else 0)
-
     if asistencias_hoy.count() < total_accesos_permitidos and reserva_hoy:
         nombre_actividad = reserva_hoy.horario.actividad.nombre
         hora_turno = reserva_hoy.horario.hora_inicio.strftime('%H:%M')
-
-        # Registrar el segundo ingreso específico para la clase
+# Registrar el segundo ingreso específico para la clase
         Asistencia.objects.create(socio=socio, fecha_hora=timezone.now())
-
-        # Si el modelo tiene estado de asistencia en la reserva, marcarla como asistida
+# Si el modelo tiene estado de asistencia en la reserva, marcarla como asistida
         if hasattr(reserva_hoy, 'estado'):
             reserva_hoy.estado = 'asistida'
             reserva_hoy.save()
-
         messages.success(
             request,
             f'Acceso Concedido: Turno de {nombre_actividad} ({hora_turno} hs) para {usuario_socio.first_name}.',
@@ -92,7 +82,6 @@ def validar_ingreso_socio(request, dni):
                 request,
                 f'{usuario_socio.first_name} ya ingresó hoy ({primer_ingreso} hs) y no tiene reserva activa para otra actividad.',
             )
-
     return redirect('dashboard')
 
 @login_required
@@ -100,31 +89,28 @@ def registrar_asistencia(request):
     user = request.user
     if not (user.is_superuser or getattr(user, 'rol', None) in ('recepcion', 'entrenador', 'empleado', 'admin')):
         return redirect('dashboard')
-
     if request.method == 'POST':
         dni = request.POST.get('dni', '').strip()
         hoy = timezone.localdate()
         inicio_dia = timezone.make_aware(datetime.combine(hoy, time.min))
         fin_dia = timezone.make_aware(datetime.combine(hoy, time.max))
-
         try:
-            # 1. El DNI se busca en username para los socios
+# 1. El DNI se busca en username para los socios
             usuario_socio = Usuario.objects.get(username=dni, rol='socio')
 
-            # 2. Obtener el perfil del socio
+# 2. Obtener el perfil del socio
             if hasattr(usuario_socio, 'perfil_socio'):
                 socio = usuario_socio.perfil_socio
             else:
                 socio = Socio.objects.get(usuario=usuario_socio)
 
-            # 3. Comprobar semáforo de estado de cuenta
+# 3. Comprobar semáforo de estado de cuenta
             if getattr(socio, 'estado_cuenta', 'VERDE').upper() == 'VERDE':
                 # Evitar duplicar asistencia si ya ingresó hoy
                 ya_marco = Asistencia.objects.filter(
                     socio=socio,
                     fecha_hora__range=(inicio_dia, fin_dia)
                 ).exists()
-
                 if not ya_marco:
                     Asistencia.objects.create(
                         socio=socio,
@@ -144,8 +130,6 @@ def registrar_asistencia(request):
                     request,
                     f"Acceso DENEGADO: {usuario_socio.first_name} figura con CUOTA VENCIDA (Rojo)."
                 )
-
         except (Usuario.DoesNotExist, Socio.DoesNotExist):
             messages.error(request, f"No se encontró ningún socio registrado con el DNI {dni}.")
-
     return redirect('dashboard')

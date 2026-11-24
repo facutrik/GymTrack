@@ -11,6 +11,5 @@ class Socio(models.Model):
     email = models.EmailField(blank=True)
     activo = models.BooleanField(default=True)
     fecha_alta = models.DateField(auto_now_add=True)
-
     def __str__(self):
         return f"{self.apellido}, {self.nombre} (DNI: {self.dni})"
