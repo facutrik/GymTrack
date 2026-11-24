@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,21 +7,41 @@
     <title>GymTrack - Portal Socio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }</style>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }
+        .set-row.completed { background-color: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); }
+        .set-row.completed input { color: #6ee7b7; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }
+        .font-brand { font-family: 'Barlow Condensed', sans-serif; }
+    </style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-    <!-- NAVBAR UNIFICADO CON EMPLEADO (GymTrack × BODYDYNAMIC) -->
+    <!-- NAVBAR UNIFICADO -->
     <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-600/30">🏋️‍♂️</div>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-2xl font-extrabold tracking-tight text-white">GymTrack</span>
-                        <span class="text-xs font-light text-slate-500">×</span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">BODYDYNAMIC</span>
+                <!-- LOGO -->
+                <div class="flex items-center gap-3.5">
+                    <img src="{% static 'img/logo-gymtrack.svg' %}"
+                        alt="Logo GymTrack"
+                        class="h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(59,76,202,0.45)]">
+                    <div class="flex items-baseline gap-2.5">
+                        <span class="font-brand italic font-extrabold text-3xl sm:text-4xl tracking-wide">
+                            <span class="text-[#3f51d6] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">GYM</span><span class="text-white">track</span>
+                        </span>
+                        {% if user.is_authenticated %}
+                            <span class="text-xs font-light text-slate-500">×</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">
+                                BODYDYNAMIC
+                            </span>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
@@ -31,10 +52,11 @@
                         <div class="hidden sm:block text-left leading-tight">
                             <p class="text-xs font-bold text-white">{{ user.first_name|default:user.username }} {{ user.last_name }}</p>
                             <p class="text-[10px] text-blue-400 font-semibold font-mono">Portal Socio • DNI: {{ user.username }}</p>
+                            <p class="text-xs font-bold text-white">{{ user.first_name|default:user.username }} {{ user.last_name }}</p>
+                            <p class="text-[10px] text-blue-400 font-semibold font-mono">Portal Socio • DNI: {{ user.username }}</p>
                         </div>
                     </div>
 
-                    <!-- 🔔 BOTÓN PORTAL DE NOVEDADES -->
                     <button type="button" onclick="toggleModalNovedades()" class="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition cursor-pointer" title="Novedades y Anuncios">
                         <i class="fa-solid fa-bell text-sm"></i>
                         <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
@@ -42,6 +64,7 @@
 
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
+                        <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition cursor-pointer" title="Cerrar sesión">
                         <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition cursor-pointer" title="Cerrar sesión">
                             <i class="fa-solid fa-arrow-right-from-bracket text-base"></i>
                         </button>
@@ -51,10 +74,10 @@
         </div>
     </nav>
 
-    <!-- CONTENEDOR PRINCIPAL -->
+    <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
 
-        <!-- CABECERA: SALUDO + TARJETA ÚNICA DE ESTADO A LA DERECHA -->
+        <!-- CABECERA -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2">
@@ -65,7 +88,6 @@
                 <p class="text-slate-400 text-sm mt-1">Elegí una sección para gestionar tus entrenamientos, clases y perfil.</p>
             </div>
 
-            <!-- TARJETA ÚNICA DE ESTADO DE MEMBRESÍA -->
             <div class="sm:self-end">
                 {% if cuota_al_dia and membresia_actual %}
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl px-5 py-3.5 flex items-center gap-3.5 shadow-sm">
@@ -88,7 +110,7 @@
             </div>
         </div>
 
-        <!-- MENSAJES DE ALERTA -->
+        <!-- MENSAJES -->
         {% if messages %}
             <div class="w-full space-y-2">
                 {% for message in messages %}
@@ -100,30 +122,27 @@
             </div>
         {% endif %}
 
-        <!-- ========================================================= -->
-        <!-- 🔘 LOS 3 BOTONES EN GRANDE                              -->
-        <!-- ========================================================= -->
+        <!-- LOS 3 BOTONES EN GRANDE -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            <!-- 1er Botón: Mi Rutina -->
             <button onclick="switchTab('rutina')" id="tab-rutina" class="main-btn active p-6 rounded-3xl bg-slate-900/90 border-2 border-blue-500 transition text-left w-full cursor-pointer shadow-lg shadow-blue-500/10">
                 <div class="flex items-center justify-between mb-4">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-600/10 text-blue-400 flex items-center justify-center text-2xl transition">
                     <div class="w-14 h-14 rounded-2xl bg-blue-600/10 text-blue-400 flex items-center justify-center text-2xl transition">
                         <i class="fa-solid fa-dumbbell"></i>
                     </div>
                     <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2.5 py-1 rounded-full">
-                        Plan Activo
+                        Hevy Tracker
                     </span>
                 </div>
                 <h3 class="text-xl font-bold text-white mb-1">Mi Rutina</h3>
                 <p class="text-xs text-slate-400 leading-relaxed">
-                    Consultá tus rutinas preestablecidas o personalizá tu propio plan de ejercicios.
+                    3 planes básicos, rutina del profesor o tu propia rutina con registro de series, kg y descanso.
                 </p>
             </button>
 
-            <!-- 2do Botón: Actividades -->
             <button onclick="switchTab('actividades')" id="tab-actividades" class="main-btn p-6 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition text-left w-full cursor-pointer">
                 <div class="flex items-center justify-between mb-4">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-600/10 text-emerald-400 flex items-center justify-center text-2xl transition">
                     <div class="w-14 h-14 rounded-2xl bg-emerald-600/10 text-emerald-400 flex items-center justify-center text-2xl transition">
                         <i class="fa-solid fa-heart-pulse"></i>
                     </div>
@@ -137,9 +156,9 @@
                 </p>
             </button>
 
-            <!-- 3er Botón: Mi Perfil -->
             <button onclick="switchTab('perfil')" id="tab-perfil" class="main-btn p-6 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition text-left w-full cursor-pointer">
                 <div class="flex items-center justify-between mb-4">
+                    <div class="w-14 h-14 rounded-2xl bg-indigo-600/10 text-indigo-400 flex items-center justify-center text-2xl transition">
                     <div class="w-14 h-14 rounded-2xl bg-indigo-600/10 text-indigo-400 flex items-center justify-center text-2xl transition">
                         <i class="fa-solid fa-user-gear"></i>
                     </div>
@@ -152,564 +171,539 @@
                     Modificá tus datos personales, cambiá tu clave y revisá tu estado de cuenta con historial.
                 </p>
             </button>
-
         </div>
 
         <!-- ============================================================== -->
-        <!-- SECCIÓN 1: MI RUTINA                                           -->
+        <!-- SECCIÓN 1: MI RUTINA (ESTILO HEVY TRACKER UNIFICADO)           -->
         <!-- ============================================================== -->
         <div id="seccion-rutina" class="seccion-contenido mt-8 space-y-6">
 
-            <!-- 1. BARRA SUPERIOR CON SUB-PESTAÑAS -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-                <div>
-                    <h3 class="text-xl font-extrabold text-white">Planes de Entrenamiento</h3>
-                    <p class="text-xs text-slate-400 mt-1">Consultá las 4 rutinas institucionales del gimnasio o armá tu semana personalizada día por día.</p>
+            <!-- BARRA SUPERIOR DE SESIÓN ESTILO HEVY -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-xl">
+                <div class="flex flex-wrap items-center gap-6">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Volumen Levantado</span>
+                        <span id="hevyVolumenTotal" class="text-xl font-black text-blue-400 font-mono">0 kg</span>
+                    </div>
+                    <div class="h-8 w-px bg-slate-800 hidden sm:block"></div>
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Series Completadas</span>
+                        <span id="hevySeriesCompletadas" class="text-xl font-black text-emerald-400 font-mono">0</span>
+                    </div>
+                    <div class="h-8 w-px bg-slate-800 hidden sm:block"></div>
+                    <div class="flex items-center gap-2.5 bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-2xl">
+                        <i class="fa-solid fa-stopwatch text-blue-400 text-sm"></i>
+                        <div>
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 block">Descanso</span>
+                            <span id="hevyTimerDisplay" class="text-sm font-black font-mono text-white">01:30</span>
+                        </div>
+                        <div class="flex items-center gap-1 ml-2">
+                            <button type="button" onclick="ajustarTimerHevy(-15)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-300 cursor-pointer">-15s</button>
+                            <button type="button" onclick="iniciarTimerHevy(90)" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 rounded-lg text-[10px] font-bold text-white cursor-pointer">Start</button>
+                            <button type="button" onclick="ajustarTimerHevy(15)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-300 cursor-pointer">+15s</button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="bg-slate-900/90 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
-                        <button type="button" onclick="cambiarSubTabRutina('gym')" id="subtab-btn-gym" 
-                                class="px-4 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow cursor-pointer">
-                            Rutinas del Gimnasio
-                        </button>
-                        <button type="button" onclick="cambiarSubTabRutina('custom')" id="subtab-btn-custom" 
-                                class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer">
-                            + Mi Rutina Propia (7 Días)
-                        </button>
-                    </div>
-
-                    <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700/80 rounded-xl text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-2 transition cursor-pointer">
-                        <i class="fa-regular fa-file-pdf text-blue-400"></i> Descargar Rutina (PDF)
+                <div class="flex items-center gap-2.5">
+                    <button type="button" onclick="reiniciarChecksHevy()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-semibold text-slate-300 transition cursor-pointer">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Reiniciar Sesión
+                    </button>
+                    <button type="button" onclick="window.print()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold text-white flex items-center gap-2 transition cursor-pointer shadow-lg shadow-blue-600/20">
+                        <i class="fa-regular fa-file-pdf"></i> Exportar PDF
                     </button>
                 </div>
             </div>
 
-            <!-- SUB-PESTAÑA 1: 4 RUTINAS BÁSICAS INSTITUCIONALES -->
-            <div id="subpanel-gym" class="space-y-6">
-                
-                <div class="flex flex-wrap gap-2">
-                    <button onclick="seleccionarRutinaGym('hipertrofia')" id="btn-cat-hip" 
-                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 transition cursor-pointer">
-                        💪 Hipertrofia
-                    </button>
-                    <button onclick="seleccionarRutinaGym('fuerza')" id="btn-cat-fue" 
-                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
-                        🏋️ Fuerza
-                    </button>
-                    <button onclick="seleccionarRutinaGym('spinning')" id="btn-cat-spi" 
-                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
-                        🚴 Spinning
-                    </button>
-                    <button onclick="seleccionarRutinaGym('profe')" id="btn-cat-pro" 
-                            class="btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
-                        📋 Profesor Personalizado
-                    </button>
-                </div>
+            <!-- SELECTOR DE LAS 5 RUTINAS -->
+            <div class="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-4">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mr-1">3 Básicos:</span>
+                <button type="button" onclick="seleccionarModoRutina('adaptacion')" id="btn-rutina-adaptacion"
+                        class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md shadow-blue-600/20 transition cursor-pointer">
+                    🌱 Adaptación
+                </button>
+                <button type="button" onclick="seleccionarModoRutina('hipertrofia')" id="btn-rutina-hipertrofia"
+                        class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
+                    💪 Hipertrofia
+                </button>
+                <button type="button" onclick="seleccionarModoRutina('fuerza')" id="btn-rutina-fuerza"
+                        class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
+                    🏋️ Fuerza
+                </button>
 
-                <!-- 1.1 Hipertrofia -->
-                <div id="rutina-hipertrofia" class="panel-rutina-gym grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold text-blue-400 uppercase">DÍA 1</span>
-                            <h4 class="font-bold text-sm text-white">Pecho & Tríceps</h4>
-                        </div>
-                        <div class="space-y-2.5 text-xs">
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-white">Press de Banca Plano</p>
-                                    <p class="text-[11px] text-slate-400">4 series × 8-10 reps</p>
-                                </div>
-                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60-90s</span>
-                            </div>
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-white">Press Inclinado c/ Mancuernas</p>
-                                    <p class="text-[11px] text-slate-400">4 series × 10 reps</p>
-                                </div>
-                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60s</span>
-                            </div>
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-white">Fondos en Paralelas</p>
-                                    <p class="text-[11px] text-slate-400">3 series al fallo</p>
-                                </div>
-                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60s</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="h-6 w-px bg-slate-800 mx-1 hidden sm:block"></div>
 
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold text-blue-400 uppercase">DÍA 2</span>
-                            <h4 class="font-bold text-sm text-white">Espalda & Bíceps</h4>
-                        </div>
-                        <div class="space-y-2.5 text-xs">
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-white">Dominadas Pronas</p>
-                                    <p class="text-[11px] text-slate-400">4 series × 6-8 reps</p>
-                                </div>
-                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">90s</span>
-                            </div>
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-white">Remo con Barra</p>
-                                    <p class="text-[11px] text-slate-400">4 series × 10 reps</p>
-                                </div>
-                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60s</span>
-                            </div>
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-white">Curl en Banco Scott</p>
-                                    <p class="text-[11px] text-slate-400">3 series × 12 reps</p>
-                                </div>
-                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60s</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold text-blue-400 uppercase">DÍA 3</span>
-                            <h4 class="font-bold text-sm text-white">Pierna & Hombro</h4>
-                        </div>
-                        <div class="space-y-2.5 text-xs">
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-white">Sentadilla Libre</p>
-                                    <p class="text-[11px] text-slate-400">4 series × 8-10 reps</p>
-                                </div>
-                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">120s</span>
-                            </div>
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-white">Prensa 45°</p>
-                                    <p class="text-[11px] text-slate-400">4 series × 12 reps</p>
-                                </div>
-                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60s</span>
-                            </div>
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-white">Press Militar</p>
-                                    <p class="text-[11px] text-slate-400">4 series × 10 reps</p>
-                                </div>
-                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold">60s</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 1.2 Fuerza -->
-                <div id="rutina-fuerza" class="panel-rutina-gym grid grid-cols-1 md:grid-cols-3 gap-5 hidden">
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold text-amber-400 uppercase">DÍA 1</span>
-                            <h4 class="font-bold text-sm text-white">Sentadilla Pesada</h4>
-                        </div>
-                        <div class="space-y-2.5 text-xs">
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-white">Sentadilla Trasera Barra</p>
-                                <p class="text-slate-400 text-[11px]">5 series × 5 reps (85% 1RM) • Descanso 180s</p>
-                            </div>
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-white">Sentadilla Búlgara</p>
-                                <p class="text-slate-400 text-[11px]">3 series × 6 reps c/ pierna • Descanso 90s</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold text-amber-400 uppercase">DÍA 2</span>
-                            <h4 class="font-bold text-sm text-white">Press de Banca Pesado</h4>
-                        </div>
-                        <div class="space-y-2.5 text-xs">
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-white">Press de Banca Plano</p>
-                                <p class="text-slate-400 text-[11px]">5 series × 3-5 reps • Descanso 180s</p>
-                            </div>
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-white">Press Militar de Pie</p>
-                                <p class="text-slate-400 text-[11px]">4 series × 6 reps • Descanso 120s</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold text-amber-400 uppercase">DÍA 3</span>
-                            <h4 class="font-bold text-sm text-white">Peso Muerto</h4>
-                        </div>
-                        <div class="space-y-2.5 text-xs">
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-white">Peso Muerto Convencional</p>
-                                <p class="text-slate-400 text-[11px]">4 series × 3 reps pesadas • Descanso 180s</p>
-                            </div>
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-white">Paseo de Granjero</p>
-                                <p class="text-slate-400 text-[11px]">4 rondas × 40 metros • Descanso 90s</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 1.3 Spinning -->
-                <div id="rutina-spinning" class="panel-rutina-gym grid grid-cols-1 md:grid-cols-3 gap-5 hidden">
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold text-emerald-400 uppercase">SESIÓN 1</span>
-                            <h4 class="font-bold text-sm text-white">Intervalos HIIT</h4>
-                        </div>
-                        <div class="space-y-2.5 text-xs text-slate-300">
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-white">Calentamiento</p>
-                                <p class="text-slate-400 text-[11px]">8 min pedaleo cadencia 85 RPM</p>
-                            </div>
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-emerald-400">8 Sprints Máximos</p>
-                                <p class="text-slate-400 text-[11px]">30s a máxima carga + 45s pedaleo ágil suave</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold text-emerald-400 uppercase">SESIÓN 2</span>
-                            <h4 class="font-bold text-sm text-white">Subida de Montaña</h4>
-                        </div>
-                        <div class="space-y-2.5 text-xs text-slate-300">
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-white">Escalada con Resistencia</p>
-                                <p class="text-slate-400 text-[11px]">4 bloques de 5 min aumentando fricción de pie</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold text-emerald-400 uppercase">SESIÓN 3</span>
-                            <h4 class="font-bold text-sm text-white">Resistencia Aeróbica</h4>
-                        </div>
-                        <div class="space-y-2.5 text-xs text-slate-300">
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-white">Cadencia Continua</p>
-                                <p class="text-slate-400 text-[11px]">35 min sostenidos a 80-90 RPM</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 1.4 Profesor Personalizado -->
-                <div id="rutina-profe" class="panel-rutina-gym grid grid-cols-1 md:grid-cols-2 gap-5 hidden">
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold text-purple-400 uppercase">BLOQUE A</span>
-                            <h4 class="font-bold text-sm text-white">Torso & Fuerza Funcional</h4>
-                        </div>
-                        <div class="space-y-2.5 text-xs text-slate-300">
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-white">Jalón al Pecho + Press Plano</p>
-                                <p class="text-slate-400 text-[11px]">Superserie de 4 series × 10 reps</p>
-                            </div>
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-white">Planchas Abdominales</p>
-                                <p class="text-slate-400 text-[11px]">3 rondas de 45 segundos</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                            <span class="text-xs font-bold text-purple-400 uppercase">BLOQUE B</span>
-                            <h4 class="font-bold text-sm text-white">Tren Inferior & Postura</h4>
-                        </div>
-                        <div class="space-y-2.5 text-xs text-slate-300">
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-white">Peso Muerto Rumano</p>
-                                <p class="text-slate-400 text-[11px]">4 series × 12 reps controladas</p>
-                            </div>
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
-                                <p class="font-bold text-white">Puente de Glúteos con Barra</p>
-                                <p class="text-slate-400 text-[11px]">3 series × 15 reps</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+                <button type="button" onclick="seleccionarModoRutina('profe')" id="btn-rutina-profe"
+                        class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
+                    📋 Personalizada por Profesor
+                </button>
+                <button type="button" onclick="seleccionarModoRutina('custom')" id="btn-rutina-custom"
+                        class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
+                    ✍️ Mi Propia Rutina (7 Días)
+                </button>
             </div>
 
-            <!-- SUB-PESTAÑA 2: MI RUTINA PROPIA (PERSISTIDA EN BD) -->
-            <div id="subpanel-custom" class="space-y-6 hidden">
-                
-                <div class="bg-slate-900/80 border border-blue-500/30 rounded-2xl p-5 space-y-4">
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                        <h4 class="font-bold text-white text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-dumbbell text-blue-400"></i> Agregar Ejercicio a tu Semana
-                        </h4>
-                        <span class="text-[11px] text-slate-400">Se guarda directamente en tu cuenta</span>
+            <!-- 1. BÁSICO 1: ADAPTACIÓN -->
+            <div id="panel-rutina-adaptacion" class="panel-modo-rutina space-y-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-white">Plan Básico: Adaptación</h3>
+                        <p class="text-xs text-slate-400">3×12-15 reps • 60-90s descanso • Seleccioná un día para desplegar sus ejercicios.</p>
+                    </div>
+                    <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">3 Días / Semana</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {% for dia in rutina_adaptacion.dias.all %}
+                        <button type="button"
+                                onclick="seleccionarDiaRutina('adaptacion', '{{ forloop.counter }}')"
+                                id="btn-dia-adaptacion-{{ forloop.counter }}"
+                                class="btn-dia-adaptacion p-4 rounded-2xl border text-left transition cursor-pointer {% if forloop.first %}bg-slate-900 border-2 border-blue-500 shadow-lg shadow-blue-500/10{% else %}bg-slate-900/60 border-slate-800 hover:border-slate-700{% endif %}">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">ADAPTACIÓN • DÍA {{ forloop.counter }}</span>
+                                <span class="text-[10px] font-mono text-slate-400">{{ dia.ejercicios.count }} ej.</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-white">{{ dia.nombre_dia }}</h4>
+                        </button>
+                    {% endfor %}
+                </div>
+
+                {% for dia in rutina_adaptacion.dias.all %}
+                    <div id="contenido-dia-adaptacion-{{ forloop.counter }}"
+                        class="contenido-dia-adaptacion {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div>
+                                <span class="text-[10px] font-bold text-blue-400 uppercase block">ADAPTACIÓN • DÍA {{ forloop.counter }}</span>
+                                <h4 class="font-bold text-base text-white mt-0.5">{{ dia.nombre_dia }}</h4>
+                            </div>
+                            <span class="text-xs font-semibold text-blue-400">Descanso: 60–90s</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {% for ej in dia.ejercicios.all %}
+                                <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <span class="font-bold text-blue-400 text-xs">{{ forloop.counter }}. {{ ej.nombre }}</span>
+                                        <span class="text-[10px] text-slate-400 font-mono shrink-0">{{ ej.series }}×{{ ej.repeticiones }}</span>
+                                    </div>
+                                    <div class="grid grid-cols-4 gap-1.5 text-[9px] font-bold text-slate-500 uppercase px-2">
+                                        <span>Serie</span><span>KG</span><span>Reps</span><span class="text-right">Listo</span>
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        {% for s in "12345678"|make_list %}
+                                            {% if forloop.counter <= ej.series %}
+                                                <div class="set-row grid grid-cols-4 gap-1.5 items-center bg-slate-900/90 border border-slate-800 rounded-xl px-2 py-1.5 text-xs">
+                                                    <span class="font-mono font-bold text-slate-400">S{{ forloop.counter }}</span>
+                                                    <input type="number" placeholder="kg" onchange="recalcularHevy()" class="hevy-kg w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                    <input type="number" value="12" onchange="recalcularHevy()" class="hevy-reps w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                    <button type="button" onclick="toggleSerieHevy(this, 75)" class="ml-auto w-7 h-7 rounded-lg bg-slate-800 hover:bg-emerald-600/30 text-slate-400 flex items-center justify-center transition cursor-pointer">
+                                                        <i class="fa-solid fa-check text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl text-center text-xs text-slate-400">
+                        No se encontraron días cargados para Adaptación. Ejecutá <code class="text-blue-400">python cargar_rutinas_base.py</code>.
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- 2. BÁSICO 2: HIPERTROFIA -->
+            <div id="panel-rutina-hipertrofia" class="panel-modo-rutina hidden space-y-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-white">Plan Básico: Hipertrofia Muscular</h3>
+                        <p class="text-xs text-slate-400">3×8-12 reps • 90-120s descanso • Seleccioná un día para desplegar sus ejercicios.</p>
+                    </div>
+                    <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">Split 3 Días</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {% for dia in rutina_hipertrofia.dias.all %}
+                        <button type="button"
+                                onclick="seleccionarDiaRutina('hipertrofia', '{{ forloop.counter }}')"
+                                id="btn-dia-hipertrofia-{{ forloop.counter }}"
+                                class="btn-dia-hipertrofia p-4 rounded-2xl border text-left transition cursor-pointer {% if forloop.first %}bg-slate-900 border-2 border-blue-500 shadow-lg shadow-blue-500/10{% else %}bg-slate-900/60 border-slate-800 hover:border-slate-700{% endif %}">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">HIPERTROFIA • DÍA {{ forloop.counter }}</span>
+                                <span class="text-[10px] font-mono text-slate-400">{{ dia.ejercicios.count }} ej.</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-white">{{ dia.nombre_dia }}</h4>
+                        </button>
+                    {% endfor %}
+                </div>
+
+                {% for dia in rutina_hipertrofia.dias.all %}
+                    <div id="contenido-dia-hipertrofia-{{ forloop.counter }}"
+                         class="contenido-dia-hipertrofia {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div>
+                                <span class="text-[10px] font-bold text-blue-400 uppercase block">HIPERTROFIA • DÍA {{ forloop.counter }}</span>
+                                <h4 class="font-bold text-base text-white mt-0.5">{{ dia.nombre_dia }}</h4>
+                            </div>
+                            <span class="text-xs font-semibold text-blue-400">Descanso: 90–120s</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {% for ej in dia.ejercicios.all %}
+                                <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <span class="font-bold text-blue-400 text-xs">{{ forloop.counter }}. {{ ej.nombre }}</span>
+                                        <span class="text-[10px] text-slate-400 font-mono shrink-0">{{ ej.series }}×{{ ej.repeticiones }}</span>
+                                    </div>
+                                    <div class="grid grid-cols-4 gap-1.5 text-[9px] font-bold text-slate-500 uppercase px-2">
+                                        <span>Serie</span><span>KG</span><span>Reps</span><span class="text-right">Listo</span>
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        {% for s in "12345678"|make_list %}
+                                            {% if forloop.counter <= ej.series %}
+                                                <div class="set-row grid grid-cols-4 gap-1.5 items-center bg-slate-900/90 border border-slate-800 rounded-xl px-2 py-1.5 text-xs">
+                                                    <span class="font-mono font-bold text-slate-400">S{{ forloop.counter }}</span>
+                                                    <input type="number" placeholder="kg" onchange="recalcularHevy()" class="hevy-kg w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                    <input type="number" value="10" onchange="recalcularHevy()" class="hevy-reps w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                    <button type="button" onclick="toggleSerieHevy(this, 105)" class="ml-auto w-7 h-7 rounded-lg bg-slate-800 hover:bg-emerald-600/30 text-slate-400 flex items-center justify-center transition cursor-pointer">
+                                                        <i class="fa-solid fa-check text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl text-center text-xs text-slate-400">
+                        No se encontraron días cargados para Hipertrofia. Ejecutá <code class="text-blue-400">python cargar_rutinas_base.py</code>.
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- 3. BÁSICO 3: FUERZA -->
+            <div id="panel-rutina-fuerza" class="panel-modo-rutina hidden space-y-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-white">Plan Básico: Fuerza Máxima</h3>
+                        <p class="text-xs text-slate-400">3-4×4-6 reps • 2-3 min descanso • Seleccioná un día para desplegar sus ejercicios.</p>
+                    </div>
+                    <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">Descanso 150-180s</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {% for dia in rutina_fuerza.dias.all %}
+                        <button type="button"
+                                onclick="seleccionarDiaRutina('fuerza', '{{ forloop.counter }}')"
+                                id="btn-dia-fuerza-{{ forloop.counter }}"
+                                class="btn-dia-fuerza p-4 rounded-2xl border text-left transition cursor-pointer {% if forloop.first %}bg-slate-900 border-2 border-blue-500 shadow-lg shadow-blue-500/10{% else %}bg-slate-900/60 border-slate-800 hover:border-slate-700{% endif %}">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">FUERZA • DÍA {{ forloop.counter }}</span>
+                                <span class="text-[10px] font-mono text-slate-400">{{ dia.ejercicios.count }} ej.</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-white">{{ dia.nombre_dia }}</h4>
+                        </button>
+                    {% endfor %}
+                </div>
+
+                {% for dia in rutina_fuerza.dias.all %}
+                    <div id="contenido-dia-fuerza-{{ forloop.counter }}"
+                        class="contenido-dia-fuerza {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div>
+                                <span class="text-[10px] font-bold text-blue-400 uppercase block">FUERZA • DÍA {{ forloop.counter }}</span>
+                                <h4 class="font-bold text-base text-white mt-0.5">{{ dia.nombre_dia }}</h4>
+                            </div>
+                            <span class="text-xs font-semibold text-blue-400">Descanso: 150–180s</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {% for ej in dia.ejercicios.all %}
+                                <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <span class="font-bold text-blue-400 text-xs">{{ forloop.counter }}. {{ ej.nombre }}</span>
+                                        <span class="text-[10px] text-slate-400 font-mono shrink-0">{{ ej.series }}×{{ ej.repeticiones }}</span>
+                                    </div>
+                                    <div class="grid grid-cols-4 gap-1.5 text-[9px] font-bold text-slate-500 uppercase px-2">
+                                        <span>Serie</span><span>KG</span><span>Reps</span><span class="text-right">Listo</span>
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        {% for s in "12345678"|make_list %}
+                                            {% if forloop.counter <= ej.series %}
+                                                <div class="set-row grid grid-cols-4 gap-1.5 items-center bg-slate-900/90 border border-slate-800 rounded-xl px-2 py-1.5 text-xs">
+                                                    <span class="font-mono font-bold text-slate-400">S{{ forloop.counter }}</span>
+                                                    <input type="number" placeholder="kg" onchange="recalcularHevy()" class="hevy-kg w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                    <input type="number" value="5" onchange="recalcularHevy()" class="hevy-reps w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                    <button type="button" onclick="toggleSerieHevy(this, 150)" class="ml-auto w-7 h-7 rounded-lg bg-slate-800 hover:bg-emerald-600/30 text-slate-400 flex items-center justify-center transition cursor-pointer">
+                                                        <i class="fa-solid fa-check text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl text-center text-xs text-slate-400">
+                        No se encontraron días cargados para Fuerza. Ejecutá <code class="text-blue-400">python cargar_rutinas_base.py</code>.
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- 4. PERSONALIZADA POR PROFESOR -->
+            <div id="panel-rutina-profe" class="panel-modo-rutina hidden space-y-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-white">Rutina Personalizada por Profesor</h3>
+                        <p class="text-xs text-slate-400">Planificación asignada por tu profesor • Seleccioná un día para entrenar.</p>
+                    </div>
+                    <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">Supervisada</span>
+                </div>
+
+                {% if rutina_gym and rutina_gym.dias.all %}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {% for dia in rutina_gym.dias.all %}
+                            <button type="button"
+                                    onclick="seleccionarDiaRutina('profe', '{{ forloop.counter }}')"
+                                    id="btn-dia-profe-{{ forloop.counter }}"
+                                    class="btn-dia-profe p-4 rounded-2xl border text-left transition cursor-pointer {% if forloop.first %}bg-slate-900 border-2 border-blue-500 shadow-lg shadow-blue-500/10{% else %}bg-slate-900/60 border-slate-800 hover:border-slate-700{% endif %}">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">PROFESOR • DÍA {{ forloop.counter }}</span>
+                                    <span class="text-[10px] font-mono text-slate-400">{{ dia.ejercicios.count }} ej.</span>
+                                </div>
+                                <h4 class="font-bold text-sm text-white">{{ dia.nombre_dia }}</h4>
+                            </button>
+                        {% endfor %}
                     </div>
 
-                    <form method="POST" action="{% url 'dashboard' %}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+                    {% for dia in rutina_gym.dias.all %}
+                        <div id="contenido-dia-profe-{{ forloop.counter }}"
+                             class="contenido-dia-profe {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                                <div>
+                                    <span class="text-[10px] font-bold text-blue-400 uppercase block">PROFESOR • DÍA {{ forloop.counter }}</span>
+                                    <h4 class="font-bold text-base text-white mt-0.5">{{ dia.nombre_dia }}</h4>
+                                </div>
+                                <span class="text-xs font-semibold text-blue-400">Plan Personalizado</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {% for ej in dia.ejercicios.all %}
+                                    <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <span class="font-bold text-blue-400 text-xs">{{ forloop.counter }}. {{ ej.nombre }}</span>
+                                            <span class="text-[10px] text-slate-400 font-mono shrink-0">{{ ej.series }}×{{ ej.repeticiones }}</span>
+                                        </div>
+                                        <div class="grid grid-cols-4 gap-1.5 text-[9px] font-bold text-slate-500 uppercase px-2">
+                                            <span>Serie</span><span>KG</span><span>Reps</span><span class="text-right">Listo</span>
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            {% for s in "12345678"|make_list %}
+                                                {% if forloop.counter <= ej.series %}
+                                                    <div class="set-row grid grid-cols-4 gap-1.5 items-center bg-slate-900/90 border border-slate-800 rounded-xl px-2 py-1.5 text-xs">
+                                                        <span class="font-mono font-bold text-slate-400">S{{ forloop.counter }}</span>
+                                                        <input type="number" placeholder="kg" onchange="recalcularHevy()" class="hevy-kg w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                        <input type="number" value="10" onchange="recalcularHevy()" class="hevy-reps w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                        <button type="button" onclick="toggleSerieHevy(this, 90)" class="ml-auto w-7 h-7 rounded-lg bg-slate-800 hover:bg-emerald-600/30 text-slate-400 flex items-center justify-center transition cursor-pointer">
+                                                            <i class="fa-solid fa-check text-xs"></i>
+                                                        </button>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="p-8 bg-slate-900/60 border border-slate-800 rounded-2xl text-center space-y-2">
+                        <i class="fa-solid fa-clipboard-list text-blue-400 text-2xl"></i>
+                        <h4 class="text-sm font-bold text-white">Aún no tenés una rutina personalizada asignada</h4>
+                        <p class="text-xs text-slate-400 max-w-md mx-auto">Pedile a tu profesor en sala que cargue tu plan personalizado o entrená con cualquiera de los 3 planes básicos.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- 5. MI PROPIA RUTINA (CON CATÁLOGO COMPLETO HEVY + 7 DÍAS) -->
+            <div id="panel-rutina-custom" class="panel-modo-rutina hidden space-y-6">
+                <div class="bg-slate-900/90 border border-blue-500/30 rounded-3xl p-6 space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                        <div>
+                            <h4 class="font-extrabold text-white text-base flex items-center gap-2">
+                                <i class="fa-solid fa-dumbbell text-blue-400"></i> Armar Mi Propia Rutina
+                            </h4>
+                            <p class="text-xs text-slate-400">Buscá en el catálogo estilo Hevy por grupo muscular o escribí tu propio ejercicio.</p>
+                        </div>
+                        <span class="text-[11px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
+                            Catálogo Hevy Integrado
+                        </span>
+                    </div>
+
+                    <!-- Buscador y filtros -->
+                    <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3">
+                        <div class="flex flex-col sm:flex-row gap-2.5">
+                            <div class="relative flex-1">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                                <input type="text" id="buscadorCatalogoHevy" onkeyup="filtrarCatalogoHevy()"
+                                    placeholder="Buscar ejercicio (ej: Press banca, Remo, Sentadilla, Polea, Mancuernas)..."
+                                    class="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                            </div>
+                            <span id="contadorCatalogoHevy" class="text-[11px] font-mono text-slate-400 self-center px-2"></span>
+                        </div>
+
+                        <div class="flex flex-wrap gap-1.5" id="filtrosGrupoHevy">
+                            <button type="button" onclick="seleccionarGrupoHevy('todos', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-blue-600 text-white font-bold text-[11px] cursor-pointer">Todos</button>
+                            <button type="button" onclick="seleccionarGrupoHevy('pecho', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Pecho</button>
+                            <button type="button" onclick="seleccionarGrupoHevy('espalda', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Espalda</button>
+                            <button type="button" onclick="seleccionarGrupoHevy('piernas', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Piernas</button>
+                            <button type="button" onclick="seleccionarGrupoHevy('hombros', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Hombros</button>
+                            <button type="button" onclick="seleccionarGrupoHevy('biceps', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Bíceps</button>
+                            <button type="button" onclick="seleccionarGrupoHevy('triceps', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Tríceps</button>
+                            <button type="button" onclick="seleccionarGrupoHevy('core', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Abdomen / Core</button>
+                            <button type="button" onclick="seleccionarGrupoHevy('cardio', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Cardio / Funcional</button>
+                        </div>
+
+                        <div id="gridCatalogoHevy" class="max-h-48 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pr-1 pt-1"></div>
+                    </div>
+
+                    <!-- Formulario Agregar -->
+                    <form method="POST" action="{% url 'dashboard' %}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
                         {% csrf_token %}
                         <input type="hidden" name="accion" value="agregar_ejercicio_custom">
 
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre del Ejercicio</label>
-                            <input type="text" name="nombre_ejercicio" required placeholder="Ej: Press de Banca" 
-                                class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                        <div class="lg:col-span-2">
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Ejercicio Seleccionado o Libre</label>
+                            <input type="text" name="nombre_ejercicio" id="inputCustomNombreEj" required placeholder="Elegí arriba o escribí uno..." 
+                                class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Series y Repeticiones</label>
-                            <input type="text" name="repeticiones" required placeholder="Ej: 4 series x 10 reps" 
-                                class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Series</label>
+                            <input type="number" name="series" id="inputCustomSeries" value="3" min="1" max="8" required
+                                class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-blue-500">
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Día de la Semana</label>
-                            <select name="dia" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
-                                <option value="lunes">Lunes (Día 1)</option>
-                                <option value="martes">Martes (Día 2)</option>
-                                <option value="miercoles">Miércoles (Día 3)</option>
-                                <option value="jueves">Jueves (Día 4)</option>
-                                <option value="viernes">Viernes (Día 5)</option>
-                                <option value="sabado">Sábado (Día 6)</option>
-                                <option value="domingo">Domingo (Día 7)</option>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Reps / Kg</label>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <input type="text" name="reps" id="inputCustomReps" value="10" required placeholder="Reps"
+                                    class="w-full px-2.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-blue-500">
+                                <input type="text" name="peso_sugerido" id="inputCustomPeso" placeholder="Kg"
+                                    class="w-full px-2.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Día</label>
+                            <select name="dia" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
+                                <option value="lunes">Lunes</option>
+                                <option value="martes">Martes</option>
+                                <option value="miercoles">Miércoles</option>
+                                <option value="jueves">Jueves</option>
+                                <option value="viernes">Viernes</option>
+                                <option value="sabado">Sábado</option>
+                                <option value="domingo">Domingo</option>
                             </select>
                         </div>
 
                         <div>
                             <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
-                                <i class="fa-solid fa-plus text-xs"></i> Guardar Ejercicio
+                                <i class="fa-solid fa-plus text-xs"></i> Agregar
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <!-- Grilla de los 7 Días -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Lunes -->
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
-                                <span class="text-xs font-bold text-blue-400 uppercase">Lunes</span>
-                                <span class="text-[10px] text-slate-400">Día 1</span>
-                            </div>
-                            <div class="space-y-2">
-                                {% for ej in rutina_semanal.lunes %}
-                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
-                                        <div>
-                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
-                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
-                                        </div>
-                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
-                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                {% empty %}
-                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Martes -->
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
-                                <span class="text-xs font-bold text-blue-400 uppercase">Martes</span>
-                                <span class="text-[10px] text-slate-400">Día 2</span>
-                            </div>
-                            <div class="space-y-2">
-                                {% for ej in rutina_semanal.martes %}
-                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
-                                        <div>
-                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
-                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
-                                        </div>
-                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
-                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                {% empty %}
-                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Miércoles -->
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
-                                <span class="text-xs font-bold text-blue-400 uppercase">Miércoles</span>
-                                <span class="text-[10px] text-slate-400">Día 3</span>
-                            </div>
-                            <div class="space-y-2">
-                                {% for ej in rutina_semanal.miercoles %}
-                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
-                                        <div>
-                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
-                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
-                                        </div>
-                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
-                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                {% empty %}
-                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Jueves -->
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
-                                <span class="text-xs font-bold text-emerald-400 uppercase">Jueves</span>
-                                <span class="text-[10px] text-slate-400">Día 4</span>
-                            </div>
-                            <div class="space-y-2">
-                                {% for ej in rutina_semanal.jueves %}
-                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
-                                        <div>
-                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
-                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
-                                        </div>
-                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
-                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                {% empty %}
-                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Viernes -->
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
-                                <span class="text-xs font-bold text-blue-400 uppercase">Viernes</span>
-                                <span class="text-[10px] text-slate-400">Día 5</span>
-                            </div>
-                            <div class="space-y-2">
-                                {% for ej in rutina_semanal.viernes %}
-                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
-                                        <div>
-                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
-                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
-                                        </div>
-                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
-                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                {% empty %}
-                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Sábado -->
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
-                                <span class="text-xs font-bold text-amber-400 uppercase">Sábado</span>
-                                <span class="text-[10px] text-slate-400">Día 6</span>
-                            </div>
-                            <div class="space-y-2">
-                                {% for ej in rutina_semanal.sabado %}
-                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
-                                        <div>
-                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
-                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
-                                        </div>
-                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
-                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                {% empty %}
-                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Domingo -->
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
-                                <span class="text-xs font-bold text-purple-400 uppercase">Domingo</span>
-                                <span class="text-[10px] text-slate-400">Día 7</span>
-                            </div>
-                            <div class="space-y-2">
-                                {% for ej in rutina_semanal.domingo %}
-                                    <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex justify-between items-center">
-                                        <div>
-                                            <p class="font-bold text-white text-xs">{{ ej.nombre }}</p>
-                                            <p class="text-[11px] text-blue-400 font-medium">{{ ej.repeticiones }}</p>
-                                        </div>
-                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
-                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-600 hover:text-red-400 text-xs px-1.5 py-0.5 transition cursor-pointer" title="Eliminar">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                {% empty %}
-                                    <p class="text-[11px] text-slate-600 italic py-2 text-center">Sin ejercicios cargados</p>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
+                <!-- Botones horizontales de los 7 Días -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+                    {% for dia_clave, ejercicios_dia in rutina_semanal.items %}
+                        <button type="button"
+                                onclick="seleccionarDiaRutina('custom', '{{ dia_clave }}')"
+                                id="btn-dia-custom-{{ dia_clave }}"
+                                class="btn-dia-custom p-3.5 rounded-2xl border text-left transition cursor-pointer {% if forloop.first %}bg-slate-900 border-2 border-blue-500 shadow-lg shadow-blue-500/10{% else %}bg-slate-900/60 border-slate-800 hover:border-slate-700{% endif %}">
+                            <span class="text-[10px] font-bold text-blue-400 uppercase block">{{ dia_clave }}</span>
+                            <span class="text-xs font-extrabold text-white mt-0.5 block">{{ ejercicios_dia|length }} ej.</span>
+                        </button>
+                    {% endfor %}
                 </div>
 
+                <!-- Panel desplegable del día seleccionado en Mi Propia Rutina -->
+                {% for dia_clave, ejercicios_dia in rutina_semanal.items %}
+                    <div id="contenido-dia-custom-{{ dia_clave }}"
+                        class="contenido-dia-custom {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div>
+                                <span class="text-[10px] font-bold text-blue-400 uppercase block">MI RUTINA PROPIA</span>
+                                <h4 class="font-bold text-base text-white uppercase mt-0.5">{{ dia_clave }}</h4>
+                            </div>
+                            <span class="text-xs font-semibold text-blue-400">{{ ejercicios_dia|length }} ejercicio(s)</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {% for ej in ejercicios_dia %}
+                                <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div>
+                                            <span class="font-bold text-blue-400 text-xs block">{{ forloop.counter }}. {{ ej.nombre }}</span>
+                                            <span class="text-[10px] text-slate-400 font-mono">{{ ej.repeticiones }}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1 shrink-0">
+                                            <button type="button" onclick="abrirModalEditarEjercicio('{{ ej.id }}', '{{ ej.nombre|escapejs }}', '{{ ej.repeticiones|escapejs }}')" class="text-slate-500 hover:text-blue-400 text-xs p-1 transition cursor-pointer" title="Editar">
+                                                <i class="fa-regular fa-pen-to-square"></i>
+                                            </button>
+                                            <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
+                                                <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
+                                                <button type="submit" class="text-slate-500 hover:text-rose-400 text-xs p-1 transition cursor-pointer" title="Eliminar">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-4 gap-1.5 text-[9px] font-bold text-slate-500 uppercase px-2">
+                                        <span>Serie</span><span>KG</span><span>Reps</span><span class="text-right">Listo</span>
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        {% for s in "12345678"|make_list %}
+                                            {% if forloop.counter <= ej.series %}
+                                                <div class="set-row grid grid-cols-4 gap-1.5 items-center bg-slate-900/90 border border-slate-800 rounded-xl px-2 py-1.5 text-xs">
+                                                    <span class="font-mono font-bold text-slate-400">S{{ forloop.counter }}</span>
+                                                    <input type="number" placeholder="kg" onchange="recalcularHevy()" class="hevy-kg w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                    <input type="number" value="10" onchange="recalcularHevy()" class="hevy-reps w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                    <button type="button" onclick="toggleSerieHevy(this, 90)" class="ml-auto w-7 h-7 rounded-lg bg-slate-800 hover:bg-emerald-600/30 text-slate-400 flex items-center justify-center transition cursor-pointer">
+                                                        <i class="fa-solid fa-check text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="col-span-3 py-6 text-center text-xs text-slate-500 italic">
+                                    No tenés ejercicios cargados para el día {{ dia_clave }}. Usá el catálogo o el formulario de arriba para agregar.
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
 
         </div>
 
         <!-- ========================================================= -->
         <!-- 🧘‍♀️ SECCIÓN 2: ACTIVIDADES (CON INSCRIPCIÓN REAL)          -->
+        <!-- 🧘‍♀️ SECCIÓN 2: ACTIVIDADES (CON INSCRIPCIÓN REAL)          -->
         <!-- ========================================================= -->
         <section id="seccion-actividades" class="seccion-bloque hidden space-y-8">
-            
-            <!-- ARRIBA: A las que estoy anotado -->
             <div class="space-y-4">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
@@ -717,6 +711,7 @@
                     </div>
                     <div>
                         <h2 class="text-lg font-extrabold text-white">Mis Clases Inscriptas</h2>
+                        <p class="text-xs text-slate-400">Disciplinas en las que estás anotado actualmente.</p>
                         <p class="text-xs text-slate-400">Disciplinas en las que estás anotado actualmente.</p>
                     </div>
                 </div>
@@ -745,17 +740,55 @@
                                     <i class="fa-solid fa-xmark mr-1"></i> Cancelar Inscripción
                                 </button>
                             </form>
+                        <div class="p-6 rounded-2xl bg-slate-900/80 border-2 border-emerald-500/40 shadow-lg shadow-emerald-950/10 flex flex-col justify-between space-y-4">
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-2xl">🏋️‍♂️</span>
+                                    <span class="text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                                        Inscripto
+                                    </span>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-base text-white">{{ act.nombre }}</h3>
+                                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">{{ act.descripcion|default:"Acceso habilitado según el cronograma semanal del gimnasio." }}</p>
+                                </div>
+                            </div>
+
+                            <form method="POST" action="{% url 'dashboard' %}" class="pt-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="cancelar_actividad">
+                                <input type="hidden" name="actividad_id" value="{{ act.id }}">
+                                <button type="submit" onclick="return confirm('¿Deseás darte de baja de {{ act.nombre }}?')" class="w-full py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold text-xs rounded-xl transition cursor-pointer">
+                                    <i class="fa-solid fa-xmark mr-1"></i> Cancelar Inscripción
+                                </button>
+                            </form>
                         </div>
                     {% empty %}
                         <div class="col-span-3 p-6 bg-slate-900/40 border border-slate-800 rounded-2xl text-center text-xs text-slate-400">
+                            Actualmente no estás inscripto en ninguna disciplina. Elegí una clase abajo para anotarte.
                             Actualmente no estás inscripto en ninguna disciplina. Elegí una clase abajo para anotarte.
                         </div>
                     {% endfor %}
                 </div>
             </div>
 
-            <!-- ABAJO: Todas las disciplinas disponibles del gimnasio -->
+            <!-- ABAJO: Otras actividades disponibles -->
             <div class="space-y-4 border-t border-slate-800 pt-8">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-compass"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-extrabold text-white">Disciplinas Disponibles en el Gimnasio</h2>
+                            <p class="text-xs text-slate-400">Anotate directamente desde acá con tu membresía activa.</p>
+                        </div>
+                    </div>
+                    {% if not cuota_al_dia %}
+                        <span class="text-[11px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-1 rounded-full">
+                            <i class="fa-solid fa-lock mr-1"></i> Regularizá tu cuota para anotarte
+                        </span>
+                    {% endif %}
                 <div class="flex items-center justify-between flex-wrap gap-2">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
@@ -789,9 +822,37 @@
                                         </span>
                                     {% endif %}
                                 </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-2xl">🔥</span>
+                                    {% if act.requiere_reserva %}
+                                        <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
+                                            Con Reserva
+                                        </span>
+                                    {% else %}
+                                        <span class="text-[10px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2.5 py-0.5 rounded-full">
+                                            Pase Libre
+                                        </span>
+                                    {% endif %}
+                                </div>
                                 <h3 class="font-bold text-base text-white">{{ act.nombre }}</h3>
                                 <p class="text-xs text-slate-400 leading-relaxed">{{ act.descripcion|default:"Actividad disponible en la grilla horaria del gimnasio." }}</p>
+                                <p class="text-xs text-slate-400 leading-relaxed">{{ act.descripcion|default:"Actividad disponible en la grilla horaria del gimnasio." }}</p>
                             </div>
+
+                            <form method="POST" action="{% url 'dashboard' %}" class="mt-4">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="inscribir_actividad">
+                                <input type="hidden" name="actividad_id" value="{{ act.id }}">
+                                {% if cuota_al_dia %}
+                                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                        <i class="fa-solid fa-plus text-[10px]"></i> Anotarme a {{ act.nombre }}
+                                    </button>
+                                {% else %}
+                                    <button type="button" onclick="switchTab('perfil'); abrirModalPagoSocio();" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/30 font-bold text-xs rounded-xl transition cursor-pointer">
+                                        <i class="fa-solid fa-lock mr-1"></i> Cuota Vencida (Abonar)
+                                    </button>
+                                {% endif %}
+                            </form>
 
                             <form method="POST" action="{% url 'dashboard' %}" class="mt-4">
                                 {% csrf_token %}
@@ -815,30 +876,30 @@
                             {% else %}
                                 No hay disciplinas activas cargadas en este momento.
                             {% endif %}
+                            {% if actividades_anotadas %}
+                                ¡Ya estás anotado en todas las disciplinas activas del gimnasio!
+                            {% else %}
+                                No hay disciplinas activas cargadas en este momento.
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
             </div>
-
         </section>
 
         <!-- ========================================================= -->
         <!-- 👤 SECCIÓN 3: MI PERFIL + CONTRASEÑA + ESTADO DE CUENTA    -->
         <!-- ========================================================= -->
         <section id="seccion-perfil" class="seccion-bloque hidden space-y-8">
-            
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                
-                <!-- Columna Izquierda: Datos Personales & Cambio de Contraseña -->
                 <div class="lg:col-span-6 space-y-6">
-                    
-                    <!-- Formulario: Mis Datos -->
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
                         <div>
                             <h3 class="text-base font-bold text-white">Mis Datos Personales</h3>
                             <p class="text-xs text-slate-400">Modificá tus vías de contacto registradas.</p>
                         </div>
 
+                        <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
                         <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
                             {% csrf_token %}
                             <input type="hidden" name="accion" value="actualizar_perfil">
@@ -871,13 +932,13 @@
 
                             <div class="pt-2 flex justify-end">
                                 <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">
+                                <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">
                                     Guardar Datos
                                 </button>
                             </div>
                         </form>
                     </div>
 
-                    <!-- Formulario: Cambiar Contraseña con Reglas de Seguridad -->
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm">
@@ -889,6 +950,7 @@
                             </div>
                         </div>
 
+                        <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
                         <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
                             {% csrf_token %}
                             <input type="hidden" name="accion" value="cambiar_password">
@@ -902,15 +964,15 @@
                                 <div>
                                     <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nueva Contraseña</label>
                                     <input type="password" name="pass_nueva" required minlength="8"
-                                           pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}"
-                                           title="Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo."
-                                           placeholder="••••••••"
-                                           class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}"
+                                        title="Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo."
+                                        placeholder="••••••••"
+                                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
                                 </div>
                                 <div>
                                     <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Confirmar Nueva</label>
                                     <input type="password" name="pass_confirmar" required minlength="8" placeholder="••••••••"
-                                           class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
                                 </div>
                             </div>
 
@@ -918,20 +980,21 @@
                                 Requisitos: mínimo <strong class="text-slate-200">8 caracteres</strong>, con al menos <strong class="text-slate-200">1 mayúscula</strong>, <strong class="text-slate-200">1 minúscula</strong>, <strong class="text-slate-200">1 número</strong> y <strong class="text-slate-200">1 símbolo</strong> (ej. <code class="text-amber-400">Gym2026!</code>).
                             </p>
 
+                            <p class="text-[11px] text-slate-400 leading-relaxed">
+                                Requisitos: mínimo <strong class="text-slate-200">8 caracteres</strong>, con al menos <strong class="text-slate-200">1 mayúscula</strong>, <strong class="text-slate-200">1 minúscula</strong>, <strong class="text-slate-200">1 número</strong> y <strong class="text-slate-200">1 símbolo</strong> (ej. <code class="text-amber-400">Gym2026!</code>).
+                            </p>
+
                             <div class="pt-2 flex justify-end">
+                                <button type="submit" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">
                                 <button type="submit" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">
                                     Actualizar Contraseña
                                 </button>
                             </div>
                         </form>
                     </div>
-
                 </div>
 
-                <!-- Columna Derecha: Estado de Cuenta & Historial de Pagos -->
                 <div class="lg:col-span-6 space-y-6">
-                    
-                    <!-- Tarjeta de Membresía Actual -->
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
                         <h3 class="text-base font-bold text-white">Estado de Cuenta</h3>
                         
@@ -939,6 +1002,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="text-base font-bold text-white">Pase Mensual Activo</h3>
+                                    <p class="text-xs text-slate-400 mt-0.5">Acceso a: {{ membresia_actual.plan.nombre|default:"Sin pase activo" }}</p>
                                     <p class="text-xs text-slate-400 mt-0.5">Acceso a: {{ membresia_actual.plan.nombre|default:"Sin pase activo" }}</p>
                                 </div>
 
@@ -957,7 +1021,6 @@
                                 </div>
                             </div>
 
-                            <!-- BANNER Y BOTÓN: PAGAR CUOTA -->
                             <div class="mt-6 p-5 rounded-2xl bg-gradient-to-r from-blue-900/30 to-emerald-900/30 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
                                 <div class="flex items-center gap-3.5">
                                     <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl font-bold border border-emerald-500/20">
@@ -982,7 +1045,6 @@
                         </div>
                     </div>
 
-                    <!-- Tabla de Historial de Pagos -->
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
                         <div class="flex items-center justify-between">
                             <h3 class="text-base font-bold text-white">Historial de Pagos</h3>
@@ -995,14 +1057,20 @@
                                     <tr>
                                         <th class="pb-3 px-2">Fecha</th>
                                         <th class="pb-3 px-2">Concepto</th>
+                                        <th class="pb-3 px-2">Concepto</th>
                                         <th class="pb-3 px-2">Monto</th>
                                         <th class="pb-3 px-2">Medio</th>
                                         <th class="pb-3 px-2 text-right">Recibo</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                                <tbody class="divide-y divide-slate-800/60 text-slate-300">
                                     {% for pago in historial_pagos %}
                                         <tr class="hover:bg-slate-800/30 transition">
+                                            <td class="py-3 px-2 font-mono text-slate-400">{{ pago.fecha_pago|date:"d/m/Y" }}</td>
+                                            <td class="py-3 px-2 text-white font-medium">{{ pago.membresia.plan.nombre|default:"Cuota Mensual" }}</td>
+                                            <td class="py-3 px-2 font-mono font-bold text-emerald-400">${{ pago.monto|floatformat:0 }}</td>
+                                            <td class="py-3 px-2">
                                             <td class="py-3 px-2 font-mono text-slate-400">{{ pago.fecha_pago|date:"d/m/Y" }}</td>
                                             <td class="py-3 px-2 text-white font-medium">{{ pago.membresia.plan.nombre|default:"Cuota Mensual" }}</td>
                                             <td class="py-3 px-2 font-mono font-bold text-emerald-400">${{ pago.monto|floatformat:0 }}</td>
@@ -1011,6 +1079,7 @@
                                                     {{ pago.metodo_pago }}
                                                 </span>
                                             </td>
+                                            <td class="py-3 px-2 text-right">
                                             <td class="py-3 px-2 text-right">
                                                 <span class="text-blue-400 font-mono text-[11px]">#REC-{{ pago.id }}</span>
                                             </td>
@@ -1026,21 +1095,45 @@
                             </table>
                         </div>
                     </div>
-
                 </div>
-
             </div>
-
         </section>
 
     </main>
 
-    <!-- ============================================================== -->
-    <!-- 💳 MODAL: AUTOGESTIÓN DE PAGO / RENOVACIÓN (SOCIO)            -->
-    <!-- ============================================================== -->
+    <!-- MODAL EDITAR EJERCICIO PROPIO -->
+    <div id="modalEditarEjercicio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-white text-base">Editar Ejercicio</h3>
+                <button type="button" onclick="cerrarModalEditarEjercicio()" class="text-slate-400 hover:text-white transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="editar_ejercicio_custom">
+                <input type="hidden" name="ejercicio_id" id="editEjId">
+
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre del Ejercicio</label>
+                    <input type="text" name="nombre_ejercicio" id="editEjNombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Series, Repeticiones y Peso</label>
+                    <input type="text" name="repeticiones" id="editEjReps" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="cerrarModalEditarEjercicio()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition cursor-pointer">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: AUTOGESTIÓN DE PAGO / RENOVACIÓN (SOCIO) -->
     <div id="modalPagoSocio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl overflow-y-auto max-h-[90vh]">
-            
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div class="flex items-center gap-2.5">
                     <span class="text-xl">💳</span>
@@ -1059,9 +1152,7 @@
                 <input type="hidden" name="accion" value="pagar_cuota_socio">
 
                 <div>
-                    <label class="block text-slate-400 font-bold uppercase text-[10px] mb-2 tracking-wider">
-                        ¿Qué disciplinas vas a abonar?
-                    </label>
+                    <label class="block text-slate-400 font-bold uppercase text-[10px] mb-2 tracking-wider">¿Qué disciplinas vas a abonar?</label>
                     <div class="space-y-2">
                         <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
                             <div class="flex items-center gap-3">
@@ -1074,6 +1165,16 @@
                             <span class="font-mono font-bold text-blue-400 text-sm">$60.000</span>
                         </label>
 
+                        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" name="servicios" value="clases" data-precio="45000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
+                                <div>
+                                    <span class="font-bold text-white block">🧘 Clases Grupales</span>
+                                    <span class="text-[10px] text-slate-400">Funcional, Spinning, Zumba, Cardio</span>
+                                </div>
+                            </div>
+                            <span class="font-mono font-bold text-blue-400 text-sm">$45.000</span>
+                        </label>
                         <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
                             <div class="flex items-center gap-3">
                                 <input type="checkbox" name="servicios" value="clases" data-precio="45000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
@@ -1106,7 +1207,29 @@
                             </div>
                             <span class="font-mono font-bold text-blue-400 text-sm">$42.000</span>
                         </label>
+                        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" name="servicios" value="pilates_2" data-precio="42000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
+                                <div>
+                                    <span class="font-bold text-white block">🤸 Pilates (2 veces por semana)</span>
+                                    <span class="text-[10px] text-slate-400">2 turnos semanales reservados</span>
+                                </div>
+                            </div>
+                            <span class="font-mono font-bold text-blue-400 text-sm">$42.000</span>
+                        </label>
 
+                        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" name="servicios" value="pilates_3" data-precio="50000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
+                                <div>
+                                    <span class="font-bold text-white block">🤸 Pilates (3 veces por semana)</span>
+                                    <span class="text-[10px] text-slate-400">3 turnos semanales reservados</span>
+                                </div>
+                            </div>
+                            <span class="font-mono font-bold text-blue-400 text-sm">$50.000</span>
+                        </label>
+                    </div>
+                </div>
                         <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
                             <div class="flex items-center gap-3">
                                 <input type="checkbox" name="servicios" value="pilates_3" data-precio="50000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
@@ -1124,7 +1247,24 @@
                     <span class="text-xs font-bold text-slate-300">Total a abonar:</span>
                     <span id="labelTotalPagoSocio" class="text-xl font-black text-blue-400 font-mono">$0</span>
                 </div>
+                <div class="p-3.5 rounded-xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-300">Total a abonar:</span>
+                    <span id="labelTotalPagoSocio" class="text-xl font-black text-blue-400 font-mono">$0</span>
+                </div>
 
+                <div>
+                    <label class="block text-slate-400 font-bold uppercase text-[10px] mb-1.5 tracking-wider">Método de Pago:</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
+                            <input type="radio" name="metodo_pago" value="transferencia" checked class="text-emerald-500 focus:ring-0">
+                            <span class="font-bold text-slate-200">📱 Transferencia</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
+                            <input type="radio" name="metodo_pago" value="efectivo" class="text-emerald-500 focus:ring-0">
+                            <span class="font-bold text-slate-200">💵 En Recepción</span>
+                        </label>
+                    </div>
+                </div>
                 <div>
                     <label class="block text-slate-400 font-bold uppercase text-[10px] mb-1.5 tracking-wider">Método de Pago:</label>
                     <div class="grid grid-cols-2 gap-3">
@@ -1144,14 +1284,15 @@
                     <p>Alias: <span class="text-white font-mono font-bold">GYMTRACK.BODYMIC.MP</span></p>
                     <p>CBU: <span class="text-white font-mono">0000003100012345678901</span></p>
                 </div>
+                <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                    <p class="font-bold text-slate-300">📌 Datos para transferencia inmediata:</p>
+                    <p>Alias: <span class="text-white font-mono font-bold">GYMTRACK.BODYMIC.MP</span></p>
+                    <p>CBU: <span class="text-white font-mono">0000003100012345678901</span></p>
+                </div>
 
                 <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
-                    <button type="button" onclick="cerrarModalPagoSocio()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition cursor-pointer">
-                        Confirmar Renovación
-                    </button>
+                    <button type="button" onclick="cerrarModalPagoSocio()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition cursor-pointer">Confirmar Renovación</button>
                 </div>
             </form>
         </div>
@@ -1174,7 +1315,6 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-
             <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
                 <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-1.5">
                     <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">Institucional</span>
@@ -1182,22 +1322,178 @@
                     <p class="text-[11px] text-slate-400 leading-relaxed">Este sábado se realizarán tareas preventivas en poleas y cintas. El resto de las áreas funcionará con normalidad.</p>
                 </div>
             </div>
-
             <div class="pt-2 border-t border-slate-800 flex justify-end">
-                <button type="button" onclick="toggleModalNovedades()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition cursor-pointer">
-                    Entendido
-                </button>
+                <button type="button" onclick="toggleModalNovedades()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition cursor-pointer">Entendido</button>
             </div>
         </div>
     </div>
 
-    <!-- FOOTER UNIFICADO -->
-    <footer class="bg-slate-900 border-t border-slate-800 text-slate-500 py-6 text-xs text-center mt-auto">
-        <p>© 2026 GymTrack — Portal de Autogestión para Socios.</p>
-    </footer>
+{% include 'includes/footer.html' %}
 
-    <!-- SCRIPTS UNIFICADOS -->
+    <!-- SCRIPTS COMPLETOS -->
     <script>
+        const CATALOGO_HEVY = [
+            // PECHO
+            { nombre: "Press de banca plano con barra", grupo: "pecho", equipo: "Barra", s: 4, r: "8-10", kg: 60 },
+            { nombre: "Press de banca inclinado con barra", grupo: "pecho", equipo: "Barra", s: 4, r: "8-10", kg: 50 },
+            { nombre: "Press de banca declinado con barra", grupo: "pecho", equipo: "Barra", s: 3, r: "10", kg: 50 },
+            { nombre: "Press plano con mancuernas", grupo: "pecho", equipo: "Mancuernas", s: 4, r: "10", kg: 22 },
+            { nombre: "Press inclinado con mancuernas", grupo: "pecho", equipo: "Mancuernas", s: 4, r: "10-12", kg: 20 },
+            { nombre: "Press declinado con mancuernas", grupo: "pecho", equipo: "Mancuernas", s: 3, r: "10-12", kg: 18 },
+            { nombre: "Press de pecho en máquina convergente", grupo: "pecho", equipo: "Máquina", s: 3, r: "12", kg: 40 },
+            { nombre: "Press inclinado en máquina Smith", grupo: "pecho", equipo: "Smith", s: 3, r: "10", kg: 40 },
+            { nombre: "Aperturas planas con mancuernas", grupo: "pecho", equipo: "Mancuernas", s: 3, r: "12-15", kg: 12 },
+            { nombre: "Aperturas inclinadas con mancuernas", grupo: "pecho", equipo: "Mancuernas", s: 3, r: "12-15", kg: 12 },
+            { nombre: "Peck Deck / Contractora de pecho", grupo: "pecho", equipo: "Máquina", s: 3, r: "12-15", kg: 35 },
+            { nombre: "Cruces en polea alta", grupo: "pecho", equipo: "Polea", s: 3, r: "12-15", kg: 15 },
+            { nombre: "Cruces en polea baja", grupo: "pecho", equipo: "Polea", s: 3, r: "12-15", kg: 10 },
+            { nombre: "Fondos en paralelas para pecho", grupo: "pecho", equipo: "Peso corporal", s: 3, r: "10", kg: 0 },
+            { nombre: "Flexiones de brazos (Push-ups)", grupo: "pecho", equipo: "Peso corporal", s: 3, r: "15", kg: 0 },
+            { nombre: "Pullover con mancuerna en banco", grupo: "pecho", equipo: "Mancuernas", s: 3, r: "12", kg: 18 },
+
+            // ESPALDA
+            { nombre: "Dominadas pronas (Pull-ups)", grupo: "espalda", equipo: "Peso corporal", s: 4, r: "8-10", kg: 0 },
+            { nombre: "Dominadas supinas (Chin-ups)", grupo: "espalda", equipo: "Peso corporal", s: 4, r: "8-10", kg: 0 },
+            { nombre: "Dominadas asistidas en máquina", grupo: "espalda", equipo: "Máquina", s: 3, r: "10-12", kg: 25 },
+            { nombre: "Dorsalera / Jalón al pecho agarre amplio", grupo: "espalda", equipo: "Polea", s: 4, r: "10-12", kg: 45 },
+            { nombre: "Dorsalera agarre neutro (triángulo)", grupo: "espalda", equipo: "Polea", s: 3, r: "10-12", kg: 45 },
+            { nombre: "Jalón al pecho supino", grupo: "espalda", equipo: "Polea", s: 3, r: "10-12", kg: 40 },
+            { nombre: "Remo con barra (Bent-over row)", grupo: "espalda", equipo: "Barra", s: 4, r: "8-10", kg: 50 },
+            { nombre: "Remo Pendlay con barra", grupo: "espalda", equipo: "Barra", s: 4, r: "6-8", kg: 55 },
+            { nombre: "Remo T con apoyo al pecho", grupo: "espalda", equipo: "Máquina", s: 4, r: "8-12", kg: 40 },
+            { nombre: "Remo unilateral con mancuerna", grupo: "espalda", equipo: "Mancuernas", s: 3, r: "10-12", kg: 22 },
+            { nombre: "Remo sentado en polea baja (gironda)", grupo: "espalda", equipo: "Polea", s: 3, r: "10-12", kg: 45 },
+            { nombre: "Remo en máquina Hammer", grupo: "espalda", equipo: "Máquina", s: 3, r: "10-12", kg: 40 },
+            { nombre: "Pullover en polea alta con soga", grupo: "espalda", equipo: "Polea", s: 3, r: "12-15", kg: 20 },
+            { nombre: "Hiperextensiones lumbares en banco", grupo: "espalda", equipo: "Peso corporal", s: 3, r: "15", kg: 10 },
+            { nombre: "Encogimientos de trapecio con barra", grupo: "espalda", equipo: "Barra", s: 3, r: "12", kg: 60 },
+            { nombre: "Encogimientos de trapecio con mancuernas", grupo: "espalda", equipo: "Mancuernas", s: 3, r: "12-15", kg: 24 },
+
+            // PIERNAS
+            { nombre: "Sentadilla libre trasera con barra", grupo: "piernas", equipo: "Barra", s: 4, r: "8-10", kg: 80 },
+            { nombre: "Sentadilla frontal con barra", grupo: "piernas", equipo: "Barra", s: 4, r: "8", kg: 60 },
+            { nombre: "Sentadilla en máquina Smith", grupo: "piernas", equipo: "Smith", s: 3, r: "10", kg: 60 },
+            { nombre: "Sentadilla Goblet con mancuerna", grupo: "piernas", equipo: "Mancuernas", s: 3, r: "12", kg: 20 },
+            { nombre: "Sentadilla Hack en máquina", grupo: "piernas", equipo: "Máquina", s: 4, r: "10", kg: 70 },
+            { nombre: "Sentadilla búlgara con mancuernas", grupo: "piernas", equipo: "Mancuernas", s: 3, r: "10", kg: 14 },
+            { nombre: "Prensa inclinada 45°", grupo: "piernas", equipo: "Máquina", s: 4, r: "10-12", kg: 120 },
+            { nombre: "Prensa horizontal", grupo: "piernas", equipo: "Máquina", s: 3, r: "12", kg: 80 },
+            { nombre: "Peso muerto convencional con barra", grupo: "piernas", equipo: "Barra", s: 4, r: "5-8", kg: 90 },
+            { nombre: "Peso muerto rumano con barra", grupo: "piernas", equipo: "Barra", s: 4, r: "8-10", kg: 70 },
+            { nombre: "Peso muerto rumano con mancuernas", grupo: "piernas", equipo: "Mancuernas", s: 3, r: "10-12", kg: 22 },
+            { nombre: "Peso muerto sumo con barra", grupo: "piernas", equipo: "Barra", s: 4, r: "6-8", kg: 85 },
+            { nombre: "Hip Thrust con barra", grupo: "piernas", equipo: "Barra", s: 4, r: "10-12", kg: 80 },
+            { nombre: "Hip Thrust en máquina", grupo: "piernas", equipo: "Máquina", s: 3, r: "12", kg: 60 },
+            { nombre: "Sillón de cuádriceps (Extensión)", grupo: "piernas", equipo: "Máquina", s: 3, r: "12-15", kg: 40 },
+            { nombre: "Camilla femoral acostado", grupo: "piernas", equipo: "Máquina", s: 3, r: "10-12", kg: 35 },
+            { nombre: "Curl femoral sentado en máquina", grupo: "piernas", equipo: "Máquina", s: 3, r: "12", kg: 35 },
+            { nombre: "Aductores en máquina", grupo: "piernas", equipo: "Máquina", s: 3, r: "12-15", kg: 40 },
+            { nombre: "Abductores en máquina", grupo: "piernas", equipo: "Máquina", s: 3, r: "15", kg: 40 },
+            { nombre: "Zancadas / Estocadas caminando", grupo: "piernas", equipo: "Mancuernas", s: 3, r: "12", kg: 14 },
+            { nombre: "Subidas al cajón (Step-ups)", grupo: "piernas", equipo: "Mancuernas", s: 3, r: "12", kg: 12 },
+            { nombre: "Patada de glúteo en polea baja", grupo: "piernas", equipo: "Polea", s: 3, r: "15", kg: 15 },
+            { nombre: "Gemelos parado en máquina", grupo: "piernas", equipo: "Máquina", s: 4, r: "12-15", kg: 50 },
+            { nombre: "Gemelos sentado (Sóleo)", grupo: "piernas", equipo: "Máquina", s: 3, r: "15", kg: 35 },
+
+            // HOMBROS
+            { nombre: "Press militar de pie con barra", grupo: "hombros", equipo: "Barra", s: 4, r: "8-10", kg: 35 },
+            { nombre: "Press militar sentado con mancuernas", grupo: "hombros", equipo: "Mancuernas", s: 4, r: "10", kg: 16 },
+            { nombre: "Press Arnold con mancuernas", grupo: "hombros", equipo: "Mancuernas", s: 3, r: "10-12", kg: 14 },
+            { nombre: "Press de hombros en máquina", grupo: "hombros", equipo: "Máquina", s: 3, r: "10-12", kg: 30 },
+            { nombre: "Vuelos laterales con mancuernas", grupo: "hombros", equipo: "Mancuernas", s: 4, r: "12-15", kg: 10 },
+            { nombre: "Vuelos laterales en polea baja", grupo: "hombros", equipo: "Polea", s: 3, r: "12-15", kg: 8 },
+            { nombre: "Vuelos laterales en máquina", grupo: "hombros", equipo: "Máquina", s: 3, r: "12-15", kg: 20 },
+            { nombre: "Vuelos frontales con mancuernas o disco", grupo: "hombros", equipo: "Mancuernas", s: 3, r: "12", kg: 10 },
+            { nombre: "Pájaros / Vuelos posteriores con mancuernas", grupo: "hombros", equipo: "Mancuernas", s: 3, r: "12-15", kg: 8 },
+            { nombre: "Peck Deck inverso (Deltoides posterior)", grupo: "hombros", equipo: "Máquina", s: 3, r: "12-15", kg: 25 },
+            { nombre: "Face Pull en polea con soga", grupo: "hombros", equipo: "Polea", s: 3, r: "15", kg: 18 },
+            { nombre: "Remo al mentón con barra Z", grupo: "hombros", equipo: "Barra", s: 3, r: "10-12", kg: 25 },
+
+            // BÍCEPS
+            { nombre: "Curl de bíceps con barra recta", grupo: "biceps", equipo: "Barra", s: 3, r: "10-12", kg: 25 },
+            { nombre: "Curl de bíceps con barra W", grupo: "biceps", equipo: "Barra", s: 3, r: "10-12", kg: 25 },
+            { nombre: "Curl alternado con mancuernas", grupo: "biceps", equipo: "Mancuernas", s: 3, r: "10-12", kg: 12 },
+            { nombre: "Curl de bíceps sentado en banco inclinado", grupo: "biceps", equipo: "Mancuernas", s: 3, r: "10-12", kg: 10 },
+            { nombre: "Curl martillo con mancuernas", grupo: "biceps", equipo: "Mancuernas", s: 3, r: "10-12", kg: 14 },
+            { nombre: "Curl martillo en polea baja con soga", grupo: "biceps", equipo: "Polea", s: 3, r: "12", kg: 20 },
+            { nombre: "Curl en banco Scott (Predicador)", grupo: "biceps", equipo: "Barra / Máq.", s: 3, r: "10-12", kg: 20 },
+            { nombre: "Curl concentrado con mancuerna", grupo: "biceps", equipo: "Mancuernas", s: 3, r: "12", kg: 10 },
+            { nombre: "Curl de bíceps en polea baja con barra", grupo: "biceps", equipo: "Polea", s: 3, r: "12", kg: 20 },
+            { nombre: "Curl araña (Spider curl)", grupo: "biceps", equipo: "Mancuernas", s: 3, r: "12", kg: 10 },
+
+            // TRÍCEPS
+            { nombre: "Extensión de tríceps en polea alta con soga", grupo: "triceps", equipo: "Polea", s: 3, r: "12", kg: 20 },
+            { nombre: "Extensión de tríceps en polea con barra recta", grupo: "triceps", equipo: "Polea", s: 3, r: "10-12", kg: 25 },
+            { nombre: "Press francés con barra W", grupo: "triceps", equipo: "Barra", s: 3, r: "10-12", kg: 20 },
+            { nombre: "Extensión trasnuca con soga en polea", grupo: "triceps", equipo: "Polea", s: 3, r: "12-15", kg: 18 },
+            { nombre: "Copa de tríceps a dos manos con mancuerna", grupo: "triceps", equipo: "Mancuernas", s: 3, r: "12", kg: 18 },
+            { nombre: "Press de banca con agarre cerrado", grupo: "triceps", equipo: "Barra", s: 3, r: "8-10", kg: 45 },
+            { nombre: "Fondos entre bancos", grupo: "triceps", equipo: "Peso corporal", s: 3, r: "12-15", kg: 0 },
+            { nombre: "Patada de tríceps en polea o mancuerna", grupo: "triceps", equipo: "Polea / Manc.", s: 3, r: "12-15", kg: 8 },
+
+            // ABDOMEN / CORE
+            { nombre: "Plancha abdominal frontal (Isométrica)", grupo: "core", equipo: "Peso corporal", s: 3, r: "45s", kg: 0 },
+            { nombre: "Plancha lateral (Oblicuos)", grupo: "core", equipo: "Peso corporal", s: 3, r: "30s", kg: 0 },
+            { nombre: "Crunch abdominal en colchoneta", grupo: "core", equipo: "Peso corporal", s: 3, r: "15-20", kg: 0 },
+            { nombre: "Crunch abdominal en polea alta", grupo: "core", equipo: "Polea", s: 3, r: "15", kg: 25 },
+            { nombre: "Elevación de piernas colgado", grupo: "core", equipo: "Barra", s: 3, r: "12", kg: 0 },
+            { nombre: "Elevación de piernas acostado", grupo: "core", equipo: "Peso corporal", s: 3, r: "15", kg: 0 },
+            { nombre: "Rueda abdominal (Ab Wheel)", grupo: "core", equipo: "Accesorio", s: 3, r: "10-12", kg: 0 },
+            { nombre: "Giros rusos (Russian Twist) con disco", grupo: "core", equipo: "Disco", s: 3, r: "20", kg: 10 },
+            { nombre: "Press Pallof anti-rotación en polea", grupo: "core", equipo: "Polea", s: 3, r: "12", kg: 15 },
+
+            // CARDIO / FUNCIONAL
+            { nombre: "Cinta de correr (Trote / Intervalos HIIT)", grupo: "cardio", equipo: "Cardio", s: 1, r: "20 min", kg: 0 },
+            { nombre: "Bicicleta estática / Spinning", grupo: "cardio", equipo: "Cardio", s: 1, r: "25 min", kg: 0 },
+            { nombre: "Elíptico / Escalador", grupo: "cardio", equipo: "Cardio", s: 1, r: "15 min", kg: 0 },
+            { nombre: "Remo ergómetro (Concept2)", grupo: "cardio", equipo: "Cardio", s: 3, r: "500 m", kg: 0 },
+            { nombre: "Saltos a la soga", grupo: "cardio", equipo: "Accesorio", s: 4, r: "60s", kg: 0 },
+            { nombre: "Kettlebell Swing (Balanceo con pesa rusa)", grupo: "cardio", equipo: "Kettlebell", s: 4, r: "15", kg: 16 },
+            { nombre: "Burpees", grupo: "cardio", equipo: "Peso corporal", s: 3, r: "12", kg: 0 },
+            { nombre: "Battle Rope (Sogas de batalla)", grupo: "cardio", equipo: "Accesorio", s: 4, r: "30s", kg: 0 },
+            { nombre: "Paseo del granjero (Farmer Walk)", grupo: "cardio", equipo: "Mancuernas", s: 3, r: "30 m", kg: 24 }
+        ];
+
+        let grupoHevyActual = 'todos';
+
+        function seleccionarGrupoHevy(grupo, btn) {
+            grupoHevyActual = grupo;
+            document.querySelectorAll('.btn-grupo-hevy').forEach(b => {
+                b.className = "btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer";
+            });
+            if (btn) {
+                btn.className = "btn-grupo-hevy px-3 py-1 rounded-lg bg-blue-600 text-white font-bold text-[11px] cursor-pointer";
+            }
+            filtrarCatalogoHevy();
+        }
+
+        function filtrarCatalogoHevy() {
+            const grid = document.getElementById('gridCatalogoHevy');
+            if (!grid) return;
+
+            const query = (document.getElementById('buscadorCatalogoHevy')?.value || '').toLowerCase().trim();
+            const filtrados = CATALOGO_HEVY.filter(item => {
+                const okGrupo = (grupoHevyActual === 'todos') || (item.grupo === grupoHevyActual);
+                const okTexto = !query || item.nombre.toLowerCase().includes(query) || item.equipo.toLowerCase().includes(query);
+                return okGrupo && okTexto;
+            });
+
+            const contador = document.getElementById('contadorCatalogoHevy');
+            if (contador) contador.textContent = `${filtrados.length} ejercicios`;
+
+            grid.innerHTML = filtrados.map(ej => `
+                <button type="button"
+                        onclick="autocompletarEjercicioHevy('${ej.nombre.replace(/'/g, "\\'")}', ${ej.s}, '${ej.r}', ${ej.kg})"
+                        class="p-2.5 rounded-xl bg-slate-900/90 hover:bg-blue-600/20 border border-slate-800 hover:border-blue-500/40 text-left transition flex items-center justify-between gap-2 cursor-pointer group">
+                    <div class="min-w-0">
+                        <span class="font-bold text-white group-hover:text-blue-300 text-[11px] block truncate">${ej.nombre}</span>
+                        <span class="text-[10px] text-slate-500 uppercase font-mono">${ej.grupo} • ${ej.equipo}</span>
+                    </div>
+                    <span class="text-blue-400 text-xs font-bold shrink-0">+</span>
+                </button>
+            `).join('');
+        }
+
         function switchTab(tabId) {
             const secRutina = document.getElementById('seccion-rutina');
             const secActividades = document.getElementById('seccion-actividades');
@@ -1230,34 +1526,116 @@
             }
         }
 
-        function cambiarSubTabRutina(tipo) {
-            const panelGym = document.getElementById('subpanel-gym');
-            const panelCustom = document.getElementById('subpanel-custom');
-            const btnGym = document.getElementById('subtab-btn-gym');
-            const btnCustom = document.getElementById('subtab-btn-custom');
+        function seleccionarModoRutina(modo) {
+            document.querySelectorAll('.panel-modo-rutina').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.btn-modo-rutina').forEach(b => {
+                b.className = "btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer";
+            });
 
-            if (tipo === 'gym') {
-                panelGym.classList.remove('hidden');
-                panelCustom.classList.add('hidden');
-                btnGym.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow cursor-pointer";
-                btnCustom.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer";
-            } else {
-                panelGym.classList.add('hidden');
-                panelCustom.classList.remove('hidden');
-                btnCustom.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow cursor-pointer";
-                btnGym.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer";
+            const panel = document.getElementById('panel-rutina-' + modo);
+            const btn = document.getElementById('btn-rutina-' + modo);
+            if (panel) panel.classList.remove('hidden');
+            if (btn) btn.className = "btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md shadow-blue-600/20 transition cursor-pointer";
+        }
+
+        function seleccionarDiaRutina(plan, idDia) {
+            document.querySelectorAll('.contenido-dia-' + plan).forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.btn-dia-' + plan).forEach(btn => {
+                btn.className = `btn-dia-${plan} ${plan === 'custom' ? 'p-3.5' : 'p-4'} rounded-2xl border text-left transition cursor-pointer bg-slate-900/60 border-slate-800 hover:border-slate-700`;
+            });
+
+            const contenidoActivo = document.getElementById(`contenido-dia-${plan}-${idDia}`);
+            const btnActivo = document.getElementById(`btn-dia-${plan}-${idDia}`);
+
+            if (contenidoActivo) contenidoActivo.classList.remove('hidden');
+            if (btnActivo) {
+                btnActivo.className = `btn-dia-${plan} ${plan === 'custom' ? 'p-3.5' : 'p-4'} rounded-2xl border text-left transition cursor-pointer bg-slate-900 border-2 border-blue-500 shadow-lg shadow-blue-500/10`;
             }
         }
 
-        function seleccionarRutinaGym(cat) {
-            document.querySelectorAll('.panel-rutina-gym').forEach(p => p.classList.add('hidden'));
-            document.querySelectorAll('.btn-rutina-cat').forEach(b => {
-                b.className = "btn-rutina-cat px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer";
-            });
+        function toggleSerieHevy(btn, segundosDescanso) {
+            const row = btn.closest('.set-row');
+            const completada = row.classList.toggle('completed');
+            if (completada) {
+                btn.className = "ml-auto w-7 h-7 rounded-lg bg-emerald-500 text-slate-950 font-black flex items-center justify-center transition cursor-pointer shadow-md shadow-emerald-500/30";
+                iniciarTimerHevy(segundosDescanso || 90);
+            } else {
+                btn.className = "ml-auto w-7 h-7 rounded-lg bg-slate-800 hover:bg-emerald-600/30 text-slate-400 flex items-center justify-center transition cursor-pointer";
+            }
+            recalcularHevy();
+        }
 
-            document.getElementById('rutina-' + cat).classList.remove('hidden');
-            const idMap = { 'hipertrofia': 'btn-cat-hip', 'fuerza': 'btn-cat-fue', 'spinning': 'btn-cat-spi', 'profe': 'btn-cat-pro' };
-            document.getElementById(idMap[cat]).className = "btn-rutina-cat px-4 py-2 rounded-xl text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 transition cursor-pointer";
+        function recalcularHevy() {
+            let volumen = 0;
+            let seriesOk = 0;
+            document.querySelectorAll('.set-row.completed').forEach(row => {
+                seriesOk++;
+                const kg = parseFloat(row.querySelector('.hevy-kg')?.value || 0);
+                const reps = parseFloat(row.querySelector('.hevy-reps')?.value || 0);
+                volumen += (kg * reps);
+            });
+            document.getElementById('hevyVolumenTotal').textContent = volumen.toLocaleString('es-AR') + ' kg';
+            document.getElementById('hevySeriesCompletadas').textContent = seriesOk;
+        }
+
+        function reiniciarChecksHevy() {
+            document.querySelectorAll('.set-row.completed').forEach(row => {
+                row.classList.remove('completed');
+                const btn = row.querySelector('button');
+                if (btn) btn.className = "ml-auto w-7 h-7 rounded-lg bg-slate-800 hover:bg-emerald-600/30 text-slate-400 flex items-center justify-center transition cursor-pointer";
+            });
+            recalcularHevy();
+        }
+
+        let hevySegundos = 90;
+        let hevyIntervalo = null;
+
+        function actualizarDisplayTimerHevy() {
+            const min = String(Math.floor(hevySegundos / 60)).padStart(2, '0');
+            const seg = String(hevySegundos % 60).padStart(2, '0');
+            document.getElementById('hevyTimerDisplay').textContent = `${min}:${seg}`;
+        }
+
+        function iniciarTimerHevy(segundos) {
+            if (hevyIntervalo) clearInterval(hevyIntervalo);
+            hevySegundos = segundos;
+            actualizarDisplayTimerHevy();
+            const display = document.getElementById('hevyTimerDisplay');
+            display.classList.add('text-blue-400');
+
+            hevyIntervalo = setInterval(() => {
+                if (hevySegundos > 0) {
+                    hevySegundos--;
+                    actualizarDisplayTimerHevy();
+                } else {
+                    clearInterval(hevyIntervalo);
+                    display.classList.remove('text-blue-400');
+                    display.classList.add('text-emerald-400');
+                }
+            }, 1000);
+        }
+
+        function ajustarTimerHevy(delta) {
+            hevySegundos = Math.max(0, hevySegundos + delta);
+            actualizarDisplayTimerHevy();
+        }
+
+        function autocompletarEjercicioHevy(nombre, series, reps, kg) {
+            document.getElementById('inputCustomNombreEj').value = nombre;
+            document.getElementById('inputCustomSeries').value = series;
+            document.getElementById('inputCustomReps').value = reps;
+            document.getElementById('inputCustomPeso').value = kg;
+        }
+
+        function abrirModalEditarEjercicio(id, nombre, reps) {
+            document.getElementById('editEjId').value = id;
+            document.getElementById('editEjNombre').value = nombre;
+            document.getElementById('editEjReps').value = reps;
+            document.getElementById('modalEditarEjercicio').classList.remove('hidden');
+        }
+
+        function cerrarModalEditarEjercicio() {
+            document.getElementById('modalEditarEjercicio').classList.add('hidden');
         }
 
         function toggleModalNovedades() {
@@ -1288,12 +1666,15 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            filtrarCatalogoHevy();
             const urlParams = new URLSearchParams(window.location.search);
             const tab = urlParams.get('tab');
+            const diaParam = urlParams.get('dia');
 
             if (tab === 'custom') {
                 switchTab('rutina');
-                cambiarSubTabRutina('custom');
+                seleccionarModoRutina('custom');
+                if (diaParam) seleccionarDiaRutina('custom', diaParam);
                 window.history.replaceState({}, document.title, window.location.pathname);
             } else if (tab === 'actividades') {
                 switchTab('actividades');
@@ -1304,5 +1685,6 @@
             }
         });
     </script>
+
 </body>
 </html>

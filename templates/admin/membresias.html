@@ -11,7 +11,7 @@
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col antialiased">
 
-<!-- NAVBAR ADMIN (IDÉNTICO AL DASHBOARD PRINCIPAL) -->
+    <!-- NAVBAR ADMIN (IDÉNTICO AL DASHBOARD PRINCIPAL) -->
     <nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -68,13 +68,13 @@
             {% for p in planes %}
                 <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-slate-700 transition space-y-4">
                     <div>
-                        <div class="flex items-start justify-between">
+                        <div class="flex items-start justify-between gap-3">
                             <h3 class="font-bold text-base text-white">{{ p.nombre }}</h3>
-                            <span class="text-xs font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                            <span class="shrink-0 text-xs font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
                                 ${{ p.precio }}
                             </span>
                         </div>
-                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">{{ p.descripcion|default:"Acceso según las normas del plan." }}</p>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">{{ p.descripcion_mostrar|default:"Acceso según las normas del plan." }}</p>
                     </div>
 
                     <div class="pt-4 border-t border-slate-800 flex items-center justify-between text-xs">
@@ -82,7 +82,7 @@
                         
                         <div class="flex items-center gap-2">
                             <!-- Botón Editar -->
-                            <button type="button" onclick="abrirModalEditarPlan('{{ p.id }}', '{{ p.nombre }}', '{{ p.precio }}', '{{ p.duracion_dias|default:30 }}', '{{ p.descripcion|default:',' }}')" class="p-2 text-slate-400 hover:text-blue-400 transition" title="Editar">
+                            <button type="button" onclick="abrirModalEditarPlan('{{ p.id }}', '{{ p.nombre|escapejs }}', '{{ p.precio|floatformat:0 }}', '{{ p.duracion_dias|default:30 }}', '{{ p.descripcion_mostrar|escapejs }}')" class="p-2 text-slate-400 hover:text-blue-400 transition cursor-pointer" title="Editar">
                                 <i class="fa-regular fa-pen-to-square"></i>
                             </button>
 
@@ -91,7 +91,7 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="accion" value="eliminar">
                                 <input type="hidden" name="plan_id" value="{{ p.id }}">
-                                <button type="submit" class="p-2 text-slate-400 hover:text-rose-400 transition" title="Eliminar">
+                                <button type="submit" class="p-2 text-slate-400 hover:text-rose-400 transition cursor-pointer" title="Eliminar">
                                     <i class="fa-regular fa-trash-can"></i>
                                 </button>
                             </form>
@@ -107,7 +107,7 @@
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 id="modalPlanTitulo" class="font-bold text-white text-base">Crear Plan de Membresía</h3>
-                <button type="button" onclick="cerrarModalPlan()" class="text-slate-400 hover:text-white transition">
+                <button type="button" onclick="cerrarModalPlan()" class="text-slate-400 hover:text-white transition cursor-pointer">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
@@ -139,10 +139,10 @@
                 </div>
 
                 <div class="flex justify-end gap-2 pt-3">
-                    <button type="button" onclick="cerrarModalPlan()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">
+                    <button type="button" onclick="cerrarModalPlan()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
                         Cancelar
                     </button>
-                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition">
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition cursor-pointer">
                         Guardar Plan
                     </button>
                 </div>

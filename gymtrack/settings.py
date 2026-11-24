@@ -117,9 +117,7 @@ USE_TZ = True
 
 # Archivos estáticos (CSS, JS, Imágenes)
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
+STATICFILES_DIRS = [BASE_DIR / 'static',]
 
 # Archivos subidos por usuarios
 MEDIA_URL = 'media/'

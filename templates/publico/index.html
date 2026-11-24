@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
 <head>
@@ -8,14 +9,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts -->
+    <!-- Google Fonts (Plus Jakarta Sans + Barlow Condensed para la marca) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #0b1120;
+        }
+        .font-brand {
+            font-family: 'Barlow Condensed', sans-serif;
         }
         .carousel-slide {
             opacity: 0;
@@ -26,20 +30,23 @@
         }
     </style>
 </head>
+
 <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
     <!-- NAVBAR FIXED -->
     <nav class="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 text-white transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo -->
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-600/30">
-                        🏋️‍♂️
+                <!-- NAVBAR: Isotipo GT + GYMtrack -->
+                <div class="flex items-center gap-3.5">
+                    <img src="{% static 'img/logo-gymtrack.svg' %}"
+                        alt="Logo GymTrack"
+                        class="h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(59,76,202,0.45)]">
+                    <div class="flex items-baseline gap-2.5">
+                        <span class="font-brand italic font-extrabold text-3xl sm:text-4xl tracking-wide">
+                            <span class="text-[#3f51d6] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">GYM</span><span class="text-white">track</span>
+                        </span>
                     </div>
-                    <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
-                        GymTrack
-                    </span>
                 </div>
 
                 <!-- Navigation Links & Login -->
@@ -80,12 +87,14 @@
                     Tu mejor versión empieza hoy
                 </div>
                 
-                <h1 class="text-5xl sm:text-7xl font-extrabold text-white tracking-tight mb-6 leading-none">
-                    Gym<span class="text-blue-500">Track</span>
-                </h1>
+                <div class="flex items-center gap-4">
+                    <h1 class="font-brand italic font-extrabold text-7xl sm:text-8xl lg:text-9xl tracking-wide leading-none">
+                        <span class="text-[#3f51d6] drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">GYM</span><span class="text-white">track</span>
+                    </h1>
+                </div>
 
-                <p class="text-xl sm:text-2xl text-slate-300 font-light leading-relaxed mb-8 border-l-4 border-blue-600 pl-4 bg-slate-900/40 py-2 rounded-r-lg backdrop-blur-sm">
-                    El espacio ideal para entrenar, superar tus límites y transformar tu rutina diaria.
+                <p class="w-fit pr-4 text-xl text-slate-300 font-light leading-relaxed mb-8 border-l-4 border-blue-600 pl-3 bg-slate-900/40 py-1 rounded-r-lg backdrop-blur-sm">
+                    El espacio ideal para entrenar, superar tus límites <br> y transformar tu rutina diaria.
                 </p>
 
                 <div class="flex flex-wrap gap-4">
@@ -111,18 +120,19 @@
     <section id="sobre-nosotros" class="py-20 bg-slate-950 text-white relative overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                
-                <!-- Columna Izquierda: Mockup Celular -->
+<!-- Columna Izquierda: Mockup Celular -->
                 <div class="lg:col-span-5 flex justify-center relative">
                     <div class="absolute -top-10 -left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
                     <div class="relative z-10 w-64 sm:w-72 bg-slate-900 p-4 rounded-[2.5rem] border-4 border-slate-800 shadow-2xl">
                         <div class="w-full h-[480px] bg-slate-950 rounded-[2rem] p-4 flex flex-col justify-between border border-slate-800/80">
                             <div class="text-center pt-4">
-                                <span class="text-2xl">🏋️‍♂️</span>
-                                <h4 class="font-bold text-sm mt-1 text-white">GymTrack</h4>
+                                <div class="flex flex-col items-center justify-center pt-4 pb-2">
+                                    <img src="{% static 'img/logo-gymtrack.svg' %}"
+                                        alt="Logo GT"
+                                        class="h-16 w-auto object-contain drop-shadow-[0_4px_14px_rgba(63,81,214,0.45)]">
+                                </div>
                                 <p class="text-[10px] text-blue-400 font-semibold">Portal del Socio</p>
                             </div>
-
                             <div class="space-y-2 py-4">
                                 <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-left">
                                     <p class="text-[10px] text-slate-400">Estado de Membresía</p>
@@ -135,25 +145,21 @@
                                     <p class="text-xs font-bold text-slate-200 mt-0.5">Funcional – 18:30 hs</p>
                                 </div>
                             </div>
-
                             <div class="w-full py-2.5 bg-blue-600 text-white text-center font-bold text-xs rounded-xl shadow">
                                 Ver Rutina
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Columna Derecha: Contenido y Beneficios -->
+<!-- Columna Derecha: Contenido y Beneficios -->
                 <div class="lg:col-span-7 space-y-6">
                     <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">EXPERIENCIA DIGITAL</span>
-                    
                     <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
                         Tu entrenamiento y membresía, gestionados desde cualquier lugar
                     </h2>
                     <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
                         Nuestra plataforma web optimizada para móviles permite a cada socio tener el control total de sus actividades, turnos y estado de cuenta sin hacer filas en recepción.
                     </p>
-
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                         <div class="flex items-center gap-2.5 text-xs text-slate-300 font-medium">
                             <span class="text-emerald-400 font-bold">✓</span> Renovación y estado de membresía
@@ -162,7 +168,7 @@
                             <span class="text-emerald-400 font-bold">✓</span> Reserva de cupos en clases grupales
                         </div>
                         <div class="flex items-center gap-2.5 text-xs text-slate-300 font-medium">
-                            <span class="text-emerald-400 font-bold">✓</span> Rutinas de ejercicios personalizadas
+                            <span class="text-emerald-400 font-bold">✓</span> Rutinas interactivas con control total
                         </div>
                         <div class="flex items-center gap-2.5 text-xs text-slate-300 font-medium">
                             <span class="text-emerald-400 font-bold">✓</span> Historial de pagos y comprobantes
@@ -174,7 +180,6 @@
                             <span class="text-emerald-400 font-bold">✓</span> Acceso 100% web sin descargas pesadas
                         </div>
                     </div>
-
                     <div class="pt-4 flex items-center gap-4">
                         <a href="{% url 'login' %}" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition">
                             Ingresar a mi cuenta
@@ -184,7 +189,6 @@
                         </a>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
@@ -196,9 +200,8 @@
                 <h2 class="text-3xl font-extrabold text-white tracking-tight">Todo lo que tu gimnasio necesita en un solo lugar</h2>
                 <p class="text-slate-400 mt-2 text-sm">Gestión integral en la nube para recepción, administración y socios.</p>
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- CARD 1: CONTROL DE ACCESO Y MOSTRADOR -->
+<!-- CARD 1: CONTROL DE ACCESO Y MOSTRADOR -->
                 <div class="bg-slate-950/70 rounded-2xl p-7 border border-slate-800 hover:border-slate-700 transition flex flex-col justify-between">
                     <div>
                         <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800">
@@ -210,7 +213,6 @@
                                 <p class="text-xs text-slate-400 font-medium">Control de accesos y turnos</p>
                             </div>
                         </div>
-
                         <div class="space-y-4">
                             <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
                                 <h4 class="font-bold text-white text-sm">Semáforo de Acceso por DNI</h4>
@@ -226,15 +228,13 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="mt-6 pt-4 border-t border-slate-800">
                         <a href="{% url 'login' %}" class="block text-center w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-semibold text-xs rounded-xl transition">
                             Acceder al Panel Operativo
                         </a>
                     </div>
                 </div>
-
-                <!-- CARD 2: COBROS Y MORA AUTOMÁTICA -->
+<!-- CARD 2: COBROS Y MORA AUTOMÁTICA -->
                 <div class="bg-slate-950/70 rounded-2xl p-7 border border-slate-800 hover:border-slate-700 transition flex flex-col justify-between relative overflow-hidden">
                     <div class="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold tracking-wider px-3 py-1 rounded-bl-lg uppercase">
                         Automatizado
@@ -249,7 +249,6 @@
                                 <p class="text-xs text-slate-400 font-medium">Cero fuga de cuotas</p>
                             </div>
                         </div>
-
                         <div class="space-y-4">
                             <div class="p-3.5 rounded-xl bg-blue-950/20 border border-blue-500/30">
                                 <h4 class="font-bold text-white text-sm flex items-center justify-between">
@@ -268,15 +267,13 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="mt-6 pt-4 border-t border-slate-800">
                         <a href="#planes-saas" class="block text-center w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl shadow transition">
                             Ver Planes de Suscripción
                         </a>
                     </div>
                 </div>
-
-                <!-- CARD 3: IDENTIDAD MARCA BLANCA -->
+<!-- CARD 3: IDENTIDAD MARCA BLANCA -->
                 <div class="bg-slate-950/70 rounded-2xl p-7 border border-slate-800 hover:border-slate-700 transition flex flex-col justify-between">
                     <div>
                         <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800">
@@ -288,7 +285,6 @@
                                 <p class="text-xs text-slate-400 font-medium">Tu gimnasio, tu identidad</p>
                             </div>
                         </div>
-
                         <div class="space-y-4">
                             <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1">
                                 <p class="text-xs text-slate-400">Personalización Dinámica</p>
@@ -306,7 +302,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="mt-6 pt-4 border-t border-slate-800">
                         <a href="https://wa.me/" target="_blank" class="block text-center w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-semibold text-xs rounded-xl transition">
                             Solicitar Demo Guiada
@@ -317,17 +312,22 @@
         </div>
     </section>
 
-    <!-- SECCIÓN 4: PLANES DE SUSCRIPCIÓN SAAS B2B (REEMPLAZA EL MAPA LOCAL PARA SER MULTI-GIMNASIO) -->
-    <section id="planes-saas" class="py-20 bg-slate-900 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+<!-- SECCIÓN 4: PLANES DE SUSCRIPCIÓN SAAS B2B -->
+    <section id="planes-saas" class="relative py-20 bg-slate-900 border-t border-slate-800">
+<!-- MARCA DE AGUA GT -->
+        <img src="{% static 'img/logo-gymtrack.svg' %}"
+            alt=""
+            aria-hidden="true"
+            class="pointer-events-none select-none hidden md:block absolute -top-56 -left-14 w-[480px] lg:w-[580px] h-auto opacity-[0.08] z-0">
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">MODELO SAAS B2B</span>
                 <h2 class="text-3xl font-extrabold text-white tracking-tight mt-1">Planes para Centros Deportivos</h2>
                 <p class="text-slate-400 mt-2 text-sm">Elegí la suscripción mensual que mejor se adapte al volumen de socios de tu gimnasio.</p>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-                <!-- Plan Start -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+<!-- 1. Plan Start -->
                 <div class="bg-slate-950/70 rounded-2xl p-7 border border-slate-800 flex flex-col justify-between">
                     <div>
                         <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Plan Start</span>
@@ -343,30 +343,28 @@
                         Consultar Plan Start
                     </a>
                 </div>
-
-                <!-- Plan Pro -->
+<!-- 2. Plan Pro -->
                 <div class="bg-slate-950/70 rounded-2xl p-7 border-2 border-blue-500 flex flex-col justify-between relative shadow-xl shadow-blue-600/10">
                     <span class="absolute -top-3 right-6 bg-blue-600 text-white text-[10px] font-bold uppercase px-3 py-0.5 rounded-full">Más Elegido</span>
                     <div>
-                        <span class="text-xs font-bold uppercase tracking-wider text-blue-400">Plan Pro</span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Plan Pro</span>
                         <h3 class="text-2xl font-extrabold text-white mt-2 mb-1">Centro Integral</h3>
                         <p class="text-xs text-slate-400 mb-6">Automatización total con app para socios.</p>
                         <ul class="space-y-3 text-xs text-slate-300 mb-8">
                             <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Hasta 600 socios activos</li>
                             <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Portal PWA para socios y reservas</li>
                             <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Fichaje horario de instructores</li>
-                            <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Marca Blanca (GymTrack × Tu Gym)</li>
+                            <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Marca Blanca (GYMtrack × Tu Gym)</li>
                         </ul>
                     </div>
                     <a href="https://wa.me/" target="_blank" class="block text-center w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition">
                         Contratar Plan Pro
                     </a>
                 </div>
-
-                <!-- Plan Enterprise -->
+<!-- 3. Plan Enterprise -->
                 <div class="bg-slate-950/70 rounded-2xl p-7 border border-slate-800 flex flex-col justify-between">
                     <div>
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Plan Enterprise</span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Plan Enterprise</span>
                         <h3 class="text-2xl font-extrabold text-white mt-2 mb-1">Cadenas y Polideportivos</h3>
                         <p class="text-xs text-slate-400 mb-6">Múltiples sedes y capacidad ilimitada.</p>
                         <ul class="space-y-3 text-xs text-slate-300 mb-8">
@@ -379,11 +377,30 @@
                         Contactar Ventas
                     </a>
                 </div>
+<!-- 4. Plan a Medida -->
+                <div class="bg-slate-950/70 rounded-2xl p-7 border border-slate-800 flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-blue-400">Plan a Medida</span>
+                        <h3 class="text-2xl font-extrabold text-white mt-2 mb-1">Suscripción Flexible</h3>
+                        <p class="text-xs text-slate-400 mb-6">Armá tu sistema según la necesidad de tu centro.</p>
+                        <ul class="space-y-3 text-xs text-slate-300 mb-8">
+                            <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Capacidad adaptable a convenir</li>
+                            <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Módulos seleccionables a elección</li>
+                            <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Integraciones y flujos personalizados</li>
+                            <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Soporte técnico dedicado</li>
+                        </ul>
+                    </div>
+                    <a href="https://wa.me/" target="_blank" class="block text-center w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-semibold text-xs rounded-xl transition">
+                        Armar Plan a Medida
+                    </a>
+                </div>
+
             </div>
         </div>
     </section>
 
-    <!-- SECCIÓN: GIMNASIOS QUE TRABAJAN CON NOSOTROS -->
+
+<!-- SECCIÓN 5: GIMNASIOS QUE TRABAJAN CON NOSOTROS -->
 <section id="clientes" class="py-20 bg-slate-950 border-t border-slate-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-14">
@@ -391,15 +408,16 @@
             <h2 class="text-3xl font-extrabold text-white tracking-tight mt-1">Gimnasios que trabajan con GymTrack</h2>
             <p class="text-slate-400 mt-2 text-sm">Establecimientos que ya digitalizaron sus accesos, cobros y rutinas con nuestra plataforma.</p>
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-            <!-- TARJETA CLIENTE PILOTO: BODYNAMIC -->
+<!-- BODYNAMIC -->
             <div class="bg-slate-900/90 rounded-2xl p-7 border border-slate-800 hover:border-emerald-500/40 transition flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between gap-4 mb-5 pb-4 border-b border-slate-800">
                         <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-bold">
-                                <i class="fa-solid fa-fire-flame-curved"></i>
+                            <div class="w-14 h-14 rounded-2xl bg-[#0b1120] border border-amber-500/30 flex items-center justify-center overflow-hidden shrink-0 shadow-md">
+                                <img src="{% static 'img/logo-bodynamic.jpg' %}"
+                                    alt="Logo Bodynamic"
+                                    class="w-full h-full object-cover">
                             </div>
                             <div>
                                 <h3 class="text-xl font-bold text-white">Bodynamic</h3>
@@ -410,7 +428,6 @@
                             Implementación Activa
                         </span>
                     </div>
-
                     <div class="space-y-3 text-xs text-slate-300 mb-6">
                         <p class="flex items-center gap-2.5">
                             <i class="fa-solid fa-location-dot text-blue-400 w-4 text-center"></i>
@@ -426,7 +443,6 @@
                         </p>
                     </div>
                 </div>
-
                 <div class="pt-4 border-t border-slate-800 flex items-center justify-between gap-3">
                     <span class="text-[11px] text-slate-400">¿Sos socio de Bodynamic?</span>
                     <a href="{% url 'login' %}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl border border-slate-700 transition">
@@ -434,8 +450,7 @@
                     </a>
                 </div>
             </div>
-
-            <!-- TARJETA INVITACIÓN PARA NUEVOS GIMNASIOS -->
+<!-- NUEVOS GIMNASIOS -->
             <div class="bg-gradient-to-br from-slate-900 to-blue-950/30 rounded-2xl p-7 border border-dashed border-slate-700 flex flex-col justify-between">
                 <div>
                     <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xl mb-5">
@@ -451,7 +466,6 @@
                         <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Capacitación rápida para recepción</li>
                     </ul>
                 </div>
-
                 <div class="pt-4 border-t border-slate-800/80">
                     <a href="#planes-saas" class="block text-center w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition">
                         Conocer Planes de Suscripción
@@ -462,93 +476,6 @@
     </div>
 </section>
 
-    <!-- FOOTER CON ENLACES LEGALES -->
-    <footer class="bg-slate-950 border-t border-slate-800 text-slate-400 py-8 text-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-2">
-                <span class="text-base">🏋️‍♂️</span>
-                <span class="font-bold text-white">GymTrack</span>
-                <span>— Plataforma SaaS de Gestión Deportiva.</span>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-6">
-                <button type="button" onclick="abrirModalLegal('modal-terminos')" class="hover:text-white transition underline underline-offset-4">
-                    Términos de Servicio
-                </button>
-                <button type="button" onclick="abrirModalLegal('modal-privacidad')" class="hover:text-white transition underline underline-offset-4">
-                    Política de Privacidad
-                </button>
-                <span class="text-slate-600">© 2026 GymTrack OS</span>
-            </div>
-        </div>
-    </footer>
-
-    <!-- MODAL: TÉRMINOS DE SERVICIO -->
-    <div id="modal-terminos" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-                <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-file-contract text-blue-400"></i> Términos y Condiciones de Uso
-                </h3>
-                <button type="button" onclick="cerrarModalLegal('modal-terminos')" class="text-slate-400 hover:text-white text-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-300 leading-relaxed">
-                <p><strong class="text-white">1. Objeto del Servicio:</strong> GymTrack OS es una plataforma de software en la nube (SaaS B2B) destinada a la gestión administrativa, control de accesos, cobro de membresías y autogestión deportiva para gimnasios y centros de entrenamiento.</p>
-                <p><strong class="text-white">2. Licencia y Suscripción:</strong> El acceso operativo para establecimientos se otorga bajo licencia de uso no exclusiva mediante suscripción periódica. El código fuente y la arquitectura de la plataforma son propiedad intelectual de GymTrack OS.</p>
-                <p><strong class="text-white">3. Propiedad de los Datos del Gimnasio:</strong> Cada gimnasio cliente conserva la titularidad exclusiva sobre su padrón de socios, registros contables, tarifas y rutinas. GymTrack OS actúa únicamente como proveedor tecnológico y encargado del alojamiento seguro.</p>
-                <p><strong class="text-white">4. Uso del Portal del Socio:</strong> Las credenciales de acceso (DNI/usuario y contraseña) son personales e intransferibles. La reserva de turnos y el acceso presencial están condicionados a las reglas comerciales y vigencia de cuota definidas por cada establecimiento.</p>
-                <p><strong class="text-white">5. Disponibilidad:</strong> El servicio se presta sobre infraestructura en la nube con copias de respaldo periódicas, sujeto a ventanas de mantenimiento técnico programado.</p>
-            </div>
-            <div class="px-6 py-4 border-t border-slate-800 flex justify-end">
-                <button type="button" onclick="cerrarModalLegal('modal-terminos')" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition">
-                    Entendido
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: POLÍTICA DE PRIVACIDAD -->
-    <div id="modal-privacidad" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-                <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-shield-halved text-emerald-400"></i> Política de Privacidad y Protección de Datos
-                </h3>
-                <button type="button" onclick="cerrarModalLegal('modal-privacidad')" class="text-slate-400 hover:text-white text-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-300 leading-relaxed">
-                <p><strong class="text-white">1. Marco Normativo:</strong> El tratamiento de datos personales realizado en GymTrack OS cumple con las disposiciones de la <strong class="text-white">Ley N.º 25.326 de Protección de Datos Personales</strong> de la República Argentina.</p>
-                <p><strong class="text-white">2. Datos Recolectados:</strong> Para la prestación del servicio se almacenan datos identificatorios y operativos: nombre, apellido, DNI, fecha de nacimiento, domicilio, teléfono, correo electrónico, historial de pagos, asistencias y rutinas de entrenamiento.</p>
-                <p><strong class="text-white">3. Finalidad:</strong> Los datos se utilizan exclusivamente para validar la identidad en el control de acceso, gestionar el estado de membresías, procesar reservas de actividades y emitir comprobantes. No se comercializan ni ceden a terceros ajenos al establecimiento.</p>
-                <p><strong class="text-white">4. Seguridad y Aislamiento:</strong> Las contraseñas se almacenan cifradas mediante algoritmos criptográficos seguros (PBKDF2/SHA256) y las comunicaciones operan bajo protocolo cifrado HTTPS. Cada gimnasio cliente posee aislamiento lógico de su información.</p>
-                <p><strong class="text-white">5. Derechos del Titular:</strong> El socio puede consultar y actualizar sus datos de contacto desde su perfil o solicitar la rectificación/baja administrativa ante la recepción de su gimnasio.</p>
-            </div>
-            <div class="px-6 py-4 border-t border-slate-800 flex justify-end">
-                <button type="button" onclick="cerrarModalLegal('modal-privacidad')" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition">
-                    Cerrar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- SCRIPT MODALES LEGALES -->
-    <script>
-        function abrirModalLegal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-        function cerrarModalLegal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-        // Cerrar al hacer clic fuera del cuadro
-        window.addEventListener('click', function(e) {
-            if (e.target.id === 'modal-terminos' || e.target.id === 'modal-privacidad') {
-                e.target.classList.add('hidden');
-            }
-        });
-    </script>
+{% include 'includes/footer.html' %}
 </body>
 </html>

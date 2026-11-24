@@ -1,22 +1,25 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GymTrack - Panel de Administración</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #0b1120; /* Slate 950 */
+            background-color: #0b1120;
         }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }
+        .font-brand { font-family: 'Barlow Condensed', sans-serif; }
     </style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
@@ -25,26 +28,23 @@
     <nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Navbar Privado (Cuando user.is_authenticated) -->
-                <div class="flex items-center gap-3">
-                    <!-- Icono / Logo -->
-                    <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white text-lg shadow-md shadow-blue-600/30">
-                        🏋️‍♂️
-                    </div>
-                    
-                    <!-- Marca Compartida: GymTrack x Bodynamic -->
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-xl font-extrabold tracking-tight text-white">
-                            GymTrack
+                <!-- LOGO -->
+                <div class="flex items-center gap-3.5">
+                    <img src="{% static 'img/logo-gymtrack.svg' %}"
+                        alt="Logo GymTrack"
+                        class="h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(59,76,202,0.45)]">
+                    <div class="flex items-baseline gap-2.5">
+                        <span class="font-brand italic font-extrabold text-3xl sm:text-4xl tracking-wide">
+                            <span class="text-[#3f51d6] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">GYM</span><span class="text-white">track</span>
                         </span>
-                        <span class="text-xs font-light text-slate-500">×</span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                            Bodynamic
-                        </span>
+                        {% if user.is_authenticated %}
+                            <span class="text-xs font-light text-slate-500">×</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">
+                                BODYDYNAMIC
+                            </span>
+                        {% endif %}
                     </div>
                 </div>
-
-                <!-- Usuario y Salir -->
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-600 to-blue-600 flex items-center justify-center text-sm font-bold shadow-md">
@@ -58,7 +58,7 @@
 
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
-                        <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition" title="Cerrar sesión">
+                        <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition cursor-pointer" title="Cerrar sesión">
                             <i class="fa-solid fa-arrow-right-from-bracket text-base"></i>
                         </button>
                     </form>
@@ -73,7 +73,7 @@
             {% for message in messages %}
                 <div class="p-4 rounded-xl text-xs font-semibold flex items-center justify-between border {% if message.tags == 'error' %}bg-rose-950/60 border-rose-500/40 text-rose-300{% else %}bg-emerald-950/60 border-emerald-500/40 text-emerald-300{% endif %}">
                     <span>{{ message }}</span>
-                    <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white">
+                    <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white cursor-pointer">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
@@ -84,11 +84,10 @@
     <!-- CONTENEDOR PRINCIPAL -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
         
-        <!-- ENCABEZADO -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-extrabold text-white tracking-tight">Panel de Administración</h1>
-                <p class="text-slate-400 text-sm mt-1">Bienvenido/a, {{ user.username }}. Control general del negocio, estadísticas y membresías.</p>
+                <p class="text-slate-400 text-sm mt-1">Bienvenido/a, {{ user.username }}. Control general del negocio, estadísticas, rutinas y membresías.</p>
             </div>
 
             <div class="flex items-center gap-3">
@@ -100,7 +99,6 @@
 
         <!-- TARJETAS DE MÉTRICAS GLOBALES -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <!-- Socios Totales -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -116,7 +114,6 @@
                 </a>
             </div>
 
-            <!-- Empleados -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -132,7 +129,6 @@
                 </a>
             </div>
 
-            <!-- Ingresos del Mes -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -148,7 +144,6 @@
                 </a>
             </div>
 
-            <!-- Actividades / Clases -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -187,14 +182,17 @@
                         <i class="fa-solid fa-sliders text-purple-400"></i> Acciones Administrativas
                     </h3>
                     <p class="text-xs text-slate-400 leading-relaxed mb-6">
-                        Carga directa de miembros o cobros especiales fuera del circuito estándar de mostrador.
+                        Carga directa de miembros, edición de rutinas básicas/personalizadas y cobros en caja.
                     </p>
                 </div>
                 <div class="flex flex-wrap gap-3">
                     <a href="{% url 'admin_socios' %}" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">
                         <i class="fa-solid fa-user-plus"></i> Nuevo Socio
                     </a>
-                    <button type="button" onclick="abrirModalCobroAdmin()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer">
+                    <button type="button" onclick="document.getElementById('modalRutinasAdmin').classList.remove('hidden')" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-dumbbell"></i> Gestionar Rutinas
+                    </button>
+                    <button type="button" onclick="abrirModalCobroUnificado()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer">
                         <i class="fa-solid fa-receipt"></i> Registrar Pago
                     </button>
                 </div>
@@ -203,163 +201,393 @@
 
     </main>
 
-    <!-- 💵 MODAL: REGISTRAR PAGO CON BUSCADOR DE SOCIOS (ADMIN)        -->
-    <div id="modalCobroAdmin" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-            
-            <!-- Cabecera -->
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-base">
-                        <i class="fa-solid fa-cash-register"></i>
+    <!-- ============================================================== -->
+    <!-- 🏋️ MODAL ADMIN: EDITAR 3 RUTINAS BÁSICAS Y RUTINAS DE SOCIOS   -->
+    <!-- ============================================================== -->
+    <div id="modalRutinasAdmin" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-5xl w-full p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[92vh]">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg border border-blue-500/20">
+                        <i class="fa-solid fa-dumbbell"></i>
                     </div>
                     <div>
-                        <h3 class="text-base font-extrabold text-white">Registrar Cobro a Socio</h3>
-                        <p class="text-[11px] text-slate-400">Buscá al socio, revisá su estado actual y seleccioná qué abona</p>
+                        <h3 class="font-extrabold text-white text-base">Gestión y Edición de Rutinas</h3>
+                        <p class="text-xs text-slate-400">Editá las 3 rutinas predefinidas o las rutinas personalizadas de cada socio</p>
                     </div>
                 </div>
-                <button type="button" onclick="cerrarModalCobroAdmin()" class="text-slate-400 hover:text-white text-lg cursor-pointer">
-                    <i class="fa-solid fa-xmark"></i>
+                <button type="button" onclick="document.getElementById('modalRutinasAdmin').classList.add('hidden')" class="text-slate-400 hover:text-white transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <form method="POST" action="{% url 'dashboard' %}" class="p-6 overflow-y-auto space-y-5 text-xs">
+            <!-- Formulario Agregar Ejercicio -->
+            <form method="POST" action="{% url 'dashboard' %}" class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3 text-xs">
                 {% csrf_token %}
-                <input type="hidden" name="accion" value="cobrar_desde_admin">
-                <input type="hidden" name="socio_id" id="inputSocioIdAdmin" required>
+                <input type="hidden" name="accion" value="admin_agregar_ejercicio_rutina">
 
-                <!-- PASO 1: BUSCADOR Y LISTA DE SOCIOS -->
-                <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-                        1. Seleccionar Socio (filtrar por Nombre o DNI)
-                    </label>
-                    
-                    <!-- Input buscador -->
-                    <div class="relative mb-3">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                        <input type="text" id="buscadorSocioCobro" onkeyup="filtrarSociosCobro()" 
-                            placeholder="Escribí nombre, apellido o DNI..." 
-                            class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tipo de Rutina</label>
+                        <select name="destino" id="selectDestinoRutinaAdmin" onchange="toggleDestinoRutinaAdmin()" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                            <option value="basica">Rutina Predefinida (Adaptación / Hipertrofia / Fuerza)</option>
+                            <option value="socio">Rutina Personalizada de Socio</option>
+                        </select>
                     </div>
 
-                    <!-- Lista scrolleable de socios -->
-                    <div id="listaSociosCobro" class="max-h-52 overflow-y-auto space-y-2 pr-1">
-                        {% for s in socios_para_cobro %}
-                        <div onclick="seleccionarSocioCobro(this)"
-                            data-id="{{ s.id }}"
-                            data-nombre="{{ s.nombre }}"
-                            data-dni="{{ s.dni }}"
-                            data-aldia="{% if s.al_dia %}true{% else %}false{% endif %}"
-                            data-vence="{{ s.vence|default:'' }}"
-                            data-anotado="{{ s.anotado_en|join:', ' }}"
-                            data-search="{{ s.nombre|lower }} {{ s.dni }}"
-                            class="item-socio-cobro p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/50 cursor-pointer transition flex items-center justify-between gap-3">
-                            
-                            <div class="space-y-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-bold text-white text-sm">{{ s.nombre }}</span>
-                                    <span class="text-[11px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded">DNI: {{ s.dni }}</span>
+                    <div id="bloqueSelectBasicaAdmin">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Rutina Predefinida</label>
+                        <select name="rutina_basica_id" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                            {% for rb in rutinas_basicas_admin %}
+                                <option value="{{ rb.id }}">{{ rb.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div id="bloqueSelectSocioAdmin" class="hidden">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Socio</label>
+                        <select name="socio_usuario_id" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                            {% for u in socios_select %}
+                                <option value="{{ u.id }}">{{ u.first_name }} {{ u.last_name }} (DNI: {{ u.username }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Día (Exacto o Nuevo)</label>
+                        <input type="text" name="nombre_dia" required placeholder="Ej: Día 1 - Torso y Brazos Base" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
+                    <div class="sm:col-span-2">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nombre del Ejercicio</label>
+                        <input type="text" name="nombre_ejercicio" required placeholder="Ej: Banco plano con barra" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Series / Reps</label>
+                        <div class="flex gap-1.5">
+                            <input type="number" name="series" value="3" min="1" max="8" class="w-16 px-2 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono">
+                            <input type="text" name="repeticiones" value="8-12 reps" class="w-full px-2 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Descanso</label>
+                        <input type="text" name="descanso" value="90s" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono">
+                    </div>
+                    <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition cursor-pointer">
+                        <i class="fa-solid fa-plus mr-1"></i> Agregar
+                    </button>
+                </div>
+            </form>
+
+            <!-- Tabs: Predefinidas vs Personalizadas de Socios -->
+            <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
+                <button type="button" onclick="cambiarTabRutinasModal('basicas')" id="btnTabRutinasBasicas" class="px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl cursor-pointer">
+                    3 Rutinas Predefinidas
+                </button>
+                <button type="button" onclick="cambiarTabRutinasModal('socios')" id="btnTabRutinasSocios" class="px-4 py-2 bg-slate-800 text-slate-300 hover:text-white font-bold text-xs rounded-xl cursor-pointer">
+                    Rutinas Personalizadas de Socios ({{ rutinas_socios_admin|length }})
+                </button>
+            </div>
+
+            <!-- Listado 1: 3 Rutinas Predefinidas -->
+            <div id="contenedorRutinasBasicasModal" class="space-y-4 max-h-[46vh] overflow-y-auto pr-1">
+                {% for rb in rutinas_basicas_admin %}
+                    <div class="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-3">
+                        <h5 class="font-extrabold text-white text-sm flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-blue-400"></span> {{ rb.nombre }}
+                        </h5>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            {% for d in rb.dias.all %}
+                                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                                    <span class="text-[11px] font-bold text-blue-400 block">{{ d.nombre_dia }}</span>
+                                    {% for ej in d.ejercicios.all %}
+                                        <div class="flex items-center justify-between gap-2 text-[11px] text-slate-300 border-t border-slate-800/70 pt-1.5">
+                                            <span class="truncate">{{ ej.nombre }} <strong class="text-white">({{ ej.series }}×{{ ej.repeticiones }})</strong></span>
+                                            <div class="flex items-center gap-1 shrink-0">
+                                                <button type="button"
+                                                        onclick="abrirModalEditarEjStaff(this)"
+                                                        data-id="{{ ej.id }}"
+                                                        data-nombre="{{ ej.nombre }}"
+                                                        data-series="{{ ej.series }}"
+                                                        data-reps="{{ ej.repeticiones }}"
+                                                        data-descanso="{{ ej.descanso|default:'90s' }}"
+                                                        class="text-slate-400 hover:text-blue-400 p-1 cursor-pointer" title="Editar">
+                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                </button>
+                                                <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="accion" value="admin_eliminar_ejercicio_rutina">
+                                                    <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
+                                                    <button type="submit" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer" title="Eliminar">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
                                 </div>
-                                <!-- En qué está anotado -->
-                                <div class="flex flex-wrap items-center gap-1.5">
-                                    <span class="text-[10px] text-slate-500">Anotado en:</span>
-                                    {% if s.anotado_en %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Listado 2: Rutinas Personalizadas de Socios -->
+            <div id="contenedorRutinasSociosModal" class="hidden space-y-4 max-h-[46vh] overflow-y-auto pr-1">
+                {% for rs in rutinas_socios_admin %}
+                    <div class="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h5 class="font-extrabold text-white text-sm">{{ rs.socio.first_name }} {{ rs.socio.last_name }} <span class="text-xs font-mono text-slate-400">(DNI: {{ rs.socio.username }})</span></h5>
+                            <span class="text-[11px] text-blue-400 font-bold">{{ rs.nombre }}</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            {% for d in rs.dias.all %}
+                                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                                    <span class="text-[11px] font-bold text-blue-400 block">{{ d.nombre_dia }}</span>
+                                    {% for ej in d.ejercicios.all %}
+                                        <div class="flex items-center justify-between gap-2 text-[11px] text-slate-300 border-t border-slate-800/70 pt-1.5">
+                                            <span class="truncate">{{ ej.nombre }} <strong class="text-white">({{ ej.series }}×{{ ej.repeticiones }})</strong></span>
+                                            <div class="flex items-center gap-1 shrink-0">
+                                                <button type="button"
+                                                        onclick="abrirModalEditarEjStaff(this)"
+                                                        data-id="{{ ej.id }}"
+                                                        data-nombre="{{ ej.nombre }}"
+                                                        data-series="{{ ej.series }}"
+                                                        data-reps="{{ ej.repeticiones }}"
+                                                        data-descanso="{{ ej.descanso|default:'90s' }}"
+                                                        class="text-slate-400 hover:text-blue-400 p-1 cursor-pointer" title="Editar">
+                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                </button>
+                                                <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="accion" value="admin_eliminar_ejercicio_rutina">
+                                                    <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
+                                                    <button type="submit" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer" title="Eliminar">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-center text-slate-500 text-xs py-6">Aún no hay rutinas personalizadas asignadas a socios.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sub-Modal Editar Ejercicio (Admin) -->
+    <div id="modalEditarEjercicioStaff" class="fixed inset-0 z-[60] hidden bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-white text-base">Editar Ejercicio de Rutina</h3>
+                <button type="button" onclick="document.getElementById('modalEditarEjercicioStaff').classList.add('hidden')" class="text-slate-400 hover:text-white cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="admin_editar_ejercicio_rutina">
+                <input type="hidden" name="ejercicio_id" id="staffEditEjId">
+
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre del Ejercicio</label>
+                    <input type="text" name="nombre_ejercicio" id="staffEditEjNombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Series</label>
+                        <input type="number" name="series" id="staffEditEjSeries" min="1" max="10" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Repeticiones</label>
+                        <input type="text" name="repeticiones" id="staffEditEjReps" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Descanso</label>
+                        <input type="text" name="descanso" id="staffEditEjDescanso" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white font-mono">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="document.getElementById('modalEditarEjercicioStaff').classList.add('hidden')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow cursor-pointer">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- 🧾 MODAL UNIFICADO: REGISTRAR COBRO A SOCIO (IDÉNTICO EMPLEADO) -->
+    <!-- ============================================================== -->
+    <div id="modalRegistrarPago" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[92vh]">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg border border-emerald-500/20">
+                        <i class="fa-solid fa-cash-register"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-white text-base">Registrar Cobro a Socio</h3>
+                        <p class="text-xs text-slate-400">Buscá al socio, revisá su estado actual y seleccioná qué abona</p>
+                    </div>
+                </div>
+                <button type="button" onclick="cerrarModalCobroUnificado()" class="text-slate-400 hover:text-white transition cursor-pointer p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{% url 'dashboard' %}" class="space-y-5 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="cobrar_desde_admin">
+                <input type="hidden" name="socio_id" id="cobroUnificadoSocioId" required>
+                <input type="hidden" name="plan_id" id="cobroUnificadoPlanIdReal">
+
+                <div class="space-y-2.5">
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold tracking-wider">
+                        1. Seleccionar Socio (Filtrar por nombre o DNI)
+                    </label>
+
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input type="text" id="buscadorSocioCobro" onkeyup="filtrarSociosCobroUnificado()"
+                               placeholder="Escribí nombre, apellido o DNI..."
+                               class="w-full bg-slate-950 border border-emerald-500/40 focus:border-emerald-400 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-slate-500 focus:outline-none">
+                    </div>
+
+                    <div id="listaSociosCobro" class="max-h-48 overflow-y-auto space-y-2 pr-1">
+                        {% for s in socios_para_cobro %}
+                            <div onclick="seleccionarSocioCobroUnificado(this, '{{ s.id }}')"
+                                 data-busqueda="{{ s.nombre|lower }} {{ s.dni }}"
+                                 data-dni="{{ s.dni }}"
+                                 class="tarjeta-socio-cobro p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/50 cursor-pointer transition flex items-center justify-between gap-3">
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-white text-sm">{{ s.nombre }}</span>
+                                        <span class="text-[10px] font-mono text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded">
+                                            DNI: {{ s.dni }}
+                                        </span>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-1.5">
+                                        <span class="text-[10px] text-slate-500">Anotado en:</span>
                                         {% for item in s.anotado_en %}
-                                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">{{ item }}</span>
+                                            <span class="text-[10px] font-bold text-blue-300 bg-blue-500/10 border border-blue-500/30 px-2 py-0.5 rounded-md">
+                                                {{ item }}
+                                            </span>
+                                        {% empty %}
+                                            <span class="text-[10px] text-slate-500 italic">Sin clases asignadas</span>
                                         {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="text-right shrink-0">
+                                    {% if s.al_dia %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Al Día
+                                        </span>
+                                        <p class="text-[10px] text-slate-500 mt-1">Vence: {{ s.vence }}</p>
                                     {% else %}
-                                        <span class="text-[10px] italic text-slate-500">Sin inscripciones activas</span>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Vencido / Sin Plan
+                                        </span>
                                     {% endif %}
                                 </div>
                             </div>
-
-                            <!-- Semáforo de estado -->
-                            <div class="text-right shrink-0">
-                                {% if s.al_dia %}
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Al Día
-                                    </span>
-                                    <p class="text-[10px] text-slate-400 mt-1">Vence: {{ s.vence }}</p>
-                                {% else %}
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] font-bold">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Vencido / Rojo
-                                    </span>
-                                {% endif %}
-                            </div>
-                        </div>
                         {% empty %}
-                        <p class="text-center text-slate-500 py-4">No hay socios registrados aún.</p>
+                            <p class="text-center text-slate-500 py-4">No hay socios activos registrados.</p>
                         {% endfor %}
                     </div>
                 </div>
 
-                <!-- RESUMEN DEL SOCIO SELECCIONADO -->
-                <div id="resumenSocioSeleccionado" class="hidden p-3.5 rounded-xl bg-slate-950 border border-emerald-500/40 flex items-center justify-between">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-800">
                     <div>
-                        <p class="text-[10px] uppercase font-bold text-emerald-400">Socio seleccionado para cobro:</p>
-                        <p id="lblSocioNombre" class="text-sm font-extrabold text-white"></p>
-                        <p id="lblSocioInscripciones" class="text-[11px] text-slate-400 mt-0.5"></p>
-                    </div>
-                    <span id="lblSocioEstado" class="text-xs font-bold"></span>
-                </div>
-
-                <!-- PASO 2: MEMBRESÍA / ACTIVIDAD -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-800">
-                    <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
                             2. Membresía / Plan
                         </label>
-                        <select name="plan_id" id="selectPlanAdmin" onchange="actualizarTotalAdmin()" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500">
+                        <select id="selectCategoriaPaseUnificado" onchange="actualizarSelectorPaseUnificado()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-emerald-500">
                             <option value="" data-precio="0">-- Ninguna / Solo actividad --</option>
-                            {% for plan in planes_disponibles %}
-                                <option value="{{ plan.id }}" data-precio="{{ plan.precio }}">{{ plan.nombre }} (${{ plan.precio|floatformat:0 }})</option>
+                            {% for p in planes_disponibles %}
+                                {% if 'pilates' not in p.nombre|lower %}
+                                    <option value="{{ p.id }}" data-precio="{{ p.precio|floatformat:0 }}" data-nombre="{{ p.nombre|lower }}">
+                                        {{ p.nombre }} — ${{ p.precio|floatformat:0 }}
+                                    </option>
+                                {% endif %}
                             {% endfor %}
+                            <option value="grupo_pilates" data-precio="0">Pilates (Elegir días por semana)</option>
                         </select>
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
                             3. Actividad Adicional (Opcional)
                         </label>
-                        <select name="actividad_id" id="selectActAdmin" onchange="actualizarTotalAdmin()" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500">
-                            <option value="" data-precio="0">-- Ninguna / Incluida en plan --</option>
+                        <select name="actividad_id" id="selectActividadUnificado" onchange="recalcularTotalCobroUnificado()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-emerald-500">
+                            <option value="" data-precio="0">-- Ninguna / Incluida en el plan --</option>
                             {% for act in actividades_disponibles %}
-                                <option value="{{ act.id }}" data-precio="{{ act.precio|default:0 }}">{{ act.nombre }}{% if act.precio %} (${{ act.precio|floatformat:0 }}){% endif %}</option>
+                                <option value="{{ act.id }}" data-precio="{{ act.precio|default:0|floatformat:0 }}">
+                                    {{ act.nombre }}{% if act.precio %} — ${{ act.precio|floatformat:0 }}{% endif %}
+                                </option>
                             {% endfor %}
                         </select>
                     </div>
                 </div>
 
-                <!-- MÉTODO DE PAGO Y TOTAL -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                <div id="bloqueFrecuenciaPilatesUnificado" class="hidden p-3.5 rounded-2xl bg-blue-950/30 border border-blue-500/30 space-y-2">
+                    <label class="block text-blue-400 uppercase text-[10px] font-bold tracking-wider">
+                        <i class="fa-regular fa-calendar mr-1"></i> Frecuencia Semanal de Pilates:
+                    </label>
+                    <select id="selectSubPlanPilatesUnificado" onchange="recalcularTotalCobroUnificado()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                        {% for p in planes_disponibles %}
+                            {% if 'pilates' in p.nombre|lower %}
+                                <option value="{{ p.id }}" data-precio="{{ p.precio|floatformat:0 }}" data-nombre="{{ p.nombre|lower }}">
+                                    {{ p.nombre }} — ${{ p.precio|floatformat:0 }} / mes
+                                </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="cajaInfoPaseUnificado" class="hidden p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-1.5">
+                    <h4 id="tituloInfoPaseUnificado" class="font-bold text-emerald-400 text-xs"></h4>
+                    <p id="descInfoPaseUnificado" class="text-[11px] text-slate-300 leading-relaxed"></p>
+                    <p class="text-[10px] text-slate-500 pt-1 border-t border-slate-800/80">
+                        <i class="fa-regular fa-clock mr-1"></i> Horario del gimnasio: Lun a Vie 07:00 a 22:00 hs • Sáb 09:00 a 13:00 hs
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center pt-3 border-t border-slate-800">
                     <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
                             4. Medio de Pago
                         </label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="flex items-center justify-center gap-1.5 p-2.5 bg-slate-950 border border-slate-700 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
-                                <input type="radio" name="metodo_pago" value="efectivo" checked class="text-emerald-500">
-                                <span class="font-bold text-slate-200">💵 Efectivo</span>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
+                                <input type="radio" name="metodo_pago" value="efectivo" checked class="text-emerald-500 focus:ring-0">
+                                <span class="font-bold text-white">💵 Efectivo</span>
                             </label>
-                            <label class="flex items-center justify-center gap-1.5 p-2.5 bg-slate-950 border border-slate-700 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
-                                <input type="radio" name="metodo_pago" value="transferencia" class="text-emerald-500">
-                                <span class="font-bold text-slate-200">📱 Transferencia</span>
+                            <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
+                                <input type="radio" name="metodo_pago" value="transferencia" class="text-emerald-500 focus:ring-0">
+                                <span class="font-bold text-white">📱 Transferencia</span>
                             </label>
                         </div>
                     </div>
 
-                    <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
-                        <span class="font-bold text-slate-300">Total a Cobrar:</span>
-                        <span id="lblTotalCobroAdmin" class="text-xl font-black text-emerald-400 font-mono">$0</span>
+                    <div class="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 flex items-center justify-between">
+                        <span class="font-bold text-slate-300 text-xs">Total a Cobrar:</span>
+                        <span id="labelTotalCobroUnificado" class="text-2xl font-black text-emerald-400 font-mono">$0</span>
                     </div>
                 </div>
 
-                <!-- BOTONES -->
-                <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
-                    <button type="button" onclick="cerrarModalCobroAdmin()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="cerrarModalCobroUnificado()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
                         Cancelar
                     </button>
-                    <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition cursor-pointer">
+                    <button type="submit" onclick="return validarSocioSeleccionadoUnificado()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition cursor-pointer">
                         Confirmar Cobro
                     </button>
                 </div>
@@ -367,146 +595,147 @@
         </div>
     </div>
 
-    <!-- FOOTER ADMIN CON ENLACES LEGALES -->
-<!-- FOOTER ADMIN LIMPIO Y EQUILIBRADO -->
-    <footer class="bg-slate-900 border-t border-slate-800 text-slate-500 py-6 text-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <!-- Izquierda: Sistema y Autores -->
-            <div class="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-left">
-                <p class="text-slate-400 font-medium">© 2026 GymTrack OS — Panel de Administración.</p>
-            </div>
-
-            <!-- Derecha: Legales -->
-            <div class="flex items-center gap-5 text-slate-400">
-                <button type="button" onclick="abrirModalLegalAdmin('modal-terminos-admin')" class="hover:text-white transition cursor-pointer">
-                    Términos de Servicio
-                </button>
-                <span class="text-slate-700">•</span>
-                <button type="button" onclick="abrirModalLegalAdmin('modal-privacidad-admin')" class="hover:text-white transition cursor-pointer">
-                    Política de Privacidad
-                </button>
-            </div>
-        </div>
-    </footer>
-
-    <!-- MODAL: TÉRMINOS DE SERVICIO (ADMIN / B2B) -->
-    <div id="modal-terminos-admin" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-                <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-file-contract text-blue-400"></i> Términos de Servicio y Acuerdo SaaS B2B
-                </h3>
-                <button type="button" onclick="cerrarModalLegalAdmin('modal-terminos-admin')" class="text-slate-400 hover:text-white text-lg cursor-pointer">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-300 leading-relaxed">
-                <p><strong class="text-white">1. Alcance de la Licencia SaaS:</strong> GymTrack OS otorga al establecimiento contratante una licencia de uso no exclusiva sobre la plataforma en la nube, sujeta a la vigencia de su plan de suscripción periódico.</p>
-                <p><strong class="text-white">2. Titularidad de la Información:</strong> El gimnasio cliente es el único propietario de la base de datos de socios, registros contables, tarifas y rutinas cargadas en su entorno aislado (tenant). GymTrack OS actúa exclusivamente como proveedor de infraestructura tecnológica.</p>
-                <p><strong class="text-white">3. Gestión de Roles y Accesos:</strong> El Administrador del establecimiento es responsable de la asignación y revocación de permisos al personal operativo (recepcionistas e instructores) y de la custodia de las credenciales administrativas.</p>
-                <p><strong class="text-white">4. Integridad Contable:</strong> Las bajas de socios se procesan mediante inactivación lógica (soft delete) con el fin de preservar la trazabilidad histórica de caja y asistencias.</p>
-            </div>
-            <div class="px-6 py-4 border-t border-slate-800 flex justify-end">
-                <button type="button" onclick="cerrarModalLegalAdmin('modal-terminos-admin')" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition cursor-pointer">
-                    Entendido
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: POLÍTICA DE PRIVACIDAD (ADMIN / LEY 25.326) -->
-    <div id="modal-privacidad-admin" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-                <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-shield-halved text-emerald-400"></i> Política de Privacidad y Protección de Datos
-                </h3>
-                <button type="button" onclick="cerrarModalLegalAdmin('modal-privacidad-admin')" class="text-slate-400 hover:text-white text-lg cursor-pointer">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-300 leading-relaxed">
-                <p><strong class="text-white">1. Cumplimiento Legal:</strong> El almacenamiento y tratamiento de datos personales dentro de GymTrack OS se rige por la <strong class="text-white">Ley N.º 25.326 de Protección de Datos Personales</strong> de la República Argentina.</p>
-                <p><strong class="text-white">2. Aislamiento Multi-tenant:</strong> Cada establecimiento opera sobre un esquema lógico particionado que impide el cruce o visualización de información contable o de socios entre distintos gimnasios clientes.</p>
-                <p><strong class="text-white">3. Medidas Técnicas de Resguardo:</strong> Todas las credenciales se almacenan cifradas mediante algoritmos PBKDF2/SHA256 y las comunicaciones viajan encriptadas bajo protocolo HTTPS.</p>
-                <p><strong class="text-white">4. Deber de Confidencialidad:</strong> El personal autorizado por el gimnasio para operar los módulos administrativos y de mostrador debe utilizar la información de los socios únicamente para fines operativos y deportivos.</p>
-            </div>
-            <div class="px-6 py-4 border-t border-slate-800 flex justify-end">
-                <button type="button" onclick="cerrarModalLegalAdmin('modal-privacidad-admin')" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition cursor-pointer">
-                    Cerrar
-                </button>
-            </div>
-        </div>
-    </div>
+{% include 'includes/footer.html' %}
 
     <script>
-        function abrirModalLegalAdmin(id) {
-            document.getElementById(id).classList.remove('hidden');
+        function toggleDestinoRutinaAdmin() {
+            const dest = document.getElementById('selectDestinoRutinaAdmin').value;
+            document.getElementById('bloqueSelectBasicaAdmin').classList.toggle('hidden', dest !== 'basica');
+            document.getElementById('bloqueSelectSocioAdmin').classList.toggle('hidden', dest !== 'socio');
         }
-        function cerrarModalLegalAdmin(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-        window.addEventListener('click', function(e) {
-            if (e.target.id === 'modal-terminos-admin' || e.target.id === 'modal-privacidad-admin') {
-                e.target.classList.add('hidden');
+
+        function cambiarTabRutinasModal(tab) {
+            const basicas = document.getElementById('contenedorRutinasBasicasModal');
+            const socios = document.getElementById('contenedorRutinasSociosModal');
+            const btnB = document.getElementById('btnTabRutinasBasicas');
+            const btnS = document.getElementById('btnTabRutinasSocios');
+
+            if (tab === 'basicas') {
+                basicas.classList.remove('hidden');
+                socios.classList.add('hidden');
+                btnB.className = "px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl cursor-pointer";
+                btnS.className = "px-4 py-2 bg-slate-800 text-slate-300 hover:text-white font-bold text-xs rounded-xl cursor-pointer";
+            } else {
+                socios.classList.remove('hidden');
+                basicas.classList.add('hidden');
+                btnS.className = "px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl cursor-pointer";
+                btnB.className = "px-4 py-2 bg-slate-800 text-slate-300 hover:text-white font-bold text-xs rounded-xl cursor-pointer";
             }
-        });
-    </script>
+        }
 
-    <script>
-        function abrirModalCobroAdmin() {
-            document.getElementById('modalCobroAdmin').classList.remove('hidden');
+        function abrirModalEditarEjStaff(btn) {
+            document.getElementById('staffEditEjId').value = btn.getAttribute('data-id');
+            document.getElementById('staffEditEjNombre').value = btn.getAttribute('data-nombre');
+            document.getElementById('staffEditEjSeries').value = btn.getAttribute('data-series');
+            document.getElementById('staffEditEjReps').value = btn.getAttribute('data-reps');
+            document.getElementById('staffEditEjDescanso').value = btn.getAttribute('data-descanso');
+            document.getElementById('modalEditarEjercicioStaff').classList.remove('hidden');
+        }
+
+        function abrirModalCobroUnificado() {
+            document.getElementById('modalRegistrarPago').classList.remove('hidden');
             document.getElementById('buscadorSocioCobro').focus();
         }
 
-        function cerrarModalCobroAdmin() {
-            document.getElementById('modalCobroAdmin').classList.add('hidden');
+        function cerrarModalCobroUnificado() {
+            document.getElementById('modalRegistrarPago').classList.add('hidden');
         }
 
-        function filtrarSociosCobro() {
-            const texto = document.getElementById('buscadorSocioCobro').value.toLowerCase().trim();
-            document.querySelectorAll('.item-socio-cobro').forEach(item => {
-                const data = item.getAttribute('data-search');
-                item.style.display = data.includes(texto) ? 'flex' : 'none';
+        function filtrarSociosCobroUnificado() {
+            const q = document.getElementById('buscadorSocioCobro').value.toLowerCase().trim();
+            document.querySelectorAll('.tarjeta-socio-cobro').forEach(card => {
+                const texto = card.getAttribute('data-busqueda') || '';
+                card.style.display = texto.includes(q) ? 'flex' : 'none';
             });
         }
 
-        function seleccionarSocioCobro(elemento) {
-            document.querySelectorAll('.item-socio-cobro').forEach(el => {
-                el.classList.remove('border-emerald-500', 'bg-emerald-950/20');
-                el.classList.add('border-slate-800');
+        function seleccionarSocioCobroUnificado(el, socioId) {
+            document.querySelectorAll('.tarjeta-socio-cobro').forEach(c => {
+                c.classList.remove('border-emerald-500', 'bg-emerald-950/20');
+                c.classList.add('border-slate-800');
             });
-            elemento.classList.remove('border-slate-800');
-            elemento.classList.add('border-emerald-500', 'bg-emerald-950/20');
+            el.classList.remove('border-slate-800');
+            el.classList.add('border-emerald-500', 'bg-emerald-950/20');
+            document.getElementById('cobroUnificadoSocioId').value = socioId;
+        }
 
-            const id = elemento.getAttribute('data-id');
-            const nombre = elemento.getAttribute('data-nombre');
-            const dni = elemento.getAttribute('data-dni');
-            const alDia = elemento.getAttribute('data-aldia') === 'true';
-            const vence = elemento.getAttribute('data-vence');
-            const anotadoEn = elemento.getAttribute('data-anotado');
-
-            document.getElementById('inputSocioIdAdmin').value = id;
-            document.getElementById('resumenSocioSeleccionado').classList.remove('hidden');
-            document.getElementById('lblSocioNombre').innerText = `${nombre} (DNI: ${dni})`;
-            document.getElementById('lblSocioInscripciones').innerText = anotadoEn ? `Actualmente anotado en: ${anotadoEn}` : 'Sin actividades o planes vigentes';
-            
-            const lblEstado = document.getElementById('lblSocioEstado');
-            if (alDia) {
-                lblEstado.innerHTML = `<span class="text-emerald-400">🟢 Al Día (Vence ${vence})</span>`;
-            } else {
-                lblEstado.innerHTML = `<span class="text-rose-400">🔴 Cuota Vencida</span>`;
+        function validarSocioSeleccionadoUnificado() {
+            if (!document.getElementById('cobroUnificadoSocioId').value) {
+                alert('Por favor seleccioná un socio de la lista antes de confirmar el cobro.');
+                return false;
             }
+            return true;
         }
 
-        function actualizarTotalAdmin() {
-            const selPlan = document.getElementById('selectPlanAdmin');
-            const selAct = document.getElementById('selectActAdmin');
-            const precioPlan = parseFloat(selPlan.options[selPlan.selectedIndex]?.getAttribute('data-precio') || 0);
-            const precioAct = parseFloat(selAct.options[selAct.selectedIndex]?.getAttribute('data-precio') || 0);
-            const total = precioPlan + precioAct;
-            document.getElementById('lblTotalCobroAdmin').innerText = '$' + total.toLocaleString('es-AR');
+        function actualizarSelectorPaseUnificado() {
+            const cat = document.getElementById('selectCategoriaPaseUnificado').value;
+            const bloquePilates = document.getElementById('bloqueFrecuenciaPilatesUnificado');
+            if (cat === 'grupo_pilates') {
+                bloquePilates.classList.remove('hidden');
+            } else {
+                bloquePilates.classList.add('hidden');
+            }
+            recalcularTotalCobroUnificado();
         }
+
+        function recalcularTotalCobroUnificado() {
+            const selCat = document.getElementById('selectCategoriaPaseUnificado');
+            const selPilates = document.getElementById('selectSubPlanPilatesUnificado');
+            const selAct = document.getElementById('selectActividadUnificado');
+            const inputPlanReal = document.getElementById('cobroUnificadoPlanIdReal');
+
+            const cajaInfo = document.getElementById('cajaInfoPaseUnificado');
+            const tituloInfo = document.getElementById('tituloInfoPaseUnificado');
+            const descInfo = document.getElementById('descInfoPaseUnificado');
+
+            let precioPlan = 0;
+            let nombrePlan = '';
+
+            if (selCat.value === 'grupo_pilates' && selPilates && selPilates.options.length > 0) {
+                const optP = selPilates.options[selPilates.selectedIndex];
+                inputPlanReal.value = optP.value;
+                precioPlan = parseInt(optP.getAttribute('data-precio') || 0);
+                nombrePlan = optP.text.split('—')[0].trim();
+            } else if (selCat.value) {
+                const optC = selCat.options[selCat.selectedIndex];
+                inputPlanReal.value = optC.value;
+                precioPlan = parseInt(optC.getAttribute('data-precio') || 0);
+                nombrePlan = optC.text.split('—')[0].trim();
+            } else {
+                inputPlanReal.value = '';
+            }
+
+            if (nombrePlan) {
+                cajaInfo.classList.remove('hidden');
+                tituloInfo.textContent = nombrePlan;
+                const nomLow = nombrePlan.toLowerCase();
+                if (nomLow.includes('pilates')) {
+                    descInfo.textContent = 'Clases de Pilates Reformer con reserva previa (Lun 9-11hs, Mié 11-13hs o Vie 16-18hs).';
+                } else if (nomLow.includes('clase')) {
+                    descInfo.textContent = 'Incluye Funcional (L/M/V 18hs), Spinning (L/M/V 19hs), Abdominales (L/M/V 20hs), Funcional+Cardio (M/J 18hs) y Zumba (L/M/J 19hs).';
+                } else if (nomLow.includes('familiar')) {
+                    descInfo.textContent = 'Promoción válida a partir de 3 integrantes del grupo familiar abonando el mismo día ($50.000 c/u).';
+                } else if (nomLow.includes('musculacion') || nomLow.includes('musculación')) {
+                    descInfo.textContent = 'Acceso libre a sala de Musculación + todas las Clases grupales incluidas durante 30 días.';
+                } else {
+                    descInfo.textContent = 'Pase mensual habilitado por 30 días corridos desde la fecha de cobro.';
+                }
+            } else {
+                cajaInfo.classList.add('hidden');
+            }
+
+            const optA = selAct.options[selAct.selectedIndex];
+            const precioAct = parseInt(optA.getAttribute('data-precio') || 0);
+            document.getElementById('labelTotalCobroUnificado').textContent = '$' + (precioPlan + precioAct).toLocaleString('es-AR');
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cerrarModalCobroUnificado();
+                document.getElementById('modalRutinasAdmin').classList.add('hidden');
+                document.getElementById('modalEditarEjercicioStaff').classList.add('hidden');
+            }
+        });
     </script>
 
 </body>
