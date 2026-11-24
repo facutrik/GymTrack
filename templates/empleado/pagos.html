@@ -1,0 +1,206 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymTrack - Pagos y Caja (Recepción)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }
+        .font-brand { font-family: 'Barlow Condensed', sans-serif; }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-emerald-600 selection:text-white">
+
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3.5">
+                    <img src="{% static 'img/logo-gymtrack.svg' %}" alt="Logo GymTrack" class="h-10 w-auto object-contain">
+                    <span class="font-brand italic font-extrabold text-3xl tracking-wide">
+                        <span class="text-[#3f51d6]">GYM</span><span class="text-white">track</span>
+                    </span>
+                    <span class="text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                        Caja y Pagos
+                    </span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="{% url 'dashboard' %}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-left"></i> Volver al Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MENSAJES -->
+    {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
+            {% for message in messages %}
+                <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
+                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+            <div>
+                <h1 class="text-2xl font-black text-white tracking-tight">Caja y Cobro de Membresías 💵</h1>
+                <p class="text-xs text-slate-400 mt-1">Registrá pagos en efectivo o transferencia y consultá los últimos comprobantes.</p>
+            </div>
+            <button type="button" onclick="abrirModalCobroUnificado()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-plus"></i> Nuevo Cobro
+            </button>
+        </div>
+
+        <!-- TABLA DE COBROS RECIENTES -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
+            <h3 class="font-bold text-white text-sm mb-4">Historial Reciente de Cobros</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
+                        <tr>
+                            <th class="pb-3 px-3">Fecha / Hora</th>
+                            <th class="pb-3 px-3">Socio</th>
+                            <th class="pb-3 px-3">DNI</th>
+                            <th class="pb-3 px-3">Plan / Membresía</th>
+                            <th class="pb-3 px-3">Medio</th>
+                            <th class="pb-3 px-3 text-right">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                        {% for cobro in ultimos_cobros %}
+                            <tr class="hover:bg-slate-800/30 transition">
+                                <td class="py-3 px-3 font-mono text-slate-400">{{ cobro.fecha_pago|date:"d/m/Y H:i" }}</td>
+                                <td class="py-3 px-3 text-white font-medium">{{ cobro.socio.usuario.first_name }} {{ cobro.socio.usuario.last_name }}</td>
+                                <td class="py-3 px-3 font-mono text-slate-400">{{ cobro.socio.usuario.username }}</td>
+                                <td class="py-3 px-3 text-amber-300 font-semibold">{{ cobro.membresia.plan.nombre }}</td>
+                                <td class="py-3 px-3">
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase {% if cobro.metodo_pago == 'efectivo' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% else %}bg-blue-500/10 text-blue-400 border border-blue-500/20{% endif %}">
+                                        {{ cobro.metodo_pago }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-right font-black text-emerald-400 font-mono text-sm">${{ cobro.monto }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="py-6 text-center text-slate-500 text-xs">No hay cobros registrados en caja todavía.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL COBRO UNIFICADO -->
+    <div id="modalRegistrarPago" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[92vh]">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h3 class="font-extrabold text-white text-base">Registrar Cobro a Socio</h3>
+                <button type="button" onclick="cerrarModalCobroUnificado()" class="text-slate-400 hover:text-white cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{% url 'pagos_empleado' %}" class="space-y-5 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="cobrar_membresia_empleado">
+                <input type="hidden" name="socio_id" id="cobroUnificadoSocioId">
+                <input type="hidden" name="plan_id" id="cobroUnificadoPlanIdReal">
+
+                <div class="space-y-2">
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold">1. Buscar y Seleccionar Socio</label>
+                    <input type="text" id="buscadorSocioCobro" onkeyup="filtrarSociosCobroUnificado()"
+                           placeholder="Escribí nombre, apellido o DNI..."
+                           class="w-full bg-slate-950 border border-emerald-500/40 rounded-xl px-4 py-2.5 text-white">
+
+                    <div id="listaSociosCobro" class="max-h-44 overflow-y-auto space-y-2 pr-1">
+                        {% for s in socios_para_cobro %}
+                            <div onclick="seleccionarSocioCobroUnificado(this, '{{ s.id }}')"
+                                 data-busqueda="{{ s.nombre|lower }} {{ s.dni }}"
+                                 data-dni="{{ s.dni }}"
+                                 class="tarjeta-socio-cobro p-3 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/50 cursor-pointer transition flex items-center justify-between">
+                                <div>
+                                    <span class="font-bold text-white text-sm">{{ s.nombre }}</span>
+                                    <span class="text-[10px] font-mono text-slate-400 ml-2">DNI: {{ s.dni }}</span>
+                                </div>
+                                <span class="text-[10px] font-bold {% if s.al_dia %}text-emerald-400{% else %}text-rose-400{% endif %}">
+                                    {% if s.al_dia %}Al Día{% else %}Vencido{% endif %}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-800">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5">2. Membresía / Plan</label>
+                        <select id="selectCategoriaPaseUnificado" onchange="actualizarSelectorPaseUnificado()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                            <option value="" data-precio="0">-- Ninguna / Solo actividad --</option>
+                            {% for p in planes_disponibles %}
+                                <option value="{{ p.id }}" data-precio="{{ p.precio|floatformat:0 }}">{{ p.nombre }} — ${{ p.precio|floatformat:0 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5">3. Actividad Adicional</label>
+                        <select name="actividad_id" id="selectActividadUnificado" onchange="recalcularTotalCobroUnificado()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                            <option value="" data-precio="0">-- Ninguna --</option>
+                            {% for act in actividades_disponibles %}
+                                <option value="{{ act.id }}" data-precio="{{ act.precio|default:0|floatformat:0 }}">{{ act.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center pt-3 border-t border-slate-800">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5">4. Medio de Pago</label>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
+                                <input type="radio" name="metodo_pago" value="efectivo" checked>
+                                <span class="font-bold text-white">💵 Efectivo</span>
+                            </label>
+                            <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
+                                <input type="radio" name="metodo_pago" value="transferencia">
+                                <span class="font-bold text-white">📱 Transferencia</span>
+                            </label>
+                            <!--
+                            <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer">
+                                <input type="radio" name="metodo_pago" value="tarjeta">
+                                <span class="font-bold text-white">💳 Tarjeta</span>
+                            </label>
+                            -->
+                        </div>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 flex items-center justify-between">
+                        <span class="font-bold text-slate-300 text-xs">Total a Cobrar:</span>
+                        <span id="labelTotalCobroUnificado" class="text-2xl font-black text-emerald-400 font-mono">$0</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="cerrarModalCobroUnificado()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl cursor-pointer">Cancelar</button>
+                    <button type="submit" onclick="return validarSocioSeleccionadoUnificado()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl cursor-pointer">Confirmar Cobro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% include 'includes/footer.html' %}
+
+<script src="{% static 'js/empleado/cobros.js' %}"></script>
+
+</body>
+</html>

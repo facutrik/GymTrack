@@ -1,0 +1,578 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymTrack - Mi Rutina</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }
+        .font-brand { font-family: 'Barlow Condensed', sans-serif; }
+        .set-row.completed { background-color: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); }
+        .set-row.completed input { color: #6ee7b7; }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3.5">
+                    <img src="{% static 'img/logo-gymtrack.svg' %}" alt="Logo GymTrack" class="h-11 w-auto object-contain">
+                    <span class="font-brand italic font-extrabold text-3xl tracking-wide">
+                        <span class="text-[#3f51d6]">GYM</span><span class="text-white">track</span>
+                    </span>
+                    <span class="text-xs font-light text-slate-500">×</span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">
+                        BODYDYNAMIC
+                    </span>
+                </div>
+                <a href="{% url 'dashboard' %}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al Panel
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+
+        {% if messages %}
+            <div class="w-full space-y-2">
+                {% for message in messages %}
+                    <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% elif message.tags == 'warning' or message.tags == 'info' %}bg-amber-950/60 border border-amber-500/40 text-amber-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
+                        <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- BARRA DE TRACKER -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-xl">
+            <div class="flex flex-wrap items-center gap-6">
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Volumen Levantado</span>
+                    <span id="hevyVolumenTotal" class="text-xl font-black text-blue-400 font-mono">0 kg</span>
+                </div>
+                <div class="h-8 w-px bg-slate-800 hidden sm:block"></div>
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Series Completadas</span>
+                    <span id="hevySeriesCompletadas" class="text-xl font-black text-emerald-400 font-mono">0</span>
+                </div>
+                <div class="h-8 w-px bg-slate-800 hidden sm:block"></div>
+                <div class="flex items-center gap-2.5 bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-2xl">
+                    <i class="fa-solid fa-stopwatch text-blue-400 text-sm"></i>
+                    <div>
+                        <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 block">Descanso</span>
+                        <span id="hevyTimerDisplay" class="text-sm font-black font-mono text-white">01:30</span>
+                    </div>
+                    <div class="flex items-center gap-1 ml-2">
+                        <button type="button" onclick="ajustarTimerHevy(-15)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-300 cursor-pointer">-15s</button>
+                        <button type="button" onclick="iniciarTimerHevy(90)" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 rounded-lg text-[10px] font-bold text-white cursor-pointer">Start</button>
+                        <button type="button" onclick="ajustarTimerHevy(15)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-300 cursor-pointer">+15s</button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-2.5">
+                <button type="button" onclick="reiniciarChecksHevy()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-semibold text-slate-300 transition cursor-pointer">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Reiniciar Sesión
+                </button>
+                <button type="button" onclick="window.print()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold text-white flex items-center gap-2 transition cursor-pointer shadow-lg shadow-blue-600/20">
+                    <i class="fa-regular fa-file-pdf"></i> Exportar PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- SELECTOR DE RUTINAS -->
+        <div class="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-4">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mr-1">3 Básicos:</span>
+            <button type="button" onclick="seleccionarModoRutina('adaptacion')" id="btn-rutina-adaptacion"
+                    class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md shadow-blue-600/20 transition cursor-pointer">
+                Adaptación
+            </button>
+            <button type="button" onclick="seleccionarModoRutina('hipertrofia')" id="btn-rutina-hipertrofia"
+                    class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
+                Hipertrofia
+            </button>
+            <button type="button" onclick="seleccionarModoRutina('fuerza')" id="btn-rutina-fuerza"
+                    class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
+                Fuerza
+            </button>
+            <div class="h-6 w-px bg-slate-800 mx-1 hidden sm:block"></div>
+            <button type="button" onclick="seleccionarModoRutina('profe')" id="btn-rutina-profe"
+                    class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
+                Personalizada por Profesor
+            </button>
+            <button type="button" onclick="seleccionarModoRutina('custom')" id="btn-rutina-custom"
+                    class="btn-modo-rutina px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 transition cursor-pointer">
+                Mi Propia Rutina (7 Días)
+            </button>
+        </div>
+
+        <!-- 1. ADAPTACIÓN -->
+        <div id="panel-rutina-adaptacion" class="panel-modo-rutina space-y-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-extrabold text-white">Plan Básico: Adaptación</h3>
+                    <p class="text-xs text-slate-400">3×12-15 reps • 60-90s descanso • Seleccioná un día para desplegar sus ejercicios.</p>
+                </div>
+                <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">3 Días / Semana</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {% for dia in rutina_adaptacion.dias.all %}
+                    <button type="button"
+                            onclick="seleccionarDiaRutina('adaptacion', '{{ forloop.counter }}')"
+                            id="btn-dia-adaptacion-{{ forloop.counter }}"
+                            class="btn-dia-adaptacion p-4 rounded-2xl border text-left transition cursor-pointer {% if forloop.first %}bg-slate-900 border-2 border-blue-500 shadow-lg shadow-blue-500/10{% else %}bg-slate-900/60 border-slate-800 hover:border-slate-700{% endif %}">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">ADAPTACIÓN • DÍA {{ forloop.counter }}</span>
+                            <span class="text-[10px] font-mono text-slate-400">{{ dia.ejercicios.count }} ej.</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-white">{{ dia.nombre_dia }}</h4>
+                    </button>
+                {% endfor %}
+            </div>
+            {% for dia in rutina_adaptacion.dias.all %}
+                <div id="contenido-dia-adaptacion-{{ forloop.counter }}"
+                    class="contenido-dia-adaptacion {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <span class="text-[10px] font-bold text-blue-400 uppercase block">ADAPTACIÓN • DÍA {{ forloop.counter }}</span>
+                            <h4 class="font-bold text-base text-white mt-0.5">{{ dia.nombre_dia }}</h4>
+                        </div>
+                        <span class="text-xs font-semibold text-blue-400">Descanso: 60–90s</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {% for ej in dia.ejercicios.all %}
+                            <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
+                                <div class="flex items-start justify-between gap-2">
+                                    <span class="font-bold text-blue-400 text-xs">{{ forloop.counter }}. {{ ej.nombre }}</span>
+                                    <span class="text-[10px] text-slate-400 font-mono shrink-0">{{ ej.series }}×{{ ej.repeticiones }}</span>
+                                </div>
+                                <div class="grid grid-cols-4 gap-1.5 text-[9px] font-bold text-slate-500 uppercase px-2">
+                                    <span>Serie</span><span>KG</span><span>Reps</span><span class="text-right">Listo</span>
+                                </div>
+                                <div class="space-y-1.5">
+                                    {% for s in "12345678"|make_list %}
+                                        {% if forloop.counter <= ej.series %}
+                                            <div class="set-row grid grid-cols-4 gap-1.5 items-center bg-slate-900/90 border border-slate-800 rounded-xl px-2 py-1.5 text-xs">
+                                                <span class="font-mono font-bold text-slate-400">S{{ forloop.counter }}</span>
+                                                <input type="number" placeholder="kg" onchange="recalcularHevy()" class="hevy-kg w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                <input type="number" value="12" onchange="recalcularHevy()" class="hevy-reps w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                <button type="button" onclick="toggleSerieHevy(this, 75)" class="ml-auto w-7 h-7 rounded-lg bg-slate-800 hover:bg-emerald-600/30 text-slate-400 flex items-center justify-center transition cursor-pointer">
+                                                    <i class="fa-solid fa-check text-xs"></i>
+                                                </button>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl text-center text-xs text-slate-400">
+                    No se encontraron días cargados para Adaptación. Ejecutá <code class="text-blue-400">python cargar_rutinas_base.py</code>.
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- 2. HIPERTROFIA -->
+        <div id="panel-rutina-hipertrofia" class="panel-modo-rutina hidden space-y-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-extrabold text-white">Plan Básico: Hipertrofia Muscular</h3>
+                    <p class="text-xs text-slate-400">3×8-12 reps • 90-120s descanso • Seleccioná un día para desplegar sus ejercicios.</p>
+                </div>
+                <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">Split 3 Días</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {% for dia in rutina_hipertrofia.dias.all %}
+                    <button type="button"
+                            onclick="seleccionarDiaRutina('hipertrofia', '{{ forloop.counter }}')"
+                            id="btn-dia-hipertrofia-{{ forloop.counter }}"
+                            class="btn-dia-hipertrofia p-4 rounded-2xl border text-left transition cursor-pointer {% if forloop.first %}bg-slate-900 border-2 border-blue-500 shadow-lg shadow-blue-500/10{% else %}bg-slate-900/60 border-slate-800 hover:border-slate-700{% endif %}">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">HIPERTROFIA • DÍA {{ forloop.counter }}</span>
+                            <span class="text-[10px] font-mono text-slate-400">{{ dia.ejercicios.count }} ej.</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-white">{{ dia.nombre_dia }}</h4>
+                    </button>
+                {% endfor %}
+            </div>
+            {% for dia in rutina_hipertrofia.dias.all %}
+                <div id="contenido-dia-hipertrofia-{{ forloop.counter }}"
+                    class="contenido-dia-hipertrofia {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <span class="text-[10px] font-bold text-blue-400 uppercase block">HIPERTROFIA • DÍA {{ forloop.counter }}</span>
+                            <h4 class="font-bold text-base text-white mt-0.5">{{ dia.nombre_dia }}</h4>
+                        </div>
+                        <span class="text-xs font-semibold text-blue-400">Descanso: 90–120s</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {% for ej in dia.ejercicios.all %}
+                            <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
+                                <div class="flex items-start justify-between gap-2">
+                                    <span class="font-bold text-blue-400 text-xs">{{ forloop.counter }}. {{ ej.nombre }}</span>
+                                    <span class="text-[10px] text-slate-400 font-mono shrink-0">{{ ej.series }}×{{ ej.repeticiones }}</span>
+                                </div>
+                                <div class="grid grid-cols-4 gap-1.5 text-[9px] font-bold text-slate-500 uppercase px-2">
+                                    <span>Serie</span><span>KG</span><span>Reps</span><span class="text-right">Listo</span>
+                                </div>
+                                <div class="space-y-1.5">
+                                    {% for s in "12345678"|make_list %}
+                                        {% if forloop.counter <= ej.series %}
+                                            <div class="set-row grid grid-cols-4 gap-1.5 items-center bg-slate-900/90 border border-slate-800 rounded-xl px-2 py-1.5 text-xs">
+                                                <span class="font-mono font-bold text-slate-400">S{{ forloop.counter }}</span>
+                                                <input type="number" placeholder="kg" onchange="recalcularHevy()" class="hevy-kg w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                <input type="number" value="10" onchange="recalcularHevy()" class="hevy-reps w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                <button type="button" onclick="toggleSerieHevy(this, 105)" class="ml-auto w-7 h-7 rounded-lg bg-slate-800 hover:bg-emerald-600/30 text-slate-400 flex items-center justify-center transition cursor-pointer">
+                                                    <i class="fa-solid fa-check text-xs"></i>
+                                                </button>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl text-center text-xs text-slate-400">
+                    No se encontraron días cargados para Hipertrofia. Ejecutá <code class="text-blue-400">python cargar_rutinas_base.py</code>.
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- 3. FUERZA -->
+        <div id="panel-rutina-fuerza" class="panel-modo-rutina hidden space-y-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-extrabold text-white">Plan Básico: Fuerza Máxima</h3>
+                    <p class="text-xs text-slate-400">3-4×4-6 reps • 2-3 min descanso • Seleccioná un día para desplegar sus ejercicios.</p>
+                </div>
+                <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">Descanso 150-180s</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {% for dia in rutina_fuerza.dias.all %}
+                    <button type="button"
+                            onclick="seleccionarDiaRutina('fuerza', '{{ forloop.counter }}')"
+                            id="btn-dia-fuerza-{{ forloop.counter }}"
+                            class="btn-dia-fuerza p-4 rounded-2xl border text-left transition cursor-pointer {% if forloop.first %}bg-slate-900 border-2 border-blue-500 shadow-lg shadow-blue-500/10{% else %}bg-slate-900/60 border-slate-800 hover:border-slate-700{% endif %}">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">FUERZA • DÍA {{ forloop.counter }}</span>
+                            <span class="text-[10px] font-mono text-slate-400">{{ dia.ejercicios.count }} ej.</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-white">{{ dia.nombre_dia }}</h4>
+                    </button>
+                {% endfor %}
+            </div>
+            {% for dia in rutina_fuerza.dias.all %}
+                <div id="contenido-dia-fuerza-{{ forloop.counter }}"
+                    class="contenido-dia-fuerza {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <span class="text-[10px] font-bold text-blue-400 uppercase block">FUERZA • DÍA {{ forloop.counter }}</span>
+                            <h4 class="font-bold text-base text-white mt-0.5">{{ dia.nombre_dia }}</h4>
+                        </div>
+                        <span class="text-xs font-semibold text-blue-400">Descanso: 150–180s</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {% for ej in dia.ejercicios.all %}
+                            <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
+                                <div class="flex items-start justify-between gap-2">
+                                    <span class="font-bold text-blue-400 text-xs">{{ forloop.counter }}. {{ ej.nombre }}</span>
+                                    <span class="text-[10px] text-slate-400 font-mono shrink-0">{{ ej.series }}×{{ ej.repeticiones }}</span>
+                                </div>
+                                <div class="grid grid-cols-4 gap-1.5 text-[9px] font-bold text-slate-500 uppercase px-2">
+                                    <span>Serie</span><span>KG</span><span>Reps</span><span class="text-right">Listo</span>
+                                </div>
+                                <div class="space-y-1.5">
+                                    {% for s in "12345678"|make_list %}
+                                        {% if forloop.counter <= ej.series %}
+                                            <div class="set-row grid grid-cols-4 gap-1.5 items-center bg-slate-900/90 border border-slate-800 rounded-xl px-2 py-1.5 text-xs">
+                                                <span class="font-mono font-bold text-slate-400">S{{ forloop.counter }}</span>
+                                                <input type="number" placeholder="kg" onchange="recalcularHevy()" class="hevy-kg w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                <input type="number" value="5" onchange="recalcularHevy()" class="hevy-reps w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                <button type="button" onclick="toggleSerieHevy(this, 150)" class="ml-auto w-7 h-7 rounded-lg bg-slate-800 hover:bg-emerald-600/30 text-slate-400 flex items-center justify-center transition cursor-pointer">
+                                                    <i class="fa-solid fa-check text-xs"></i>
+                                                </button>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl text-center text-xs text-slate-400">
+                    No se encontraron días cargados para Fuerza. Ejecutá <code class="text-blue-400">python cargar_rutinas_base.py</code>.
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- 4. PERSONALIZADA POR PROFESOR -->
+        <div id="panel-rutina-profe" class="panel-modo-rutina hidden space-y-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-extrabold text-white">Rutina Personalizada por Profesor</h3>
+                    <p class="text-xs text-slate-400">Planificación asignada por tu profesor • Seleccioná un día para entrenar.</p>
+                </div>
+                <span class="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">Supervisada</span>
+            </div>
+            {% if rutina_gym and rutina_gym.dias.all %}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {% for dia in rutina_gym.dias.all %}
+                        <button type="button"
+                                onclick="seleccionarDiaRutina('profe', '{{ forloop.counter }}')"
+                                id="btn-dia-profe-{{ forloop.counter }}"
+                                class="btn-dia-profe p-4 rounded-2xl border text-left transition cursor-pointer {% if forloop.first %}bg-slate-900 border-2 border-blue-500 shadow-lg shadow-blue-500/10{% else %}bg-slate-900/60 border-slate-800 hover:border-slate-700{% endif %}">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">PROFESOR • DÍA {{ forloop.counter }}</span>
+                                <span class="text-[10px] font-mono text-slate-400">{{ dia.ejercicios.count }} ej.</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-white">{{ dia.nombre_dia }}</h4>
+                        </button>
+                    {% endfor %}
+                </div>
+                {% for dia in rutina_gym.dias.all %}
+                    <div id="contenido-dia-profe-{{ forloop.counter }}"
+                        class="contenido-dia-profe {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div>
+                                <span class="text-[10px] font-bold text-blue-400 uppercase block">PROFESOR • DÍA {{ forloop.counter }}</span>
+                                <h4 class="font-bold text-base text-white mt-0.5">{{ dia.nombre_dia }}</h4>
+                            </div>
+                            <span class="text-xs font-semibold text-blue-400">Plan Personalizado</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {% for ej in dia.ejercicios.all %}
+                                <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <span class="font-bold text-blue-400 text-xs">{{ forloop.counter }}. {{ ej.nombre }}</span>
+                                        <span class="text-[10px] text-slate-400 font-mono shrink-0">{{ ej.series }}×{{ ej.repeticiones }}</span>
+                                    </div>
+                                    <div class="grid grid-cols-4 gap-1.5 text-[9px] font-bold text-slate-500 uppercase px-2">
+                                        <span>Serie</span><span>KG</span><span>Reps</span><span class="text-right">Listo</span>
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        {% for s in "12345678"|make_list %}
+                                            {% if forloop.counter <= ej.series %}
+                                                <div class="set-row grid grid-cols-4 gap-1.5 items-center bg-slate-900/90 border border-slate-800 rounded-xl px-2 py-1.5 text-xs">
+                                                    <span class="font-mono font-bold text-slate-400">S{{ forloop.counter }}</span>
+                                                    <input type="number" placeholder="kg" onchange="recalcularHevy()" class="hevy-kg w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                    <input type="number" value="10" onchange="recalcularHevy()" class="hevy-reps w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                    <button type="button" onclick="toggleSerieHevy(this, 90)" class="ml-auto w-7 h-7 rounded-lg bg-slate-800 hover:bg-emerald-600/30 text-slate-400 flex items-center justify-center transition cursor-pointer">
+                                                        <i class="fa-solid fa-check text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="p-8 bg-slate-900/60 border border-slate-800 rounded-2xl text-center space-y-2">
+                    <i class="fa-solid fa-clipboard-list text-blue-400 text-2xl"></i>
+                    <h4 class="text-sm font-bold text-white">Aún no tenés una rutina personalizada asignada</h4>
+                    <p class="text-xs text-slate-400 max-w-md mx-auto">Pedile a tu profesor en sala que cargue tu plan personalizado o entrená con cualquiera de los 3 planes básicos.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 5. MI RUTINA PROPIA -->
+        <div id="panel-rutina-custom" class="panel-modo-rutina hidden space-y-6">
+            <div class="bg-slate-900/90 border border-blue-500/30 rounded-3xl p-6 space-y-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                    <div>
+                        <h4 class="font-extrabold text-white text-base flex items-center gap-2">
+                            <i class="fa-solid fa-dumbbell text-blue-400"></i> Armar Mi Propia Rutina
+                        </h4>
+                        <p class="text-xs text-slate-400">Buscá en el catálogo estilo Hevy por grupo muscular o escribí tu propio ejercicio.</p>
+                    </div>
+                    <span class="text-[11px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
+                        Catálogo Hevy Integrado
+                    </span>
+                </div>
+                <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <div class="flex flex-col sm:flex-row gap-2.5">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                            <input type="text" id="buscadorCatalogoHevy" onkeyup="filtrarCatalogoHevy()"
+                                placeholder="Buscar ejercicio (ej: Press banca, Remo, Sentadilla, Polea, Mancuernas)..."
+                                class="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <span id="contadorCatalogoHevy" class="text-[11px] font-mono text-slate-400 self-center px-2"></span>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5" id="filtrosGrupoHevy">
+                        <button type="button" onclick="seleccionarGrupoHevy('todos', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-blue-600 text-white font-bold text-[11px] cursor-pointer">Todos</button>
+                        <button type="button" onclick="seleccionarGrupoHevy('pecho', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Pecho</button>
+                        <button type="button" onclick="seleccionarGrupoHevy('espalda', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Espalda</button>
+                        <button type="button" onclick="seleccionarGrupoHevy('piernas', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Piernas</button>
+                        <button type="button" onclick="seleccionarGrupoHevy('hombros', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Hombros</button>
+                        <button type="button" onclick="seleccionarGrupoHevy('biceps', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Bíceps</button>
+                        <button type="button" onclick="seleccionarGrupoHevy('triceps', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Tríceps</button>
+                        <button type="button" onclick="seleccionarGrupoHevy('core', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Abdomen / Core</button>
+                        <button type="button" onclick="seleccionarGrupoHevy('cardio', this)" class="btn-grupo-hevy px-3 py-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px] cursor-pointer">Cardio / Funcional</button>
+                    </div>
+                    <div id="gridCatalogoHevy" class="max-h-48 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pr-1 pt-1"></div>
+                </div>
+                <form method="POST" action="{% url 'dashboard' %}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="agregar_ejercicio_custom">
+                    <div class="lg:col-span-2">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Ejercicio Seleccionado o Libre</label>
+                        <input type="text" name="nombre_ejercicio" id="inputCustomNombreEj" required placeholder="Elegí arriba o escribí uno..."
+                            class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Series</label>
+                        <input type="number" name="series" id="inputCustomSeries" value="3" min="1" max="8" required
+                            class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Reps / Kg</label>
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <input type="text" name="reps" id="inputCustomReps" value="10" required placeholder="Reps"
+                                class="w-full px-2.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-blue-500">
+                            <input type="text" name="peso_sugerido" id="inputCustomPeso" placeholder="Kg"
+                                class="w-full px-2.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Día</label>
+                        <select name="dia" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
+                            <option value="lunes">Lunes</option>
+                            <option value="martes">Martes</option>
+                            <option value="miercoles">Miércoles</option>
+                            <option value="jueves">Jueves</option>
+                            <option value="viernes">Viernes</option>
+                            <option value="sabado">Sábado</option>
+                            <option value="domingo">Domingo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-plus text-xs"></i> Agregar
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+                {% for dia_clave, ejercicios_dia in rutina_semanal.items %}
+                    <button type="button"
+                            onclick="seleccionarDiaRutina('custom', '{{ dia_clave }}')"
+                            id="btn-dia-custom-{{ dia_clave }}"
+                            class="btn-dia-custom p-3.5 rounded-2xl border text-left transition cursor-pointer {% if forloop.first %}bg-slate-900 border-2 border-blue-500 shadow-lg shadow-blue-500/10{% else %}bg-slate-900/60 border-slate-800 hover:border-slate-700{% endif %}">
+                        <span class="text-[10px] font-bold text-blue-400 uppercase block">{{ dia_clave }}</span>
+                        <span class="text-xs font-extrabold text-white mt-0.5 block">{{ ejercicios_dia|length }} ej.</span>
+                    </button>
+                {% endfor %}
+            </div>
+            {% for dia_clave, ejercicios_dia in rutina_semanal.items %}
+                <div id="contenido-dia-custom-{{ dia_clave }}"
+                    class="contenido-dia-custom {% if not forloop.first %}hidden{% endif %} bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <span class="text-[10px] font-bold text-blue-400 uppercase block">MI RUTINA PROPIA</span>
+                            <h4 class="font-bold text-base text-white uppercase mt-0.5">{{ dia_clave }}</h4>
+                        </div>
+                        <span class="text-xs font-semibold text-blue-400">{{ ejercicios_dia|length }} ejercicio(s)</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {% for ej in ejercicios_dia %}
+                            <div class="p-4 bg-slate-950/70 border border-slate-800/90 rounded-2xl space-y-2.5">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div>
+                                        <span class="font-bold text-blue-400 text-xs block">{{ forloop.counter }}. {{ ej.nombre }}</span>
+                                        <span class="text-[10px] text-slate-400 font-mono">{{ ej.repeticiones }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <button type="button" onclick="abrirModalEditarEjercicio('{{ ej.id }}', '{{ ej.nombre|escapejs }}', '{{ ej.repeticiones|escapejs }}')" class="text-slate-500 hover:text-blue-400 text-xs p-1 transition cursor-pointer" title="Editar">
+                                            <i class="fa-regular fa-pen-to-square"></i>
+                                        </button>
+                                        <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
+                                            <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
+                                            <button type="submit" class="text-slate-500 hover:text-rose-400 text-xs p-1 transition cursor-pointer" title="Eliminar">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-4 gap-1.5 text-[9px] font-bold text-slate-500 uppercase px-2">
+                                    <span>Serie</span><span>KG</span><span>Reps</span><span class="text-right">Listo</span>
+                                </div>
+                                <div class="space-y-1.5">
+                                    {% for s in "12345678"|make_list %}
+                                        {% if forloop.counter <= ej.series %}
+                                            <div class="set-row grid grid-cols-4 gap-1.5 items-center bg-slate-900/90 border border-slate-800 rounded-xl px-2 py-1.5 text-xs">
+                                                <span class="font-mono font-bold text-slate-400">S{{ forloop.counter }}</span>
+                                                <input type="number" placeholder="kg" onchange="recalcularHevy()" class="hevy-kg w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                <input type="number" value="10" onchange="recalcularHevy()" class="hevy-reps w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                                                <button type="button" onclick="toggleSerieHevy(this, 90)" class="ml-auto w-7 h-7 rounded-lg bg-slate-800 hover:bg-emerald-600/30 text-slate-400 flex items-center justify-center transition cursor-pointer">
+                                                    <i class="fa-solid fa-check text-xs"></i>
+                                                </button>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="col-span-3 py-6 text-center text-xs text-slate-500 italic">
+                                No tenés ejercicios cargados para el día {{ dia_clave }}. Usá el catálogo o el formulario de arriba para agregar.
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    </main>
+
+    <!-- MODAL EDITAR EJERCICIO -->
+    <div id="modalEditarEjercicio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-white text-base">Editar Ejercicio</h3>
+                <button type="button" onclick="cerrarModalEditarEjercicio()" class="text-slate-400 hover:text-white transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="editar_ejercicio_custom">
+                <input type="hidden" name="ejercicio_id" id="editEjId">
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre del Ejercicio</label>
+                    <input type="text" name="nombre_ejercicio" id="editEjNombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Series, Repeticiones y Peso</label>
+                    <input type="text" name="repeticiones" id="editEjReps" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="cerrarModalEditarEjercicio()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition cursor-pointer">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% include 'includes/footer.html' %}
+
+    <script src="{% static 'js/socio/mi_rutina.js' %}"></script>
+</body>
+</html>

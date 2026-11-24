@@ -1332,3 +1332,328 @@ def mi_perfil_empleado(request):
         'empleado': user,
     }
     return render(request, 'empleado/perfil.html', context)
+
+
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 8. SUBPANTALLAS DEL PORTAL SOCIO
+@login_required
+def mi_rutina_socio(request):
+    user = request.user
+    hoy = timezone.localdate()
+    socio_obj, _ = Socio.objects.get_or_create(usuario=user)
+    membresia_actual = (
+        MembresiaSocio.objects.filter(socio=socio_obj, activa=True, fecha_fin__gte=hoy)
+        .select_related('plan')
+        .order_by('-fecha_fin')
+        .first()
+    )
+    cuota_al_dia = bool(membresia_actual) and getattr(socio_obj, 'estado_cuenta', 'VERDE') not in ['ROJO', 'VENCIDO']
+    rutina_adaptacion = Rutina.objects.filter(nombre__iexact='Adaptación', tipo='gimnasio').prefetch_related('dias__ejercicios').first()
+    rutina_hipertrofia = Rutina.objects.filter(nombre__iexact='Hipertrofia', tipo='gimnasio').prefetch_related('dias__ejercicios').first()
+    rutina_fuerza = Rutina.objects.filter(nombre__iexact='Fuerza', tipo='gimnasio').prefetch_related('dias__ejercicios').first()
+    rutina_gym = (
+        Rutina.objects.filter(socio=user, tipo='gimnasio')
+        .exclude(nombre__iexact='Adaptación')
+        .exclude(nombre__iexact='Hipertrofia')
+        .exclude(nombre__iexact='Fuerza')
+        .prefetch_related('dias__ejercicios')
+        .first()
+    )
+    rutina_propia = Rutina.objects.filter(socio=user, tipo='personalizada').prefetch_related('dias__ejercicios').first()
+    if request.method == 'POST' and request.POST.get('accion') == 'agregar_ejercicio_custom':
+        if not rutina_propia:
+            rutina_propia = Rutina.objects.create(socio=user, tipo='personalizada', nombre='Mi Rutina Propia')
+        dia_raw = (request.POST.get('dia') or request.POST.get('grupo') or 'lunes').strip().lower()
+        reemplazos = {'miércoles': 'miercoles', 'sábado': 'sabado'}
+        dia_seleccionado = reemplazos.get(dia_raw, dia_raw)
+        dia_obj, _ = DiaEntrenamiento.objects.get_or_create(rutina=rutina_propia, nombre_dia=dia_seleccionado)
+        nombre_ej = request.POST.get('nombre_ejercicio') or request.POST.get('nombre') or 'Ejercicio'
+        series_num = int(request.POST.get('series') or 3)
+        reps_val = request.POST.get('reps') or '10'
+        peso_val = request.POST.get('peso_sugerido', '').strip()
+        reps_texto = f"{series_num} series × {reps_val} reps" + (f" ({peso_val} kg)" if peso_val else "")
+        Ejercicio.objects.create(
+            dia=dia_obj,
+            nombre=nombre_ej,
+            repeticiones=reps_texto,
+            series=series_num,
+            descanso=request.POST.get('descanso') or '90s',
+        )
+        messages.success(request, f"Ejercicio '{nombre_ej}' agregado a {dia_seleccionado.capitalize()}.")
+        return redirect('mi_rutina')
+    if request.method == 'POST' and request.POST.get('accion') == 'editar_ejercicio_custom':
+        ej_id = request.POST.get('ejercicio_id')
+        ej_obj = Ejercicio.objects.filter(id=ej_id, dia__rutina__socio=user).first()
+        if ej_obj:
+            ej_obj.nombre = request.POST.get('nombre_ejercicio', ej_obj.nombre).strip()
+            ej_obj.repeticiones = request.POST.get('repeticiones', ej_obj.repeticiones).strip()
+            if request.POST.get('series'):
+                ej_obj.series = int(request.POST.get('series'))
+            ej_obj.save()
+            messages.success(request, f"Ejercicio '{ej_obj.nombre}' actualizado.")
+        return redirect('mi_rutina')
+    if request.method == 'POST' and request.POST.get('accion') == 'eliminar_ejercicio_custom':
+        ej_id = request.POST.get('ejercicio_id')
+        if ej_id:
+            Ejercicio.objects.filter(id=ej_id, dia__rutina__socio=user).delete()
+            messages.success(request, "Ejercicio eliminado de tu rutina.")
+        return redirect('mi_rutina')
+    dias_claves = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
+    rutina_semanal = {d: [] for d in dias_claves}
+    if rutina_propia:
+        for d in rutina_propia.dias.all():
+            clave = d.nombre_dia.strip().lower()
+            if clave == 'miércoles':
+                clave = 'miercoles'
+            elif clave == 'sábado':
+                clave = 'sabado'
+            if clave in rutina_semanal:
+                rutina_semanal[clave] = d.ejercicios.all()
+    context = {
+        'socio': socio_obj,
+        'membresia_actual': membresia_actual,
+        'cuota_al_dia': cuota_al_dia,
+        'rutina_adaptacion': rutina_adaptacion,
+        'rutina_hipertrofia': rutina_hipertrofia,
+        'rutina_fuerza': rutina_fuerza,
+        'rutina_gym': rutina_gym,
+        'rutina_propia': rutina_propia,
+        'rutina_semanal': rutina_semanal,
+    }
+    return render(request, 'socio/mi_rutina.html', context)
+
+@login_required
+def mis_reservas_socio(request):
+    user = request.user
+    hoy = timezone.localdate()
+    socio_obj, _ = Socio.objects.get_or_create(usuario=user)
+    membresia_actual = (
+        MembresiaSocio.objects.filter(socio=socio_obj, activa=True, fecha_fin__gte=hoy)
+        .select_related('plan')
+        .order_by('-fecha_fin')
+        .first()
+    )
+    cuota_al_dia = bool(membresia_actual) and getattr(socio_obj, 'estado_cuenta', 'VERDE') not in ['ROJO', 'VENCIDO']
+    if request.method == 'POST' and request.POST.get('accion') == 'inscribir_actividad':
+        act_id = request.POST.get('actividad_id')
+        act_obj = get_object_or_404(Actividad, id=act_id)
+        if not cuota_al_dia:
+            messages.error(request, "Tu cuota está vencida. Regularizá el pago para anotarte a clases.")
+        elif Reserva:
+            campos_res = {f.name: f for f in Reserva._meta.get_fields()}
+            fk_horario = next((n for n in ('horario', 'clase', 'turno', 'horario_clase') if n in campos_res), None)
+            fk_actividad = 'actividad' if 'actividad' in campos_res else None
+            ya_anotado = False
+            try:
+                if fk_actividad:
+                    ya_anotado = Reserva.objects.filter(
+                        socio=socio_obj, actividad=act_obj, estado__in=['confirmada', 'activa', 'Confirmada', 'Activa']
+                    ).exists()
+                elif fk_horario:
+                    ya_anotado = Reserva.objects.filter(
+                        **{'socio': socio_obj, f'{fk_horario}__actividad': act_obj, 'estado__in': ['confirmada', 'activa', 'Confirmada', 'Activa']}
+                    ).exists()
+            except Exception:
+                ya_anotado = False
+            if ya_anotado:
+                messages.info(request, f"Ya estás anotado en {act_obj.nombre}.")
+            else:
+                try:
+                    res_kwargs = {'socio': socio_obj}
+                    if 'fecha_reserva' in campos_res:
+                        res_kwargs['fecha_reserva'] = hoy
+                    if 'fecha' in campos_res:
+                        res_kwargs['fecha'] = hoy
+                    if 'estado' in campos_res:
+                        res_kwargs['estado'] = 'confirmada'
+                    if fk_actividad:
+                        res_kwargs[fk_actividad] = act_obj
+                        Reserva.objects.create(**res_kwargs)
+                    elif fk_horario:
+                        HorarioModel = campos_res[fk_horario].related_model
+                        primer_horario = HorarioModel.objects.filter(actividad=act_obj).first()
+                        if not primer_horario:
+                            campos_h = {f.name: f for f in HorarioModel._meta.get_fields()}
+                            h_kwargs = {'actividad': act_obj}
+                            if 'dia_semana' in campos_h:
+                                h_kwargs['dia_semana'] = 'Lunes'
+                            elif 'dia' in campos_h:
+                                h_kwargs['dia'] = 'Lunes'
+                            elif 'dias' in campos_h:
+                                h_kwargs['dias'] = 'Lunes a Viernes'
+                            if 'hora_inicio' in campos_h:
+                                h_kwargs['hora_inicio'] = time(18, 0)
+                            if 'hora_fin' in campos_h:
+                                h_kwargs['hora_fin'] = time(19, 0)
+                            if 'cupo_maximo' in campos_h:
+                                h_kwargs['cupo_maximo'] = 30
+                            elif 'cupo' in campos_h:
+                                h_kwargs['cupo'] = 30
+                            primer_horario = HorarioModel.objects.create(**h_kwargs)
+                        res_kwargs[fk_horario] = primer_horario
+                        Reserva.objects.create(**res_kwargs)
+                    messages.success(request, f"¡Te anotaste con éxito en {act_obj.nombre}!")
+                except Exception as e:
+                    messages.error(request, f"Error al inscribir en {act_obj.nombre}: {e}")
+        return redirect('mis_reservas')
+    if request.method == 'POST' and request.POST.get('accion') == 'cancelar_actividad':
+        act_id = request.POST.get('actividad_id')
+        act_obj = get_object_or_404(Actividad, id=act_id)
+        if Reserva:
+            campos_res = {f.name: f for f in Reserva._meta.get_fields()}
+            fk_horario = next((n for n in ('horario', 'clase', 'turno', 'horario_clase') if n in campos_res), None)
+            try:
+                if 'actividad' in campos_res:
+                    Reserva.objects.filter(
+                        socio=socio_obj, actividad=act_obj, estado__in=['confirmada', 'activa', 'Confirmada', 'Activa']
+                    ).update(estado='cancelada')
+                elif fk_horario:
+                    Reserva.objects.filter(
+                        **{'socio': socio_obj, f'{fk_horario}__actividad': act_obj, 'estado__in': ['confirmada', 'activa', 'Confirmada', 'Activa']}
+                    ).update(estado='cancelada')
+            except Exception:
+                pass
+            messages.success(request, f"Se canceló tu inscripción en {act_obj.nombre}.")
+        return redirect('mis_reservas')
+    todas_actividades = list(Actividad.objects.filter(activa=True).order_by('nombre'))
+    ids_anotadas = set()
+    if Reserva and socio_obj:
+        campos_res = {f.name: f for f in Reserva._meta.get_fields()}
+        fk_horario = next((n for n in ('horario', 'clase', 'turno', 'horario_clase') if n in campos_res), None)
+        try:
+            reservas_activas = Reserva.objects.filter(
+                socio=socio_obj, estado__in=['confirmada', 'activa', 'Confirmada', 'Activa']
+            )
+            for r in reservas_activas:
+                if getattr(r, 'actividad_id', None):
+                    ids_anotadas.add(r.actividad_id)
+                elif fk_horario:
+                    obj_h = getattr(r, fk_horario, None)
+                    if obj_h and getattr(obj_h, 'actividad_id', None):
+                        ids_anotadas.add(obj_h.actividad_id)
+        except Exception:
+            pass
+    actividades_anotadas = [a for a in todas_actividades if a.id in ids_anotadas]
+    actividades_disponibles = [a for a in todas_actividades if a.id not in ids_anotadas]
+    context = {
+        'socio': socio_obj,
+        'membresia_actual': membresia_actual,
+        'cuota_al_dia': cuota_al_dia,
+        'actividades_anotadas': actividades_anotadas,
+        'actividades_disponibles': actividades_disponibles,
+    }
+    return render(request, 'socio/mis_reservas.html', context)
+
+@login_required
+def mis_pagos_socio(request):
+    user = request.user
+    hoy = timezone.localdate()
+    socio_obj, _ = Socio.objects.get_or_create(usuario=user)
+    membresia_actual = (
+        MembresiaSocio.objects.filter(socio=socio_obj, activa=True, fecha_fin__gte=hoy)
+        .select_related('plan')
+        .order_by('-fecha_fin')
+        .first()
+    )
+    cuota_al_dia = bool(membresia_actual) and getattr(socio_obj, 'estado_cuenta', 'VERDE') not in ['ROJO', 'VENCIDO']
+    if request.method == 'POST' and request.POST.get('accion') == 'pagar_cuota_socio':
+        servicios_seleccionados = request.POST.getlist('servicios')
+        metodo = request.POST.get('metodo_pago', 'transferencia')
+        TARIFAS = {
+            'musculacion': {'nombre': 'Musculación (Pase Libre)', 'precio': 60000},
+            'clases': {'nombre': 'Pase Clases Grupales', 'precio': 45000},
+            'pilates_1': {'nombre': 'Pilates (1 vez/semana)', 'precio': 35000},
+            'pilates_2': {'nombre': 'Pilates (2 veces/semana)', 'precio': 42000},
+            'pilates_3': {'nombre': 'Pilates (3 veces/semana)', 'precio': 50000},
+        }
+        total_a_pagar = 0
+        nombres_items = []
+        for s in servicios_seleccionados:
+            if s in TARIFAS:
+                total_a_pagar += TARIFAS[s]['precio']
+                nombres_items.append(TARIFAS[s]['nombre'])
+        if total_a_pagar <= 0:
+            messages.error(request, 'Debes seleccionar al menos una clase o disciplina para abonar.')
+        else:
+            detalle_plan = " + ".join(nombres_items)
+            plan_obj, _ = Plan.objects.get_or_create(
+                nombre=detalle_plan,
+                defaults={'precio': total_a_pagar, 'duracion_dias': 30},
+            )
+            MembresiaSocio.objects.filter(socio=socio_obj).update(activa=False)
+            nueva_membresia = MembresiaSocio.objects.create(
+                socio=socio_obj,
+                plan=plan_obj,
+                fecha_inicio=hoy,
+                fecha_fin=hoy + timedelta(days=30),
+                activa=True,
+            )
+            Pago.objects.create(
+                socio=socio_obj,
+                membresia=nueva_membresia,
+                monto=total_a_pagar,
+                metodo_pago=metodo,
+                fecha_pago=timezone.now(),
+            )
+            if hasattr(socio_obj, 'estado_cuenta'):
+                socio_obj.estado_cuenta = 'VERDE'
+                socio_obj.save()
+            if hasattr(user, 'estado_cuenta'):
+                user.estado_cuenta = 'VERDE'
+                user.save()
+            messages.success(
+                request,
+                f"¡Pago registrado con éxito por ${total_a_pagar:,.0f} ({metodo.capitalize()})! "
+                f"Concepto: {', '.join(nombres_items)}. Tu cuenta ha quedado al día hasta el {nueva_membresia.fecha_fin.strftime('%d/%m/%Y')}.",
+            )
+        return redirect('mis_pagos')
+    historial_pagos = Pago.objects.filter(socio=socio_obj).order_by('-fecha_pago')
+    context = {
+        'socio': socio_obj,
+        'membresia_actual': membresia_actual,
+        'cuota_al_dia': cuota_al_dia,
+        'historial_pagos': historial_pagos,
+    }
+    return render(request, 'socio/mis_pagos.html', context)
+
+@login_required
+def mi_perfil_socio(request):
+    user = request.user
+    socio_obj, _ = Socio.objects.get_or_create(usuario=user)
+    if request.method == 'POST' and request.POST.get('accion') == 'actualizar_perfil':
+        user.first_name = request.POST.get('first_name', '').strip()
+        user.last_name = request.POST.get('last_name', '').strip()
+        user.email = request.POST.get('email', '').strip()
+        if hasattr(user, 'telefono'):
+            user.telefono = request.POST.get('telefono', '').strip()
+        user.save()
+        messages.success(request, "Tus datos personales fueron actualizados correctamente.")
+        return redirect('mi_perfil')
+    if request.method == 'POST' and request.POST.get('accion') == 'cambiar_password':
+        pass_actual = request.POST.get('pass_actual', '')
+        pass_nueva = request.POST.get('pass_nueva', '')
+        pass_confirmar = request.POST.get('pass_confirmar', '')
+        tiene_longitud = len(pass_nueva) >= 8
+        tiene_mayuscula = bool(re.search(r'[A-Z]', pass_nueva))
+        tiene_minuscula = bool(re.search(r'[a-z]', pass_nueva))
+        tiene_numero = bool(re.search(r'\d', pass_nueva))
+        tiene_simbolo = bool(re.search(r'[^A-Za-z0-9]', pass_nueva))
+        if not user.check_password(pass_actual):
+            messages.error(request, "La contraseña actual ingresada no es correcta.")
+        elif pass_nueva != pass_confirmar:
+            messages.error(request, "La nueva contraseña y su confirmación no coinciden.")
+        elif not (tiene_longitud and tiene_mayuscula and tiene_minuscula and tiene_numero and tiene_simbolo):
+            messages.error(
+                request,
+                "La nueva contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo.",
+            )
+        else:
+            user.set_password(pass_nueva)
+            user.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, "¡Contraseña actualizada con éxito!")
+        return redirect('mi_perfil')
+    context = {
+        'socio': socio_obj,
+    }
+    return render(request, 'socio/mi_perfil.html', context)

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -128,9 +129,13 @@
                                 <p class="text-xs text-rose-300">DNI: <span class="font-mono text-white font-semibold">{{ socio.usuario.username }}</span></p>
                             </div>
                         </div>
-                        <a href="#" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow transition self-end sm:self-auto flex items-center gap-1.5">
-                            <i class="fa-solid fa-receipt"></i> Ir a Cobrar
-                        </a>
+                        {% elif estado_acceso == 'rojo' %}
+                            <div class="p-5 bg-rose-950/40 ...">
+                                ...
+                                <a href="#" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow transition self-end sm:self-auto flex items-center gap-1.5">
+                                    <i class="fa-solid fa-receipt"></i> Ir a Cobrar
+                                </a>
+                            </div>
                     </div>
 
                 {% elif estado_acceso == 'no_encontrado' %}
@@ -198,10 +203,7 @@
 
     </main>
 
-    <!-- FOOTER -->
-    <footer class="bg-slate-900 border-t border-slate-800 text-slate-500 py-6 text-xs text-center">
-        <p>© 2026 GymTrack — Control Operativo de Mostrador.</p>
-    </footer>
+{% include 'includes/footer.html' %}
 
 </body>
 </html>

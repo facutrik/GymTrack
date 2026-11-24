@@ -9,13 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #0b1120;
-        }
-    </style>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }
@@ -23,19 +16,18 @@
     </style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
-Contador
+
     <!-- NAVBAR -->
     <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- LOGO -->
                 <div class="flex items-center gap-3.5">
                     <img src="{% static 'img/logo-gymtrack.svg' %}"
                         alt="Logo GymTrack"
-                        class="h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(59,76,202,0.45)]">
+                        class="h-11 w-auto object-contain drop-shadow-[0_2px_10px_rgba(59,76,202,0.45)]">
                     <div class="flex items-baseline gap-2.5">
                         <span class="font-brand italic font-extrabold text-3xl sm:text-4xl tracking-wide">
-                            <span class="text-[#3f51d6] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">GYM</span><span class="text-white">track</span>
+                            <span class="text-[#3f51d6]">GYM</span><span class="text-white">track</span>
                         </span>
                         {% if user.is_authenticated %}
                             <span class="text-xs font-light text-slate-500">×</span>
@@ -45,6 +37,7 @@ Contador
                         {% endif %}
                     </div>
                 </div>
+
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold shadow-md">
@@ -66,7 +59,7 @@ Contador
         </div>
     </nav>
 
-    <!-- MENSAJES FLOTANTES / ALERTAS -->
+    <!-- MENSAJES -->
     {% if messages %}
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
             {% for message in messages %}
@@ -75,128 +68,6 @@ Contador
                     {{ message }}
                 </div>
             {% endfor %}
-        </div>
-    {% endif %}
-
-    <!-- FICHA DE PERFIL / VALIDACIÓN DE ACCESO DEL SOCIO -->
-    {% if perfil_socio_acceso %}
-        <div id="modalMiniPerfil" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm transition-all duration-300">
-            <div class="relative w-full max-w-lg overflow-hidden rounded-3xl border {% if perfil_socio_acceso.acceso_permitido %}border-emerald-500/40 bg-slate-900 shadow-2xl shadow-emerald-950/40{% else %}border-rose-500/40 bg-slate-900 shadow-2xl shadow-rose-950/40{% endif %} p-6 space-y-5">
-                <button type="button" onclick="cerrarMenuPerfil()" class="absolute top-5 right-5 text-slate-400 hover:text-white transition p-1.5 rounded-xl hover:bg-slate-800 cursor-pointer">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-
-                <div class="flex items-center gap-5 pt-1">
-                    <div class="relative shrink-0">
-                        {% if perfil_socio_acceso.foto_url %}
-                            <img src="{{ perfil_socio_acceso.foto_url }}" alt="Foto socio" class="w-20 h-20 rounded-full object-cover border-2 {% if perfil_socio_acceso.acceso_permitido %}border-emerald-400{% else %}border-rose-500{% endif %} shadow-lg">
-                        {% else %}
-                            <div class="w-20 h-20 rounded-full {% if perfil_socio_acceso.acceso_permitido %}bg-gradient-to-br from-emerald-500/20 to-blue-600/20 border-2 border-emerald-400/60 text-emerald-300{% else %}bg-gradient-to-br from-rose-500/20 to-slate-800 border-2 border-rose-500/60 text-rose-300{% endif %} flex items-center justify-center text-2xl font-black shadow-inner">
-                                {{ perfil_socio_acceso.iniciales }}
-                            </div>
-                        {% endif %}
-                        <span class="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full border-2 border-slate-900 {% if perfil_socio_acceso.acceso_permitido %}bg-emerald-400{% else %}bg-rose-500{% endif %}"></span>
-                    </div>
-
-                    <div class="space-y-1.5 min-w-0">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Perfil del Socio</span>
-                        <h3 class="text-xl font-black text-white tracking-tight truncate">{{ perfil_socio_acceso.nombre_completo }}</h3>
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono font-bold text-slate-300">
-                            <i class="fa-solid fa-id-card text-blue-400 text-[11px]"></i> DNI: {{ perfil_socio_acceso.dni }}
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    {% if perfil_socio_acceso.acceso_permitido %}
-                        <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs font-bold text-emerald-400">
-                            <span class="flex items-center gap-2"><i class="fa-solid fa-door-open text-base"></i> ACCESO CONCEDIDO</span>
-                            <span class="text-[11px] text-emerald-300 font-semibold">{{ perfil_socio_acceso.tipo_acceso }}</span>
-                        </div>
-                    {% else %}
-                        <div class="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between text-xs font-bold text-rose-400">
-                            <span class="flex items-center gap-2"><i class="fa-solid fa-ban text-base"></i> ACCESO DENEGADO</span>
-                            <span class="text-[11px] text-rose-300 font-semibold">{{ perfil_socio_acceso.estado_texto }}</span>
-                        </div>
-                    {% endif %}
-                </div>
-
-                <div class="space-y-2.5 text-xs">
-                    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-3.5 flex items-center justify-between">
-                        <div>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">Estado de Cuota</span>
-                            {% if perfil_socio_acceso.al_dia %}
-                                <span class="text-emerald-400 font-bold flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span> AL DÍA
-                                </span>
-                            {% else %}
-                                <span class="text-rose-400 font-bold flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-rose-500"></span> VENCIDA
-                                </span>
-                            {% endif %}
-                        </div>
-                        <div class="text-right">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">Vencimiento</span>
-                            <span class="font-mono font-bold {% if perfil_socio_acceso.al_dia %}text-slate-200{% else %}text-rose-400{% endif %}">
-                                {{ perfil_socio_acceso.fecha_vencimiento }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-3.5">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">Plan Contratado</span>
-                        <span class="font-bold text-amber-300 text-sm">{{ perfil_socio_acceso.plan_nombre }}</span>
-                    </div>
-
-                    <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-3.5">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">Actividades Inscriptas</span>
-                        {% if perfil_socio_acceso.actividades %}
-                            <div class="flex flex-wrap gap-1.5">
-                                {% for act in perfil_socio_acceso.actividades %}
-                                    <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-300 font-semibold text-[11px]">
-                                        {{ act }}
-                                    </span>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <span class="text-slate-400 text-[11px]">Musculación / Acceso general según pase</span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="pt-3 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px]">
-                    <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/70">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">Detalles</span>
-                        <p class="text-slate-300 leading-relaxed">{{ perfil_socio_acceso.motivo }}</p>
-                    </div>
-
-                    <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/70">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">Historial de Asistencias</span>
-                        {% if perfil_socio_acceso.historial_asistencias %}
-                            <ul class="space-y-1 font-mono text-[10px] text-slate-300 max-h-20 overflow-y-auto">
-                                {% for fecha_asist in perfil_socio_acceso.historial_asistencias %}
-                                    <li class="flex items-center gap-1.5">
-                                        <i class="fa-solid fa-check text-emerald-400 text-[9px]"></i> {{ fecha_asist }}
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p class="text-slate-500 text-[10px]">Sin asistencias previas.</p>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-end gap-3 pt-1">
-                    {% if not perfil_socio_acceso.al_dia %}
-                        <button type="button" onclick="irACobrarDesdePerfil('{{ perfil_socio_acceso.dni }}')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5 cursor-pointer">
-                            <i class="fa-solid fa-cash-register"></i> Cobrar Membresía
-                        </button>
-                    {% endif %}
-                    <button type="button" onclick="cerrarMenuPerfil()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition cursor-pointer">
-                        Cerrar (Esc)
-                    </button>
-                </div>
-            </div>
         </div>
     {% endif %}
 
@@ -211,212 +82,96 @@ Contador
                     Recepción & Mostrador General
                 </div>
                 <h1 class="text-3xl font-extrabold text-white tracking-tight">Panel Operativo Diario 📋</h1>
-                <p class="text-slate-400 text-sm mt-1">Control de acceso por DNI, turnos de profesores, rutinas y cobro presencial.</p>
+                <p class="text-slate-400 text-sm mt-1">Control de acceso por DNI, turnos de profesores, rutinas, caja y reservas.</p>
             </div>
 
-            <!-- Accesos Rápidos -->
             <div class="flex flex-wrap items-center gap-3">
-                <button type="button" onclick="document.getElementById('modalRutinaProfesor').classList.remove('hidden')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer">
+                <button type="button" onclick="document.getElementById('modalRutinaProfesor').classList.remove('hidden')" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-dumbbell"></i> Gestionar Rutinas
                 </button>
-                <button type="button" onclick="abrirModalCobroUnificado()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-cash-register"></i> Cobrar Membresía
-                </button>
+                <a href="{% url 'pagos_empleado' %}" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center gap-2">
+                    <i class="fa-solid fa-cash-register"></i> Pagos y Caja
+                </a>
+                <a href="{% url 'reservas_empleado' %}" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-amber-600/30 transition flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-check"></i> Reservas y Clases
+                </a>
             </div>
         </div>
 
-        <!-- 1. TARJETAS SUPERIORES DE MÉTRICAS -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
+        <!-- TARJETAS SUPERIORES -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Asistencias Hoy</span>
                         <h3 class="text-2xl font-black text-white mt-1">{{ asistencias_hoy|default:0 }}</h3>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl">
+                    <div class="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
                         <i class="fa-solid fa-clipboard-check"></i>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="openAsistenciaModal()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5 cursor-pointer">
-                        Registrar Ingreso <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    <button type="button" onclick="openAsistenciaModal()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition cursor-pointer">
+                        Marcar DNI
                     </button>
-                    <button type="button" onclick="abrirModalHistorialAsistencias()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-1.5 cursor-pointer" title="Ver Historial de Asistencias">
-                        <i class="fa-solid fa-clock-rotate-left text-[11px]"></i> Historial
+                    <button type="button" onclick="abrirModalHistorialAsistencias()" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition cursor-pointer">
+                        Historial
                     </button>
                 </div>
             </div>
 
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Padrón de Socios</span>
                         <h3 class="text-2xl font-black text-white mt-1">{{ total_socios|default:0 }}</h3>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xl">
+                    <div class="w-11 h-11 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg">
                         <i class="fa-solid fa-address-book"></i>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <a href="{% url 'padron_socios_empleado' %}" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5">
-                        Ver Socios <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                    </a>
-                    <a href="{% url 'padron_socios_empleado' %}?nuevo=1" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-1" title="Registrar Nuevo Socio">
-                        <i class="fa-solid fa-user-plus text-[11px]"></i> Nuevo
-                    </a>
-                </div>
+                <a href="{% url 'padron_socios_empleado' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition">
+                    Ver Socios
+                </a>
             </div>
 
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Disciplinas Activas</span>
-                        <h3 class="text-2xl font-black text-white mt-1">{{ total_actividades|default:0 }}</h3>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Cobros del Día</span>
+                        <h3 class="text-2xl font-black text-emerald-400 mt-1">${{ total_cobros_hoy|default:0 }}</h3>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl">
+                    <div class="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-cash-register"></i>
+                    </div>
+                </div>
+                <a href="{% url 'pagos_empleado' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-semibold rounded-xl text-center transition">
+                    Ir a Pagos y Caja
+                </a>
+            </div>
+
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Disciplinas y Cupos</span>
+                        <h3 class="text-2xl font-black text-amber-300 mt-1">{{ total_actividades|default:0 }}</h3>
+                    </div>
+                    <div class="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
                         <i class="fa-solid fa-calendar-days"></i>
                     </div>
                 </div>
-                <button type="button" onclick="document.getElementById('modalDisciplinas').classList.remove('hidden')" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-semibold rounded-xl text-center transition flex items-center justify-center gap-1.5 cursor-pointer">
-                    Ver Clases & Reservas <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                </button>
+                <a href="{% url 'reservas_empleado' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-semibold rounded-xl text-center transition">
+                    Ver Reservas y Clases
+                </a>
             </div>
         </div>
 
-        <!-- 2. PROFESORES EN SALA -->
-        <div class="space-y-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-lg font-extrabold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-stopwatch text-blue-400"></i> Turnos de Profesores en Gimnasio
-                    </h2>
-                    <p class="text-xs text-slate-400">Inicio protegido por DNI/Clave, cómputo de horas e historial estadístico.</p>
-                </div>
-                <span class="text-[11px] text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">Mostrador Central</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {% for p in profesores_cards %}
-                    <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-slate-700 transition">
-                        <div>
-                            <div class="flex items-start justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-400 flex items-center justify-center font-bold text-sm border border-blue-500/20">
-                                        {{ p.usuario.first_name|slice:":1" }}{{ p.usuario.last_name|slice:":1" }}
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-sm text-white">{{ p.usuario.first_name }} {{ p.usuario.last_name }}</h3>
-                                        <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">{{ p.rol_desc }}</span>
-                                    </div>
-                                </div>
-                                {% if p.en_turno %}
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> En Turno
-                                    </span>
-                                {% else %}
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-800 text-slate-400 border border-slate-700">Inactivo</span>
-                                {% endif %}
-                            </div>
-
-                            <div class="mt-3 p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 text-[11px] text-slate-300 leading-relaxed">
-                                <p class="text-slate-400 text-[10px] font-semibold uppercase mb-0.5">Actividades y Franjas:</p>
-                                {{ p.detalle }}
-                            </div>
-
-                            {% if p.en_turno %}
-                                <div class="mt-2 text-[11px] text-emerald-400 font-semibold flex items-center gap-1.5">
-                                    <i class="fa-regular fa-clock"></i> Ingreso activo: {{ p.turno.hora_entrada|date:"H:i" }} hs
-                                </div>
-                            {% elif p.turno and p.turno.hora_salida %}
-                                <div class="mt-2 text-[11px] text-slate-400">
-                                    Último turno: {{ p.turno.hora_entrada|date:"H:i" }} - {{ p.turno.hora_salida|date:"H:i" }} hs ({{ p.turno.horas_trabajadas }})
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="space-y-2 pt-2 border-t border-slate-800">
-                            {% if p.en_turno %}
-                                <form method="POST">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="profesor_id" value="{{ p.usuario.id }}">
-                                    <button type="submit" name="accion_profesor" value="cortar" class="w-full py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer">
-                                        <i class="fa-solid fa-stop"></i> Cortar Turno Manual
-                                    </button>
-                                </form>
-                            {% else %}
-                                <button type="button" onclick="abrirModalIniciarTurno('{{ p.usuario.id }}', '{{ p.usuario.first_name }} {{ p.usuario.last_name }}', '{{ p.usuario.username }}')" class="w-full py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer">
-                                    <i class="fa-solid fa-play"></i> Iniciar Horario de Clase
-                                </button>
-                            {% endif %}
-                            <button type="button" onclick="document.getElementById('modal-historial-{{ p.usuario.id }}').classList.remove('hidden')" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl border border-slate-700/80 transition flex items-center justify-center gap-2 cursor-pointer">
-                                <i class="fa-solid fa-chart-simple text-blue-400"></i> Historial / Horas Trabajadas
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- MODAL HISTORIAL INDIVIDUAL -->
-                    <div id="modal-historial-{{ p.usuario.id }}" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-                        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
-                            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                                <div>
-                                    <h3 class="font-bold text-white text-base">Historial de Turnos</h3>
-                                    <p class="text-xs text-blue-400 font-semibold">{{ p.usuario.first_name }} {{ p.usuario.last_name }} ({{ p.rol_desc }})</p>
-                                </div>
-                                <button type="button" onclick="document.getElementById('modal-historial-{{ p.usuario.id }}').classList.add('hidden')" class="text-slate-400 hover:text-white transition cursor-pointer">
-                                    <i class="fa-solid fa-xmark text-lg"></i>
-                                </button>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-xl text-center">
-                                    <span class="text-[10px] uppercase font-bold text-slate-400">Horas Acumuladas</span>
-                                    <p class="text-lg font-black text-emerald-400 mt-0.5">{{ p.horas_acumuladas }}</p>
-                                </div>
-                                <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-xl text-center">
-                                    <span class="text-[10px] uppercase font-bold text-slate-400">Jornadas</span>
-                                    <p class="text-lg font-black text-white mt-0.5">{{ p.total_turnos }}</p>
-                                </div>
-                            </div>
-                            <div class="max-h-60 overflow-y-auto">
-                                <table class="w-full text-left text-xs">
-                                    <thead class="text-slate-400 border-b border-slate-800 text-[10px] uppercase tracking-wider">
-                                        <tr>
-                                            <th class="pb-2">Fecha</th>
-                                            <th class="pb-2">Entrada</th>
-                                            <th class="pb-2">Salida</th>
-                                            <th class="pb-2 text-right">Duración</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-slate-800/60 text-slate-300">
-                                        {% for t in p.historial %}
-                                            <tr>
-                                                <td class="py-2.5 font-medium text-white">{{ t.hora_entrada|date:"d/m/Y" }}</td>
-                                                <td class="py-2.5 text-blue-400">{{ t.hora_entrada|date:"H:i" }} hs</td>
-                                                <td class="py-2.5 text-slate-400">
-                                                    {% if t.hora_salida %}{{ t.hora_salida|date:"H:i" }} hs{% else %}<span class="text-emerald-400 font-bold">En curso</span>{% endif %}
-                                                </td>
-                                                <td class="py-2.5 text-right font-bold text-slate-200">{{ t.horas_trabajadas }}</td>
-                                            </tr>
-                                        {% empty %}
-                                            <tr><td colspan="4" class="py-4 text-center text-slate-500 text-xs">Sin turnos previos registrados.</td></tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="flex justify-end pt-2 border-t border-slate-800">
-                                <button type="button" onclick="document.getElementById('modal-historial-{{ p.usuario.id }}').classList.add('hidden')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition cursor-pointer">Cerrar</button>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- 3. TABLA: REGISTRO DE INGRESOS DE HOY -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-sm">
+        <!-- TABLA DE INGRESOS DE HOY -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="font-bold text-white text-sm">Registro de Ingresos de Hoy</h3>
-                    <p class="text-[11px] text-slate-400">Accesos validados y computados en mostrador</p>
+                    <p class="text-[11px] text-slate-400">Accesos validados en mostrador</p>
                 </div>
                 <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
                     Total Hoy: {{ asistencias_hoy|default:0 }}
@@ -443,54 +198,7 @@ Contador
                                 </td>
                             </tr>
                         {% empty %}
-                            <tr><td colspan="4" class="py-6 text-center text-slate-500 text-xs">Aún no hay asistencias registradas en el día de hoy.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 4. TABLA: HISTORIAL DE COBROS DE MEMBRESÍAS EN CAJA -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h3 class="font-bold text-white text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-receipt text-emerald-400"></i> Historial Reciente de Cobros
-                    </h3>
-                    <p class="text-[11px] text-slate-400">Últimos comprobantes emitidos en caja de recepción</p>
-                </div>
-                <button type="button" onclick="abrirModalCobroUnificado()" class="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-bold rounded-xl transition flex items-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-plus text-[10px]"></i> Nuevo Cobro
-                </button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
-                        <tr>
-                            <th class="pb-3 px-3">Fecha / Hora</th>
-                            <th class="pb-3 px-3">Socio</th>
-                            <th class="pb-3 px-3">DNI</th>
-                            <th class="pb-3 px-3">Plan / Membresía</th>
-                            <th class="pb-3 px-3">Medio</th>
-                            <th class="pb-3 px-3 text-right">Monto</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800/60 text-slate-300">
-                        {% for cobro in ultimos_cobros %}
-                            <tr class="hover:bg-slate-800/30 transition">
-                                <td class="py-3 px-3 font-mono text-slate-400">{{ cobro.fecha_pago|date:"d/m/Y H:i" }}</td>
-                                <td class="py-3 px-3 text-white font-medium">{{ cobro.socio.usuario.first_name }} {{ cobro.socio.usuario.last_name }}</td>
-                                <td class="py-3 px-3 font-mono text-slate-400">{{ cobro.socio.usuario.username }}</td>
-                                <td class="py-3 px-3 text-amber-300 font-semibold">{{ cobro.membresia.plan.nombre }}</td>
-                                <td class="py-3 px-3">
-                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase {% if cobro.metodo_pago == 'efectivo' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% else %}bg-blue-500/10 text-blue-400 border border-blue-500/20{% endif %}">
-                                        {{ cobro.metodo_pago }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-3 text-right font-black text-emerald-400 font-mono text-sm">${{ cobro.monto }}</td>
-                            </tr>
-                        {% empty %}
-                            <tr><td colspan="6" class="py-6 text-center text-slate-500 text-xs">No hay cobros registrados en caja todavía.</td></tr>
+                            <tr><td colspan="4" class="py-6 text-center text-slate-500 text-xs">Aún no hay asistencias registradas hoy.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -499,860 +207,31 @@ Contador
 
     </main>
 
-    <!-- ============================================================== -->
-    <!-- 🏋️ MODAL EMPLEADO: EDITAR 3 RUTINAS BÁSICAS Y RUTINAS SOCIOS   -->
-    <!-- ============================================================== -->
-    <div id="modalRutinaProfesor" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-5xl w-full p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[92vh]">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg border border-blue-500/20">
-                        <i class="fa-solid fa-dumbbell"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-extrabold text-white text-base">Gestión y Edición de Rutinas</h3>
-                        <p class="text-xs text-slate-400">Editá las 3 rutinas predefinidas o las rutinas personalizadas de cada socio</p>
-                    </div>
-                </div>
-                <button type="button" onclick="document.getElementById('modalRutinaProfesor').classList.add('hidden')" class="text-slate-400 hover:text-white transition cursor-pointer">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <!-- Formulario Agregar Ejercicio -->
-            <form method="POST" action="{% url 'dashboard' %}" class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3 text-xs">
-                {% csrf_token %}
-                <input type="hidden" name="accion" value="empleado_agregar_ejercicio_rutina">
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tipo de Rutina</label>
-                        <select name="destino" id="selectDestinoRutinaEmp" onchange="toggleDestinoRutinaEmp()" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
-                            <option value="socio">Rutina Personalizada de Socio</option>
-                            <option value="basica">Rutina Predefinida (Adaptación / Hipertrofia / Fuerza)</option>
-                        </select>
-                    </div>
-
-                    <div id="bloqueSelectSocioEmp">
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Socio</label>
-                        <select name="socio_usuario_id" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
-                            {% for u in socios_usuarios_lista %}
-                                <option value="{{ u.id }}">{{ u.first_name }} {{ u.last_name }} (DNI: {{ u.username }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div id="bloqueSelectBasicaEmp" class="hidden">
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Rutina Predefinida</label>
-                        <select name="rutina_basica_id" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
-                            {% for rb in rutinas_basicas_empleado %}
-                                <option value="{{ rb.id }}">{{ rb.nombre }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Día (Exacto o Nuevo)</label>
-                        <input type="text" name="nombre_dia" required placeholder="Ej: Día 1 - Torso y Brazos Base" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
-                    <div class="sm:col-span-2">
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nombre del Ejercicio</label>
-                        <input type="text" name="nombre_ejercicio" required placeholder="Ej: Banco plano con barra" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Series / Reps</label>
-                        <div class="flex gap-1.5">
-                            <input type="number" name="series" value="3" min="1" max="8" class="w-16 px-2 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono">
-                            <input type="text" name="repeticiones" value="8-12 reps" class="w-full px-2 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Descanso</label>
-                        <input type="text" name="descanso" value="90s" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono">
-                    </div>
-                    <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition cursor-pointer">
-                        <i class="fa-solid fa-plus mr-1"></i> Agregar
-                    </button>
-                </div>
-            </form>
-
-            <!-- Tabs: Personalizadas de Socios vs Predefinidas -->
-            <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
-                <button type="button" onclick="cambiarTabRutinasEmp('socios')" id="btnTabRutinasSociosEmp" class="px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl cursor-pointer">
-                    Rutinas Personalizadas de Socios ({{ rutinas_asignadas_empleado|length }})
-                </button>
-                <button type="button" onclick="cambiarTabRutinasEmp('basicas')" id="btnTabRutinasBasicasEmp" class="px-4 py-2 bg-slate-800 text-slate-300 hover:text-white font-bold text-xs rounded-xl cursor-pointer">
-                    3 Rutinas Predefinidas
-                </button>
-            </div>
-
-            <!-- Listado 1: Rutinas Personalizadas de Socios -->
-            <div id="contenedorRutinasSociosEmp" class="space-y-4 max-h-[46vh] overflow-y-auto pr-1">
-                {% for rs in rutinas_asignadas_empleado %}
-                    <div class="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <h5 class="font-extrabold text-white text-sm">{{ rs.socio.first_name }} {{ rs.socio.last_name }} <span class="text-xs font-mono text-slate-400">(DNI: {{ rs.socio.username }})</span></h5>
-                            <span class="text-[11px] text-blue-400 font-bold">{{ rs.nombre }}</span>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            {% for d in rs.dias.all %}
-                                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1.5">
-                                    <span class="text-[11px] font-bold text-blue-400 block">{{ d.nombre_dia }}</span>
-                                    {% for ej in d.ejercicios.all %}
-                                        <div class="flex items-center justify-between gap-2 text-[11px] text-slate-300 border-t border-slate-800/70 pt-1.5">
-                                            <span class="truncate">{{ ej.nombre }} <strong class="text-white">({{ ej.series }}×{{ ej.repeticiones }})</strong></span>
-                                            <div class="flex items-center gap-1 shrink-0">
-                                                <button type="button"
-                                                        onclick="abrirModalEditarEjEmp(this)"
-                                                        data-id="{{ ej.id }}"
-                                                        data-nombre="{{ ej.nombre }}"
-                                                        data-series="{{ ej.series }}"
-                                                        data-reps="{{ ej.repeticiones }}"
-                                                        data-descanso="{{ ej.descanso|default:'90s' }}"
-                                                        class="text-slate-400 hover:text-blue-400 p-1 cursor-pointer" title="Editar">
-                                                    <i class="fa-regular fa-pen-to-square"></i>
-                                                </button>
-                                                <form method="POST" action="{% url 'dashboard' %}" class="inline">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="accion" value="empleado_eliminar_ejercicio_rutina">
-                                                    <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                                    <button type="submit" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer" title="Eliminar">
-                                                        <i class="fa-solid fa-trash-can"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% empty %}
-                    <p class="text-center text-slate-500 text-xs py-6">Aún no hay rutinas personalizadas asignadas a socios.</p>
-                {% endfor %}
-            </div>
-
-            <!-- Listado 2: 3 Rutinas Predefinidas -->
-            <div id="contenedorRutinasBasicasEmp" class="hidden space-y-4 max-h-[46vh] overflow-y-auto pr-1">
-                {% for rb in rutinas_basicas_empleado %}
-                    <div class="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-3">
-                        <h5 class="font-extrabold text-white text-sm flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-blue-400"></span> {{ rb.nombre }}
-                        </h5>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            {% for d in rb.dias.all %}
-                                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1.5">
-                                    <span class="text-[11px] font-bold text-blue-400 block">{{ d.nombre_dia }}</span>
-                                    {% for ej in d.ejercicios.all %}
-                                        <div class="flex items-center justify-between gap-2 text-[11px] text-slate-300 border-t border-slate-800/70 pt-1.5">
-                                            <span class="truncate">{{ ej.nombre }} <strong class="text-white">({{ ej.series }}×{{ ej.repeticiones }})</strong></span>
-                                            <div class="flex items-center gap-1 shrink-0">
-                                                <button type="button"
-                                                        onclick="abrirModalEditarEjEmp(this)"
-                                                        data-id="{{ ej.id }}"
-                                                        data-nombre="{{ ej.nombre }}"
-                                                        data-series="{{ ej.series }}"
-                                                        data-reps="{{ ej.repeticiones }}"
-                                                        data-descanso="{{ ej.descanso|default:'90s' }}"
-                                                        class="text-slate-400 hover:text-blue-400 p-1 cursor-pointer" title="Editar">
-                                                    <i class="fa-regular fa-pen-to-square"></i>
-                                                </button>
-                                                <form method="POST" action="{% url 'dashboard' %}" class="inline">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="accion" value="empleado_eliminar_ejercicio_rutina">
-                                                    <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                                    <button type="submit" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer" title="Eliminar">
-                                                        <i class="fa-solid fa-trash-can"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Sub-Modal Editar Ejercicio (Empleado) -->
-    <div id="modalEditarEjercicioEmp" class="fixed inset-0 z-[60] hidden bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 class="font-bold text-white text-base">Editar Ejercicio de Rutina</h3>
-                <button type="button" onclick="document.getElementById('modalEditarEjercicioEmp').classList.add('hidden')" class="text-slate-400 hover:text-white cursor-pointer">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
-                {% csrf_token %}
-                <input type="hidden" name="accion" value="empleado_editar_ejercicio_rutina">
-                <input type="hidden" name="ejercicio_id" id="empEditEjId">
-
-                <div>
-                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre del Ejercicio</label>
-                    <input type="text" name="nombre_ejercicio" id="empEditEjNombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <div>
-                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Series</label>
-                        <input type="number" name="series" id="empEditEjSeries" min="1" max="10" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Repeticiones</label>
-                        <input type="text" name="repeticiones" id="empEditEjReps" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
-                    </div>
-                    <div>
-                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Descanso</label>
-                        <input type="text" name="descanso" id="empEditEjDescanso" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white font-mono">
-                    </div>
-                </div>
-                <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
-                    <button type="button" onclick="document.getElementById('modalEditarEjercicioEmp').classList.add('hidden')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl cursor-pointer">Cancelar</button>
-                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow cursor-pointer">Guardar Cambios</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ============================================================== -->
-    <!-- 🧾 MODAL UNIFICADO: REGISTRAR COBRO A SOCIO (IDÉNTICO A ADMIN) -->
-    <!-- ============================================================== -->
-    <div id="modalRegistrarPago" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[92vh]">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg border border-emerald-500/20">
-                        <i class="fa-solid fa-cash-register"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-extrabold text-white text-base">Registrar Cobro a Socio</h3>
-                        <p class="text-xs text-slate-400">Buscá al socio, revisá su estado actual y seleccioná qué abona</p>
-                    </div>
-                </div>
-                <button type="button" onclick="cerrarModalCobroUnificado()" class="text-slate-400 hover:text-white transition cursor-pointer p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <form method="POST" action="{% url 'dashboard' %}" class="space-y-5 text-xs">
-                {% csrf_token %}
-                <input type="hidden" name="accion" value="cobrar_membresia_empleado">
-                <input type="hidden" name="socio_id" id="cobroUnificadoSocioId" required>
-                <input type="hidden" name="plan_id" id="cobroUnificadoPlanIdReal">
-
-                <div class="space-y-2.5">
-                    <label class="block text-slate-400 uppercase text-[10px] font-bold tracking-wider">
-                        1. Seleccionar Socio (Filtrar por nombre o DNI)
-                    </label>
-
-                    <div class="relative">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                        <input type="text" id="buscadorSocioCobro" onkeyup="filtrarSociosCobroUnificado()"
-                               placeholder="Escribí nombre, apellido o DNI..."
-                               class="w-full bg-slate-950 border border-emerald-500/40 focus:border-emerald-400 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-slate-500 focus:outline-none">
-                    </div>
-
-                    <div id="listaSociosCobro" class="max-h-48 overflow-y-auto space-y-2 pr-1">
-                        {% for s in socios_para_cobro %}
-                            <div onclick="seleccionarSocioCobroUnificado(this, '{{ s.id }}')"
-                                 data-busqueda="{{ s.nombre|lower }} {{ s.dni }}"
-                                 data-dni="{{ s.dni }}"
-                                 class="tarjeta-socio-cobro p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/50 cursor-pointer transition flex items-center justify-between gap-3">
-                                <div class="space-y-1.5">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-bold text-white text-sm">{{ s.nombre }}</span>
-                                        <span class="text-[10px] font-mono text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded">
-                                            DNI: {{ s.dni }}
-                                        </span>
-                                    </div>
-                                    <div class="flex flex-wrap items-center gap-1.5">
-                                        <span class="text-[10px] text-slate-500">Anotado en:</span>
-                                        {% for item in s.anotado_en %}
-                                            <span class="text-[10px] font-bold text-blue-300 bg-blue-500/10 border border-blue-500/30 px-2 py-0.5 rounded-md">
-                                                {{ item }}
-                                            </span>
-                                        {% empty %}
-                                            <span class="text-[10px] text-slate-500 italic">Sin clases asignadas</span>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-
-                                <div class="text-right shrink-0">
-                                    {% if s.al_dia %}
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Al Día
-                                        </span>
-                                        <p class="text-[10px] text-slate-500 mt-1">Vence: {{ s.vence }}</p>
-                                    {% else %}
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Vencido / Sin Plan
-                                        </span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% empty %}
-                            <p class="text-center text-slate-500 py-4">No hay socios activos registrados.</p>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-800">
-                    <div>
-                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
-                            2. Membresía / Plan
-                        </label>
-                        <select id="selectCategoriaPaseUnificado" onchange="actualizarSelectorPaseUnificado()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-emerald-500">
-                            <option value="" data-precio="0">-- Ninguna / Solo actividad --</option>
-                            {% for p in planes_disponibles %}
-                                {% if 'pilates' not in p.nombre|lower %}
-                                    <option value="{{ p.id }}" data-precio="{{ p.precio|floatformat:0 }}" data-nombre="{{ p.nombre|lower }}">
-                                        {{ p.nombre }} — ${{ p.precio|floatformat:0 }}
-                                    </option>
-                                {% endif %}
-                            {% endfor %}
-                            <option value="grupo_pilates" data-precio="0">Pilates (Elegir días por semana)</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
-                            3. Actividad Adicional (Opcional)
-                        </label>
-                        <select name="actividad_id" id="selectActividadUnificado" onchange="recalcularTotalCobroUnificado()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-emerald-500">
-                            <option value="" data-precio="0">-- Ninguna / Incluida en el plan --</option>
-                            {% for act in actividades_disponibles %}
-                                <option value="{{ act.id }}" data-precio="{{ act.precio|default:0|floatformat:0 }}">
-                                    {{ act.nombre }}{% if act.precio %} — ${{ act.precio|floatformat:0 }}{% endif %}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <div id="bloqueFrecuenciaPilatesUnificado" class="hidden p-3.5 rounded-2xl bg-blue-950/30 border border-blue-500/30 space-y-2">
-                    <label class="block text-blue-400 uppercase text-[10px] font-bold tracking-wider">
-                        <i class="fa-regular fa-calendar mr-1"></i> Frecuencia Semanal de Pilates:
-                    </label>
-                    <select id="selectSubPlanPilatesUnificado" onchange="recalcularTotalCobroUnificado()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
-                        {% for p in planes_disponibles %}
-                            {% if 'pilates' in p.nombre|lower %}
-                                <option value="{{ p.id }}" data-precio="{{ p.precio|floatformat:0 }}" data-nombre="{{ p.nombre|lower }}">
-                                    {{ p.nombre }} — ${{ p.precio|floatformat:0 }} / mes
-                                </option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div id="cajaInfoPaseUnificado" class="hidden p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-1.5">
-                    <h4 id="tituloInfoPaseUnificado" class="font-bold text-emerald-400 text-xs"></h4>
-                    <p id="descInfoPaseUnificado" class="text-[11px] text-slate-300 leading-relaxed"></p>
-                    <p class="text-[10px] text-slate-500 pt-1 border-t border-slate-800/80">
-                        <i class="fa-regular fa-clock mr-1"></i> Horario del gimnasio: Lun a Vie 07:00 a 22:00 hs • Sáb 09:00 a 13:00 hs
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center pt-3 border-t border-slate-800">
-                    <div>
-                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
-                            4. Medio de Pago
-                        </label>
-                        <div class="grid grid-cols-2 gap-2.5">
-                            <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
-                                <input type="radio" name="metodo_pago" value="efectivo" checked class="text-emerald-500 focus:ring-0">
-                                <span class="font-bold text-white">💵 Efectivo</span>
-                            </label>
-                            <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
-                                <input type="radio" name="metodo_pago" value="transferencia" class="text-emerald-500 focus:ring-0">
-                                <span class="font-bold text-white">📱 Transferencia</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 flex items-center justify-between">
-                        <span class="font-bold text-slate-300 text-xs">Total a Cobrar:</span>
-                        <span id="labelTotalCobroUnificado" class="text-2xl font-black text-emerald-400 font-mono">$0</span>
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
-                    <button type="button" onclick="cerrarModalCobroUnificado()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
-                        Cancelar
-                    </button>
-                    <button type="submit" onclick="return validarSocioSeleccionadoUnificado()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition cursor-pointer">
-                        Confirmar Cobro
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL CONTROL DE ASISTENCIA RÁPIDO -->
+    <!-- MODAL ASISTENCIA RÁPIDA -->
     <div id="asistenciaModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative">
-            <div class="flex items-center justify-between gap-3 mb-6">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xl shrink-0">
-                        <i class="fa-solid fa-id-card-clip"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-extrabold text-white tracking-tight">Control de Asistencia</h3>
-                        <p class="text-xs text-slate-400 font-medium">Marcación rápida de ingreso por DNI</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-2 shrink-0">
-                    <button type="button" onclick="abrirModalHistorialAsistencias()" class="h-9 px-3 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 text-[11px] font-bold rounded-xl transition flex items-center gap-1.5 cursor-pointer">
-                        <i class="fa-solid fa-clock-rotate-left"></i> Historial
-                    </button>
-                    <button type="button" onclick="closeAsistenciaModal()" class="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700/60 flex items-center justify-center transition cursor-pointer" title="Cerrar">
-                        <i class="fa-solid fa-xmark text-sm"></i>
-                    </button>
-                </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-extrabold text-white">Control de Asistencia por DNI</h3>
+                <button type="button" onclick="closeAsistenciaModal()" class="text-slate-400 hover:text-white cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
             </div>
-
             <form method="POST" action="{% url 'dashboard' %}" class="space-y-4">
                 {% csrf_token %}
                 <input type="hidden" name="accion" value="registrar_asistencia">
-                <div>
-                    <label for="modalDniInput" class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                        DNI del Socio
-                    </label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500 text-sm">
-                            <i class="fa-solid fa-fingerprint"></i>
-                        </span>
-                        <input type="text" id="modalDniInput" name="dni" required placeholder="Ej: 42123456" autofocus
-                            class="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-700/80 rounded-2xl text-base text-white font-medium placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-inner">
-                    </div>
-                </div>
-
-                <div class="flex gap-3 pt-1">
-                    <button type="button" onclick="closeAsistenciaModal()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition cursor-pointer">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2 cursor-pointer">
-                        <i class="fa-solid fa-check"></i> Marcar Ingreso
-                    </button>
+                <input type="text" id="modalDniInput" name="dni" required placeholder="Ej: 42123456"
+                       class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-2xl text-sm text-white font-mono">
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeAsistenciaModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl cursor-pointer">Cancelar</button>
+                    <button type="submit" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl cursor-pointer">Marcar Ingreso</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL HISTORIAL DE ASISTENCIAS -->
-    <div id="modalHistorialAsistencias" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-3xl w-full p-6 space-y-5 shadow-2xl">
-            <div class="flex items-center justify-between pt-2 border-b border-slate-800 pb-3">
-                <h3 class="font-extrabold text-white text-base">Historial de Asistencias</h3>
-                <div class="flex items-center gap-2.5">
-                    <button type="button" onclick="volverAMarcarAsistencia()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/20 transition flex items-center gap-1.5 cursor-pointer">
-                        <i class="fa-solid fa-arrow-left text-[10px]"></i> Marcar Asistencia
-                    </button>
-                    <button type="button" onclick="cerrarModalHistorialAsistencias()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition cursor-pointer">
-                        Cerrar
-                    </button>
-                </div>
-            </div>
+    {% include 'includes/footer.html' %}
 
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="flex items-center gap-2">
-                    <button type="button" id="btnTabAsistHoy" onclick="filtrarHistorialAsist('hoy')" class="px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl transition cursor-pointer">
-                        Hoy ({{ asistencias_hoy|default:0 }})
-                    </button>
-                    <button type="button" id="btnTabAsistMes" onclick="filtrarHistorialAsist('mes')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition cursor-pointer">
-                        Historial por Meses
-                    </button>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <select id="selectMesAsist" onchange="aplicarFiltroAsist()" class="hidden bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-semibold">
-                        <option value="todos">Todos los meses</option>
-                        {% for m in meses_asistencias %}
-                            <option value="{{ m.valor }}">{{ m.etiqueta }}</option>
-                        {% endfor %}
-                    </select>
-                    <input type="text" id="inputBuscarAsist" onkeyup="aplicarFiltroAsist()" placeholder="Buscar socio o DNI..."
-                        class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white w-44 focus:border-blue-500 focus:outline-none">
-                </div>
-            </div>
-
-            <div class="max-h-[55vh] overflow-y-auto border border-slate-800/80 rounded-2xl">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-950/90 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800 sticky top-0">
-                        <tr>
-                            <th class="py-3 px-4">Fecha</th>
-                            <th class="py-3 px-4">Hora</th>
-                            <th class="py-3 px-4">Socio</th>
-                            <th class="py-3 px-4">DNI</th>
-                            <th class="py-3 px-4 text-right">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyHistorialAsist" class="divide-y divide-slate-800/60 text-slate-300">
-                        {% for a in historial_asistencias_completo %}
-                            <tr class="fila-asist hover:bg-slate-800/30 transition"
-                                data-es-hoy="{% if a.es_hoy %}1{% else %}0{% endif %}"
-                                data-mes="{{ a.mes_anio }}"
-                                data-busqueda="{{ a.socio_nombre|lower }} {{ a.dni }}">
-                                <td class="py-2.5 px-4 font-mono text-slate-300">{{ a.fecha_str }}</td>
-                                <td class="py-2.5 px-4 font-bold text-blue-400">{{ a.hora_str }} hs</td>
-                                <td class="py-2.5 px-4 text-white font-medium">{{ a.socio_nombre }}</td>
-                                <td class="py-2.5 px-4 font-mono text-slate-400">{{ a.dni }}</td>
-                                <td class="py-2.5 px-4 text-right">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Presente</span>
-                                </td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="5" class="py-8 text-center text-slate-500 text-xs">No hay registros de asistencias cargados.</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="flex items-center justify-end pt-2 border-t border-slate-800">
-                <button type="button" onclick="cerrarModalHistorialAsistencias()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition cursor-pointer">
-                    Cerrar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL INICIAR TURNO PROFESOR -->
-    <div id="modalIniciarTurno" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div class="flex items-center gap-2">
-                    <span class="text-xl">🔐</span>
-                    <h3 class="font-extrabold text-white text-base">Iniciar Turno de Guardia</h3>
-                </div>
-                <button type="button" onclick="document.getElementById('modalIniciarTurno').classList.add('hidden')" class="text-slate-400 hover:text-white transition cursor-pointer">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            <p class="text-xs text-slate-400">Confirmá el inicio de clase para <strong id="modalProfeNombre" class="text-white"></strong>.</p>
-            <form method="POST" class="space-y-3 text-xs">
-                {% csrf_token %}
-                <input type="hidden" name="accion_profesor" value="iniciar">
-                <input type="hidden" name="profesor_id" id="modalProfeId">
-                <div>
-                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">DNI o Usuario</label>
-                    <input type="text" name="dni_verif" id="modalProfeDni" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
-                </div>
-                <div>
-                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Contraseña</label>
-                    <input type="password" name="password_verif" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:ring-2 focus:ring-emerald-500">
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="document.getElementById('modalIniciarTurno').classList.add('hidden')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">Cancelar</button>
-                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow transition cursor-pointer">Confirmar e Iniciar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ============================================================== -->
-    <!-- 📅 MODAL: DISCIPLINAS ACTIVAS & CRONOGRAMA                     -->
-    <!-- ============================================================== -->
-    <div id="modalDisciplinas" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-3xl w-full p-6 space-y-5 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl font-bold border border-amber-500/20">
-                        <i class="fa-solid fa-calendar-week"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-extrabold text-white text-base">Disciplinas Activas & Cronograma</h3>
-                        <p class="text-xs text-slate-400">Días, horarios semanales, profesores asignados y cantidad de socios anotados.</p>
-                    </div>
-                </div>
-                <button type="button" onclick="document.getElementById('modalDisciplinas').classList.add('hidden')" class="text-slate-400 hover:text-white transition cursor-pointer">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <div class="max-h-[60vh] overflow-y-auto space-y-3 pr-1">
-                {% for item in disciplinas_detalle %}
-                    <div class="bg-slate-950/80 border border-slate-800/90 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-700 transition">
-                        <div class="md:w-1/4">
-                            <h4 class="font-black text-white text-base tracking-tight">{{ item.actividad.nombre }}</h4>
-                        </div>
-                        <div class="md:w-2/4 space-y-1.5">
-                            {% for h in item.horarios %}
-                                <div class="flex items-center justify-between bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800/80 text-xs">
-                                    <span class="text-slate-200 font-semibold">{{ h.dias }}</span>
-                                    <span class="font-mono font-bold text-amber-300 text-[11px]">{{ h.horario }}</span>
-                                </div>
-                            {% endfor %}
-                        </div>
-                        <div class="shrink-0">
-                            {% if item.actividad.nombre|lower == 'musculación' or item.actividad.nombre|lower == 'musculacion' %}
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                    <i class="fa-solid fa-infinity text-[10px]"></i> Cupo libre
-                                </span>
-                            {% else %}
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                                    <i class="fa-solid fa-users text-[11px]"></i>
-                                    {{ item.anotados }}{% if item.cupo_maximo %} / {{ item.cupo_maximo }}{% endif %} anotados
-                                </span>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% empty %}
-                    <div class="text-center py-8 text-slate-500 text-xs">No hay disciplinas cargadas en el sistema.</div>
-                {% endfor %}
-            </div>
-
-            <div class="flex justify-end pt-3 border-t border-slate-800">
-                <button type="button" onclick="document.getElementById('modalDisciplinas').classList.add('hidden')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition cursor-pointer">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-{% include 'includes/footer.html' %}
-
-    <script>
-        function toggleDestinoRutinaEmp() {
-            const dest = document.getElementById('selectDestinoRutinaEmp').value;
-            document.getElementById('bloqueSelectBasicaEmp').classList.toggle('hidden', dest !== 'basica');
-            document.getElementById('bloqueSelectSocioEmp').classList.toggle('hidden', dest !== 'socio');
-        }
-
-        function cambiarTabRutinasEmp(tab) {
-            const basicas = document.getElementById('contenedorRutinasBasicasEmp');
-            const socios = document.getElementById('contenedorRutinasSociosEmp');
-            const btnB = document.getElementById('btnTabRutinasBasicasEmp');
-            const btnS = document.getElementById('btnTabRutinasSociosEmp');
-
-            if (tab === 'basicas') {
-                basicas.classList.remove('hidden');
-                socios.classList.add('hidden');
-                btnB.className = "px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl cursor-pointer";
-                btnS.className = "px-4 py-2 bg-slate-800 text-slate-300 hover:text-white font-bold text-xs rounded-xl cursor-pointer";
-            } else {
-                socios.classList.remove('hidden');
-                basicas.classList.add('hidden');
-                btnS.className = "px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl cursor-pointer";
-                btnB.className = "px-4 py-2 bg-slate-800 text-slate-300 hover:text-white font-bold text-xs rounded-xl cursor-pointer";
-            }
-        }
-
-        function abrirModalEditarEjEmp(btn) {
-            document.getElementById('empEditEjId').value = btn.getAttribute('data-id');
-            document.getElementById('empEditEjNombre').value = btn.getAttribute('data-nombre');
-            document.getElementById('empEditEjSeries').value = btn.getAttribute('data-series');
-            document.getElementById('empEditEjReps').value = btn.getAttribute('data-reps');
-            document.getElementById('empEditEjDescanso').value = btn.getAttribute('data-descanso');
-            document.getElementById('modalEditarEjercicioEmp').classList.remove('hidden');
-        }
-
-        function abrirModalCobroUnificado() {
-            document.getElementById('modalRegistrarPago').classList.remove('hidden');
-            document.getElementById('buscadorSocioCobro').focus();
-        }
-
-        function cerrarModalCobroUnificado() {
-            document.getElementById('modalRegistrarPago').classList.add('hidden');
-        }
-
-        function filtrarSociosCobroUnificado() {
-            const q = document.getElementById('buscadorSocioCobro').value.toLowerCase().trim();
-            document.querySelectorAll('.tarjeta-socio-cobro').forEach(card => {
-                const texto = card.getAttribute('data-busqueda') || '';
-                card.style.display = texto.includes(q) ? 'flex' : 'none';
-            });
-        }
-
-        function seleccionarSocioCobroUnificado(el, socioId) {
-            document.querySelectorAll('.tarjeta-socio-cobro').forEach(c => {
-                c.classList.remove('border-emerald-500', 'bg-emerald-950/20');
-                c.classList.add('border-slate-800');
-            });
-            el.classList.remove('border-slate-800');
-            el.classList.add('border-emerald-500', 'bg-emerald-950/20');
-            document.getElementById('cobroUnificadoSocioId').value = socioId;
-        }
-
-        function validarSocioSeleccionadoUnificado() {
-            if (!document.getElementById('cobroUnificadoSocioId').value) {
-                alert('Por favor seleccioná un socio de la lista antes de confirmar el cobro.');
-                return false;
-            }
-            return true;
-        }
-
-        function actualizarSelectorPaseUnificado() {
-            const cat = document.getElementById('selectCategoriaPaseUnificado').value;
-            const bloquePilates = document.getElementById('bloqueFrecuenciaPilatesUnificado');
-            if (cat === 'grupo_pilates') {
-                bloquePilates.classList.remove('hidden');
-            } else {
-                bloquePilates.classList.add('hidden');
-            }
-            recalcularTotalCobroUnificado();
-        }
-
-        function recalcularTotalCobroUnificado() {
-            const selCat = document.getElementById('selectCategoriaPaseUnificado');
-            const selPilates = document.getElementById('selectSubPlanPilatesUnificado');
-            const selAct = document.getElementById('selectActividadUnificado');
-            const inputPlanReal = document.getElementById('cobroUnificadoPlanIdReal');
-
-            const cajaInfo = document.getElementById('cajaInfoPaseUnificado');
-            const tituloInfo = document.getElementById('tituloInfoPaseUnificado');
-            const descInfo = document.getElementById('descInfoPaseUnificado');
-
-            let precioPlan = 0;
-            let nombrePlan = '';
-
-            if (selCat.value === 'grupo_pilates' && selPilates && selPilates.options.length > 0) {
-                const optP = selPilates.options[selPilates.selectedIndex];
-                inputPlanReal.value = optP.value;
-                precioPlan = parseInt(optP.getAttribute('data-precio') || 0);
-                nombrePlan = optP.text.split('—')[0].trim();
-            } else if (selCat.value) {
-                const optC = selCat.options[selCat.selectedIndex];
-                inputPlanReal.value = optC.value;
-                precioPlan = parseInt(optC.getAttribute('data-precio') || 0);
-                nombrePlan = optC.text.split('—')[0].trim();
-            } else {
-                inputPlanReal.value = '';
-            }
-
-            if (nombrePlan) {
-                cajaInfo.classList.remove('hidden');
-                tituloInfo.textContent = nombrePlan;
-                const nomLow = nombrePlan.toLowerCase();
-                if (nomLow.includes('pilates')) {
-                    descInfo.textContent = 'Clases de Pilates Reformer con reserva previa (Lun 9-11hs, Mié 11-13hs o Vie 16-18hs).';
-                } else if (nomLow.includes('clase')) {
-                    descInfo.textContent = 'Incluye Funcional (L/M/V 18hs), Spinning (L/M/V 19hs), Abdominales (L/M/V 20hs), Funcional+Cardio (M/J 18hs) y Zumba (L/M/J 19hs).';
-                } else if (nomLow.includes('familiar')) {
-                    descInfo.textContent = 'Promoción válida a partir de 3 integrantes del grupo familiar abonando el mismo día ($50.000 c/u).';
-                } else if (nomLow.includes('musculacion') || nomLow.includes('musculación')) {
-                    descInfo.textContent = 'Acceso libre a sala de Musculación + todas las Clases grupales incluidas durante 30 días.';
-                } else {
-                    descInfo.textContent = 'Pase mensual habilitado por 30 días corridos desde la fecha de cobro.';
-                }
-            } else {
-                cajaInfo.classList.add('hidden');
-            }
-
-            const optA = selAct.options[selAct.selectedIndex];
-            const precioAct = parseInt(optA.getAttribute('data-precio') || 0);
-            document.getElementById('labelTotalCobroUnificado').textContent = '$' + (precioPlan + precioAct).toLocaleString('es-AR');
-        }
-
-        function openAsistenciaModal() {
-            document.getElementById('asistenciaModal').classList.remove('hidden');
-            document.getElementById('modalDniInput').focus();
-        }
-
-        function closeAsistenciaModal() {
-            document.getElementById('asistenciaModal').classList.add('hidden');
-        }
-
-        let modoHistorialAsist = 'hoy';
-
-        function abrirModalHistorialAsistencias() {
-            closeAsistenciaModal();
-            document.getElementById('modalHistorialAsistencias').classList.remove('hidden');
-            filtrarHistorialAsist('hoy');
-        }
-
-        function cerrarModalHistorialAsistencias() {
-            document.getElementById('modalHistorialAsistencias').classList.add('hidden');
-        }
-
-        function filtrarHistorialAsist(modo) {
-            modoHistorialAsist = modo;
-            const btnHoy = document.getElementById('btnTabAsistHoy');
-            const btnMes = document.getElementById('btnTabAsistMes');
-            const selectMes = document.getElementById('selectMesAsist');
-
-            if (modo === 'hoy') {
-                btnHoy.className = "px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl transition cursor-pointer";
-                btnMes.className = "px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition cursor-pointer";
-                selectMes.classList.add('hidden');
-            } else {
-                btnMes.className = "px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl transition cursor-pointer";
-                btnHoy.className = "px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition cursor-pointer";
-                selectMes.classList.remove('hidden');
-            }
-            aplicarFiltroAsist();
-        }
-
-        function aplicarFiltroAsist() {
-            const mesSel = document.getElementById('selectMesAsist').value;
-            const texto = document.getElementById('inputBuscarAsist').value.toLowerCase().trim();
-            const filas = document.querySelectorAll('.fila-asist');
-            let visibles = 0;
-
-            filas.forEach(fila => {
-                const esHoy = fila.getAttribute('data-es-hoy') === '1';
-                const mesFila = fila.getAttribute('data-mes');
-                const info = fila.getAttribute('data-busqueda');
-
-                let cumpleTiempo = (modoHistorialAsist === 'hoy') ? esHoy : (mesSel === 'todos' || mesFila === mesSel);
-                let cumpleTexto = !texto || info.includes(texto);
-
-                if (cumpleTiempo && cumpleTexto) {
-                    fila.classList.remove('hidden');
-                    visibles++;
-                } else {
-                    fila.classList.add('hidden');
-                }
-            });
-
-            document.getElementById('contadorFiltroAsist').innerText = `Mostrando ${visibles} ingreso(s)`;
-        }
-
-        function cerrarMenuPerfil() {
-            const modal = document.getElementById('modalMiniPerfil');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function irACobrarDesdePerfil(dni) {
-            cerrarMenuPerfil();
-            abrirModalCobroUnificado();
-            const buscador = document.getElementById('buscadorSocioCobro');
-            buscador.value = dni;
-            filtrarSociosCobroUnificado();
-            const tarjeta = document.querySelector(`.tarjeta-socio-cobro[data-dni="${dni}"]`);
-            if (tarjeta) tarjeta.click();
-        }
-
-        function abrirModalIniciarTurno(id, nombre, dni) {
-            document.getElementById('modalProfeId').value = id;
-            document.getElementById('modalProfeNombre').innerText = nombre;
-            document.getElementById('modalProfeDni').value = dni;
-            document.getElementById('modalIniciarTurno').classList.remove('hidden');
-        }
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                cerrarMenuPerfil();
-                cerrarModalCobroUnificado();
-                closeAsistenciaModal();
-                cerrarModalHistorialAsistencias();
-                document.getElementById('modalRutinaProfesor').classList.add('hidden');
-                document.getElementById('modalEditarEjercicioEmp').classList.add('hidden');
-                document.getElementById('modalIniciarTurno').classList.add('hidden');
-                document.getElementById('modalDisciplinas').classList.add('hidden');
-            }
-        });
-
-        function volverAMarcarAsistencia() {
-            cerrarModalHistorialAsistencias();
-            openAsistenciaModal();
-        }
-    </script>
+<script src="{% static 'js/empleado/dashboard.js' %}"></script>
 
 </body>
 </html>

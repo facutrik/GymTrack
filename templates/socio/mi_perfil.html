@@ -1,0 +1,141 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymTrack - Mi Perfil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; }
+        .font-brand { font-family: 'Barlow Condensed', sans-serif; }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3.5">
+                    <img src="{% static 'img/logo-gymtrack.svg' %}" alt="Logo GymTrack" class="h-11 w-auto object-contain">
+                    <span class="font-brand italic font-extrabold text-3xl tracking-wide">
+                        <span class="text-[#3f51d6]">GYM</span><span class="text-white">track</span>
+                    </span>
+                    <span class="text-xs font-light text-slate-500">×</span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">
+                        BODYDYNAMIC
+                    </span>
+                </div>
+                <a href="{% url 'dashboard' %}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al Panel
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+
+        {% if messages %}
+            <div class="w-full space-y-2">
+                {% for message in messages %}
+                    <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% elif message.tags == 'warning' or message.tags == 'info' %}bg-amber-950/60 border border-amber-500/40 text-amber-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
+                        <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- DATOS PERSONALES -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
+            <div>
+                <h3 class="text-base font-bold text-white">Mis Datos Personales</h3>
+                <p class="text-xs text-slate-400">Modificá tus vías de contacto registradas.</p>
+            </div>
+            <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="actualizar_perfil">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre</label>
+                        <input type="text" name="first_name" value="{{ user.first_name }}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Apellido</label>
+                        <input type="text" name="last_name" value="{{ user.last_name }}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">DNI (No editable)</label>
+                    <input type="text" disabled value="{{ user.username }}" class="w-full bg-slate-950/50 border border-slate-800/60 rounded-xl px-3 py-2.5 text-slate-500 cursor-not-allowed font-mono">
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Correo Electrónico</label>
+                    <input type="email" name="email" value="{{ user.email }}" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Teléfono</label>
+                    <input type="text" name="telefono" value="{{ user.telefono|default:'' }}" placeholder="+54 9 341..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                </div>
+                <div class="pt-2 flex justify-end">
+                    <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">
+                        Guardar Datos
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- CAMBIAR CONTRASEÑA -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-white">Cambiar Contraseña</h3>
+                    <p class="text-xs text-slate-400">Actualizá tu clave de acceso al portal.</p>
+                </div>
+            </div>
+            <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="cambiar_password">
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Contraseña Actual</label>
+                    <input type="password" name="pass_actual" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nueva Contraseña</label>
+                        <input type="password" name="pass_nueva" required minlength="8"
+                            pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}"
+                            title="Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo."
+                            placeholder="••••••••"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Confirmar Nueva</label>
+                        <input type="password" name="pass_confirmar" required minlength="8" placeholder="••••••••"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">
+                    Requisitos: mínimo <strong class="text-slate-200">8 caracteres</strong>, con al menos <strong class="text-slate-200">1 mayúscula</strong>, <strong class="text-slate-200">1 minúscula</strong>, <strong class="text-slate-200">1 número</strong> y <strong class="text-slate-200">1 símbolo</strong> (ej. <code class="text-amber-400">Gym2026!</code>).
+                </p>
+                <div class="pt-2 flex justify-end">
+                    <button type="submit" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">
+                        Actualizar Contraseña
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </main>
+
+    {% include 'includes/footer.html' %}
+</body>
+</html>

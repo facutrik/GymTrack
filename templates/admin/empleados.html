@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -320,21 +321,8 @@
         </div>
     {% endfor %}
 
-    <!-- JAVASCRIPT MODAL EDITAR -->
-    <script>
-        function abrirModalEditarEmpleado(id, nombre, apellido, username, email, rol) {
-            document.getElementById('editEmpId').value = id;
-            document.getElementById('editEmpNombre').value = nombre;
-            document.getElementById('editEmpApellido').value = apellido;
-            document.getElementById('editEmpUsername').value = username;
-            document.getElementById('editEmpEmail').value = email;
-            document.getElementById('editEmpRol').value = rol;
-            document.getElementById('modalEditarEmpleado').classList.remove('hidden');
-        }
+{% include 'includes/footer.html' %}
+<script src="{% static 'js/admin/empleado.js' %}"></script>
 
-        function cerrarModalEditarEmpleado() {
-            document.getElementById('modalEditarEmpleado').classList.add('hidden');
-        }
-    </script>
 </body>
 </html>
