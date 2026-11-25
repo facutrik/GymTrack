@@ -124,15 +124,15 @@
                         1. Buscar y Seleccionar Socio
                     </label>
                     <input type="text" id="buscadorSocioCobro" onkeyup="filtrarSociosCobroUnificado()"
-                           placeholder="Escribí nombre, apellido o DNI..."
-                           class="w-full bg-slate-950 border border-amber-500/70 focus:border-amber-400 focus:outline-none rounded-xl px-3.5 py-2.5 text-white mb-2.5">
+                        placeholder="Escribí nombre, apellido o DNI..."
+                        class="w-full bg-slate-950 border border-amber-500/70 focus:border-amber-400 focus:outline-none rounded-xl px-3.5 py-2.5 text-white mb-2.5">
 
                     <div id="listaSociosCobro" class="max-h-44 overflow-y-auto space-y-2 pr-1">
                         {% for s in socios_para_cobro %}
                             <div onclick="seleccionarSocioCobroUnificado(this, '{{ s.id }}')"
-                                 data-busqueda="{{ s.nombre|lower }} {{ s.dni|lower }}"
-                                 data-dni="{{ s.dni }}"
-                                 class="tarjeta-socio-cobro flex items-center justify-between px-4 py-3 rounded-xl bg-slate-950/90 border border-slate-800 hover:border-slate-700 cursor-pointer transition">
+                                data-busqueda="{{ s.nombre|lower }} {{ s.dni|lower }}"
+                                data-dni="{{ s.dni }}"
+                                class="tarjeta-socio-cobro flex items-center justify-between px-4 py-3 rounded-xl bg-slate-950/90 border border-slate-800 hover:border-slate-700 cursor-pointer transition">
                                 <div class="flex items-baseline gap-2">
                                     <span class="font-bold text-white text-sm">{{ s.nombre }}</span>
                                     <span class="text-[11px] font-mono text-slate-400">DNI: {{ s.dni }}</span>
