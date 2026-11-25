@@ -29,6 +29,7 @@ function abrirModalIniciarTurno(id, nombre, dni) {
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
         cerrarMenuPerfil();
+        if (typeof cerrarModalPerfilSocio === 'function') cerrarModalPerfilSocio();
         if (typeof cerrarModalCobroUnificado === 'function') cerrarModalCobroUnificado();
         if (typeof closeAsistenciaModal === 'function') closeAsistenciaModal();
         if (typeof cerrarModalHistorialAsistencias === 'function') cerrarModalHistorialAsistencias();

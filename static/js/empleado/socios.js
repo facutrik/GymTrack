@@ -38,6 +38,23 @@ const INFO_PASES_ALTA = {
     }
 };
 
+function mostrarModalAltaSocio() {
+    const modalAlta = document.getElementById('modalAltaSocio');
+    if (!modalAlta) return false;
+    modalAlta.classList.remove('hidden');
+    modalAlta.classList.add('flex');
+    modalAlta.style.setProperty('display', 'flex', 'important');
+    return true;
+}
+
+function ocultarModalAltaSocio() {
+    const modalAlta = document.getElementById('modalAltaSocio');
+    if (!modalAlta) return;
+    modalAlta.classList.add('hidden');
+    modalAlta.classList.remove('flex');
+    modalAlta.style.setProperty('display', 'none', 'important');
+}
+
 function actualizarOpcionesPaseAlta() {
     const categoria = document.getElementById('selectCategoriaPaseAlta').value;
     const bloquePilates = document.getElementById('bloqueDiasPilatesAlta');
@@ -76,7 +93,7 @@ function sincronizarPlanRealAlta() {
     let idEncontrado = '';
 
     spansPlanes.forEach(span => {
-        const nombreBD = span.getAttribute('data-nombre');
+        const nombreBD = (span.getAttribute('data-nombre') || '').toLowerCase();
         const coincideTodo = info.buscarPalabras.every(palabra => nombreBD.includes(palabra));
         if (coincideTodo && !idEncontrado) {
             idEncontrado = span.getAttribute('data-id');
@@ -87,10 +104,53 @@ function sincronizarPlanRealAlta() {
 }
 
 function abrirModalEditarDesdeBoton(btn) {
-    document.getElementById('editSocioId').value = btn.getAttribute('data-id');
-    document.getElementById('editNombre').value = btn.getAttribute('data-nombre');
-    document.getElementById('editApellido').value = btn.getAttribute('data-apellido');
-    document.getElementById('editEmail').value = btn.getAttribute('data-email');
-    document.getElementById('editTelefono').value = btn.getAttribute('data-telefono');
-    document.getElementById('modalEditarSocio').classList.remove('hidden');
+    document.getElementById('editSocioId').value = btn.getAttribute('data-id') || '';
+    document.getElementById('editNombre').value = btn.getAttribute('data-nombre') || '';
+    document.getElementById('editApellido').value = btn.getAttribute('data-apellido') || '';
+    document.getElementById('editEmail').value = btn.getAttribute('data-email') || '';
+    document.getElementById('editTelefono').value = btn.getAttribute('data-telefono') || '';
+    const modalEdit = document.getElementById('modalEditarSocio');
+    if (modalEdit) {
+        modalEdit.classList.remove('hidden');
+        modalEdit.classList.add('flex');
+        modalEdit.style.setProperty('display', 'flex', 'important');
+    }
 }
+
+function verificarParametroNuevoSocio() {
+    if (new URLSearchParams(window.location.search).get('nuevo') !== '1') return;
+    if (mostrarModalAltaSocio()) return;
+
+    let intentos = 0;
+    const reintento = setInterval(() => {
+        intentos += 1;
+        if (mostrarModalAltaSocio() || intentos >= 20) {
+            clearInterval(reintento);
+        }
+    }, 50);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', verificarParametroNuevoSocio);
+} else {
+    verificarParametroNuevoSocio();
+}
+window.addEventListener('load', verificarParametroNuevoSocio);
+
+(function abrirSiVieneNuevoEnUrl() {
+    if (new URLSearchParams(window.location.search).get('nuevo') !== '1') return;
+
+    function abrirModal() {
+        const modal = document.getElementById('modalAltaSocio');
+        if (!modal) return false;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        modal.style.setProperty('display', 'flex', 'important');
+        return true;
+    }
+
+    if (!abrirModal()) {
+        document.addEventListener('DOMContentLoaded', abrirModal);
+        window.addEventListener('load', abrirModal);
+    }
+})();
