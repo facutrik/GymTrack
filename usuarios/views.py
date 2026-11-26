@@ -5,6 +5,7 @@ from datetime import datetime, time, timedelta
 from django.conf import settings
 from django.http import request
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
@@ -17,6 +18,7 @@ from asistencias.models import Asistencia
 from socios.models import Socio
 from pagos.models import Pago
 from rutinas.models import Rutina, DiaEntrenamiento, Ejercicio
+from rutinas.views import obtener_recordatorios
 
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1380,7 +1382,7 @@ def mi_rutina_socio(request):
             descanso=request.POST.get('descanso') or '90s',
         )
         messages.success(request, f"Ejercicio '{nombre_ej}' agregado a {dia_seleccionado.capitalize()}.")
-        return redirect('mi_rutina')
+        return redirect(f"{reverse('mi_rutina')}?tab=custom&dia={dia_seleccionado}")
     if request.method == 'POST' and request.POST.get('accion') == 'editar_ejercicio_custom':
         ej_id = request.POST.get('ejercicio_id')
         ej_obj = Ejercicio.objects.filter(id=ej_id, dia__rutina__socio=user).first()
@@ -1391,13 +1393,13 @@ def mi_rutina_socio(request):
                 ej_obj.series = int(request.POST.get('series'))
             ej_obj.save()
             messages.success(request, f"Ejercicio '{ej_obj.nombre}' actualizado.")
-        return redirect('mi_rutina')
+        return redirect(f"{reverse('mi_rutina')}?tab=custom")
     if request.method == 'POST' and request.POST.get('accion') == 'eliminar_ejercicio_custom':
         ej_id = request.POST.get('ejercicio_id')
         if ej_id:
             Ejercicio.objects.filter(id=ej_id, dia__rutina__socio=user).delete()
             messages.success(request, "Ejercicio eliminado de tu rutina.")
-        return redirect('mi_rutina')
+        return redirect(f"{reverse('mi_rutina')}?tab=custom")
     dias_claves = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
     rutina_semanal = {d: [] for d in dias_claves}
     if rutina_propia:
@@ -1419,6 +1421,7 @@ def mi_rutina_socio(request):
         'rutina_gym': rutina_gym,
         'rutina_propia': rutina_propia,
         'rutina_semanal': rutina_semanal,
+        'recordatorios_json': obtener_recordatorios(user),
     }
     return render(request, 'socio/mi_rutina.html', context)
 

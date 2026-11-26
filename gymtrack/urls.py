@@ -6,6 +6,7 @@ from socios import views as socios_views
 from pagos import views as pagos_views
 from actividades import views as actividades_views
 from asistencias import views as asistencias_views
+from rutinas import views as rutinas_views
 
 urlpatterns = [
 # Portada pública y autenticación
@@ -60,4 +61,7 @@ path('socio/mi-perfil/', usuarios_views.mi_perfil_socio, name='mi_perfil'),
 
 # Django Admin nativo
     path('admin/', admin.site.urls),
+
+# Guardar ultima rutina
+path('rutinas/guardar-ultima-sesion/', rutinas_views.guardar_ultima_sesion, name='guardar_ultima_rutina'),
 ]

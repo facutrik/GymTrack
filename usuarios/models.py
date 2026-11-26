@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from django.conf import settings
 
+
 # 1. MODELO PRINCIPAL DE USUARIOS DE GYMTRACK
 class Usuario(AbstractUser):
     ROLES = (

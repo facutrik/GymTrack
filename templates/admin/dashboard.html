@@ -44,7 +44,7 @@
                     <div class="flex items-baseline gap-2.5">
                         <span class="font-brand italic font-extrabold text-3xl sm:text-4xl tracking-wide">
                             <span class="marca-GymTrack text-[#3f51d6] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">GYM</span><span class="marca-GymTrack text-white">track</span>
-                        </span>
+                        </span> 
                         {% if user.is_authenticated %}
                             <span class="text-xs font-light text-slate-500">×</span>
                             <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
@@ -606,6 +606,7 @@
 {% include 'includes/footer.html' %}
 
 <script src="{% static 'js/empleado/rutinas.js' %}"></script>
+<script src="{% static 'js/admin/rutinas.js' %}"></script>
 <script src="{% static 'js/empleado/cobros.js' %}"></script>
 <script src="{% static 'js/empleado/asistencia.js' %}"></script>
 <script src="{% static 'js/empleado/dashboard.js' %}"></script>

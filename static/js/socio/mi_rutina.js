@@ -123,6 +123,151 @@ const CATALOGO_HEVY = [
 let grupoHevyActual = 'todos';
 let hevySegundos = 90;
 let hevyIntervalo = null;
+let sesionRutinaActiva = false;
+let recordatoriosUltimaRutina = {};
+let urlGuardarUltimaRutina = '/rutinas/guardar-ultima-sesion/';
+
+function getCookieCSRF(name = 'csrftoken') {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : '';
+}
+
+function inicializarDatosRutinaDesdeDOM() {
+    const contenedor = document.getElementById('contenedorMiRutina');
+    if (!contenedor) return;
+
+    if (contenedor.dataset.urlGuardar) {
+        urlGuardarUltimaRutina = contenedor.dataset.urlGuardar;
+    }
+
+    const rawRecordatorios = contenedor.dataset.recordatorios || '{}';
+    try {
+        recordatoriosUltimaRutina = JSON.parse(rawRecordatorios);
+    } catch (error) {
+        console.warn('No se pudieron parsear los recordatorios de la última rutina:', error);
+        recordatoriosUltimaRutina = {};
+    }
+}
+
+function aplicarRecordatoriosUltimaSesion() {
+    document.querySelectorAll('.set-row[data-serie-key]').forEach((row) => {
+        const clave = row.dataset.serieKey;
+        const badge = row.querySelector('.recordatorio-ultimo');
+        const rec = recordatoriosUltimaRutina[clave];
+
+        if (!badge) return;
+
+        if (rec && (rec.kg !== '' || rec.reps !== '')) {
+            const textoKg = rec.kg !== '' ? `${rec.kg} kg` : 'sin kg';
+            const textoReps = rec.reps !== '' ? `${rec.reps} reps` : '';
+            badge.textContent = `Última: ${textoKg}${textoReps ? ' · ' + textoReps : ''}`;
+            badge.classList.remove('hidden');
+        } else {
+            badge.textContent = '';
+            badge.classList.add('hidden');
+        }
+    });
+}
+
+// Deja vacías las casillas de kg y reps para anotar el próximo entrenamiento
+function limpiarInputsHevy() {
+    document.querySelectorAll('.set-row .hevy-kg, .set-row .hevy-reps').forEach((input) => {
+        input.value = input.defaultValue;
+    });
+}
+
+function iniciarSecuenciaRutina() {
+    sesionRutinaActiva = true;
+    aplicarRecordatoriosUltimaSesion();
+
+    const btnIniciar = document.getElementById('btnIniciarRutina');
+    const btnFinalizar = document.getElementById('btnFinalizarRutina');
+    if (btnIniciar) btnIniciar.classList.add('hidden');
+    if (btnFinalizar) btnFinalizar.classList.remove('hidden');
+
+    document.querySelectorAll('.set-row').forEach((row) => {
+        row.classList.add('ring-1', 'ring-emerald-500/20');
+    });
+
+    recalcularHevy();
+}
+
+async function finalizarYGuardarRutina() {
+    const completadas = [];
+
+    document.querySelectorAll('.set-row.completed[data-serie-key]').forEach((row) => {
+        const clave = row.dataset.serieKey;
+        const kg = row.querySelector('.hevy-kg')?.value ?? '';
+        const reps = row.querySelector('.hevy-reps')?.value ?? '';
+
+        completadas.push({ clave_serie: clave, kg, reps });
+    });
+
+    if (completadas.length === 0) {
+        mostrarAvisoRutina('advertencia', 'Falta completar una serie', 'Tildá al menos una serie completada antes de finalizar la rutina.');
+        return;
+    }
+
+    try {
+        const resp = await fetch(urlGuardarUltimaRutina, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookieCSRF('csrftoken'),
+            },
+            body: JSON.stringify({ series: completadas }),
+        });
+        const data = await resp.json();
+        if (!resp.ok || !data.ok) throw new Error(data.error || resp.status);
+    } catch (error) {
+        console.error('Error al guardar la rutina:', error);
+        mostrarAvisoRutina('error', 'No se pudo guardar', 'No se pudo guardar el registro de la rutina. Revisá tu conexión e intentá de nuevo.');
+        return;
+    }
+
+    completadas.forEach(({ clave_serie, kg, reps }) => {
+        recordatoriosUltimaRutina[clave_serie] = { kg, reps };
+    });
+
+    sesionRutinaActiva = false;
+    const btnIniciar = document.getElementById('btnIniciarRutina');
+    const btnFinalizar = document.getElementById('btnFinalizarRutina');
+    if (btnFinalizar) btnFinalizar.classList.add('hidden');
+    if (btnIniciar) btnIniciar.classList.remove('hidden');
+
+    document.querySelectorAll('.set-row').forEach((row) => {
+        row.classList.remove('ring-1', 'ring-emerald-500/20');
+    });
+
+    aplicarRecordatoriosUltimaSesion();
+    limpiarInputsHevy();
+    reiniciarChecksHevy(false); // el volumen y las series quedan a la vista hasta volver a iniciar
+    reiniciarTimerHevy();
+    mostrarAvisoRutina('exito', '¡Rutina guardada!', 'La próxima vez que la inicies verás el último peso y repeticiones como recordatorio.');
+}
+
+const ESTILOS_AVISO = {
+    exito: { caja: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400', icono: 'fa-circle-check' },
+    advertencia: { caja: 'bg-amber-500/10 border-amber-500/20 text-amber-400', icono: 'fa-dumbbell' },
+    error: { caja: 'bg-rose-500/10 border-rose-500/20 text-rose-400', icono: 'fa-triangle-exclamation' },
+};
+
+function mostrarAvisoRutina(tipo, titulo, mensaje) {
+    const modal = document.getElementById('modalAvisoRutina');
+    if (!modal) return;
+    const estilo = ESTILOS_AVISO[tipo] || ESTILOS_AVISO.advertencia;
+    const caja = document.getElementById('avisoRutinaIcono');
+    caja.className = `w-14 h-14 mx-auto rounded-2xl border flex items-center justify-center text-2xl ${estilo.caja}`;
+    caja.querySelector('i').className = `fa-solid ${estilo.icono}`;
+    document.getElementById('avisoRutinaTitulo').textContent = titulo;
+    document.getElementById('avisoRutinaMensaje').textContent = mensaje;
+    modal.classList.remove('hidden');
+    document.getElementById('btnCerrarAvisoRutina').focus();
+}
+
+function cerrarAvisoRutina() {
+    document.getElementById('modalAvisoRutina')?.classList.add('hidden');
+}
 
 function seleccionarGrupoHevy(grupo, btn) {
     grupoHevyActual = grupo;
@@ -212,13 +357,13 @@ function recalcularHevy() {
     if (serEl) serEl.textContent = seriesOk;
 }
 
-function reiniciarChecksHevy() {
+function reiniciarChecksHevy(actualizarMarcador = true) {
     document.querySelectorAll('.set-row.completed').forEach(row => {
         row.classList.remove('completed');
         const btn = row.querySelector('button');
         if (btn) btn.className = "ml-auto w-7 h-7 rounded-lg bg-slate-800 hover:bg-emerald-600/30 text-slate-400 flex items-center justify-center transition cursor-pointer";
     });
-    recalcularHevy();
+    if (actualizarMarcador) recalcularHevy();
 }
 
 function actualizarDisplayTimerHevy() {
@@ -229,27 +374,71 @@ function actualizarDisplayTimerHevy() {
     display.textContent = `${min}:${seg}`;
 }
 
-function iniciarTimerHevy(segundos) {
-    if (hevyIntervalo) clearInterval(hevyIntervalo);
-    hevySegundos = segundos;
-    actualizarDisplayTimerHevy();
+function pintarTimerHevy(color) {
     const display = document.getElementById('hevyTimerDisplay');
-    if (display) {
-        display.classList.remove('text-emerald-400');
-        display.classList.add('text-blue-400');
-    }
+    if (!display) return;
+    display.classList.remove('text-white', 'text-blue-400', 'text-emerald-400', 'text-amber-400');
+    display.classList.add(color);
+}
+
+function actualizarBotonPausaHevy(estado) {
+    const btn = document.getElementById('btnPausaTimerHevy');
+    if (!btn) return;
+    const pausado = estado === 'pausado';
+    const texto = pausado ? 'Reanudar descanso' : 'Pausar descanso';
+    btn.disabled = estado === 'detenido';
+    btn.title = texto;
+    btn.setAttribute('aria-label', texto);
+    btn.querySelector('i').className = `fa-solid ${pausado ? 'fa-play' : 'fa-pause'}`;
+}
+
+function correrTimerHevy() {
+    clearInterval(hevyIntervalo);
+    pintarTimerHevy('text-blue-400');
+    actualizarBotonPausaHevy('corriendo');
     hevyIntervalo = setInterval(() => {
         if (hevySegundos > 0) {
             hevySegundos--;
             actualizarDisplayTimerHevy();
-        } else {
+        }
+        if (hevySegundos === 0) {
             clearInterval(hevyIntervalo);
-            if (display) {
-                display.classList.remove('text-blue-400');
-                display.classList.add('text-emerald-400');
-            }
+            hevyIntervalo = null;
+            pintarTimerHevy('text-emerald-400');
+            actualizarBotonPausaHevy('detenido');
         }
     }, 1000);
+}
+
+function iniciarTimerHevy(segundos) {
+    hevySegundos = segundos;
+    actualizarDisplayTimerHevy();
+    correrTimerHevy();
+}
+
+function pausarTimerHevy() {
+    if (!hevyIntervalo) return;
+    clearInterval(hevyIntervalo);
+    hevyIntervalo = null;
+    pintarTimerHevy('text-amber-400');
+    actualizarBotonPausaHevy('pausado');
+}
+
+function alternarPausaTimerHevy() {
+    if (hevyIntervalo) {
+        pausarTimerHevy();
+    } else if (hevySegundos > 0) {
+        correrTimerHevy();
+    }
+}
+
+function reiniciarTimerHevy() {
+    clearInterval(hevyIntervalo);
+    hevyIntervalo = null;
+    hevySegundos = 90;
+    actualizarDisplayTimerHevy();
+    pintarTimerHevy('text-white');
+    actualizarBotonPausaHevy('detenido');
 }
 
 function ajustarTimerHevy(delta) {
@@ -285,5 +474,23 @@ function cerrarModalEditarEjercicio() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    inicializarDatosRutinaDesdeDOM();
     filtrarCatalogoHevy();
+
+    // El aviso también se cierra con Escape o tocando fuera de la tarjeta
+    const modalAviso = document.getElementById('modalAvisoRutina');
+    modalAviso?.addEventListener('click', (e) => {
+        if (e.target === modalAviso) cerrarAvisoRutina();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') cerrarAvisoRutina();
+    });
+
+    // Al volver de agregar/editar un ejercicio propio, reabrir esa pestaña y día
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'custom') {
+        seleccionarModoRutina('custom');
+        if (params.get('dia')) seleccionarDiaRutina('custom', params.get('dia'));
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
 });
