@@ -288,9 +288,9 @@ def dashboard(request):
 
             socio_obj = Socio.objects.filter(id=socio_id).first() if socio_id else None
             if not socio_obj and dni_socio:
-                socio_user = Usuario.objects.filter(username=dni_socio, rol='socio').first() or Usuario.objects.filter(username=dni_socio).first()
+                socio_user = Usuario.objects.filter(username=dni_socio, rol='socio', is_superuser=False).first()
                 if socio_user:
-                    socio_obj, _ = Socio.objects.get_or_create(usuario=socio_user)
+                    socio_obj = Socio.para_usuario(socio_user)
 
             plan_obj = Plan.objects.filter(id=plan_id).first() if plan_id else None
             act_obj = Actividad.objects.filter(id=actividad_id).first() if actividad_id else None
@@ -714,7 +714,7 @@ def dashboard(request):
 # 3. SOCIO (POR DEFECTO)
     else:
         hoy = timezone.localdate()
-        socio_obj, _ = Socio.objects.get_or_create(usuario=user)
+        socio_obj = Socio.para_usuario(user)
         membresia_actual = (
             MembresiaSocio.objects.filter(
                 socio=socio_obj,
@@ -1342,11 +1342,17 @@ def mi_perfil_empleado(request):
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 8. SUBPANTALLAS DEL PORTAL SOCIO
+def _es_socio(usuario):
+    return not usuario.is_superuser and getattr(usuario, 'rol', None) == 'socio'
+
+
 @login_required
 def mi_rutina_socio(request):
     user = request.user
     hoy = timezone.localdate()
-    socio_obj, _ = Socio.objects.get_or_create(usuario=user)
+    if not _es_socio(user):
+        return redirect('dashboard')
+    socio_obj = Socio.para_usuario(user)
     membresia_actual = (
         MembresiaSocio.objects.filter(socio=socio_obj, activa=True, fecha_fin__gte=hoy)
         .select_related('plan')
@@ -1433,7 +1439,9 @@ def mi_rutina_socio(request):
 def mis_reservas_socio(request):
     user = request.user
     hoy = timezone.localdate()
-    socio_obj, _ = Socio.objects.get_or_create(usuario=user)
+    if not _es_socio(user):
+        return redirect('dashboard')
+    socio_obj = Socio.para_usuario(user)
     membresia_actual = (
         MembresiaSocio.objects.filter(socio=socio_obj, activa=True, fecha_fin__gte=hoy)
         .select_related('plan')
@@ -1555,7 +1563,9 @@ def mis_reservas_socio(request):
 def mis_pagos_socio(request):
     user = request.user
     hoy = timezone.localdate()
-    socio_obj, _ = Socio.objects.get_or_create(usuario=user)
+    if not _es_socio(user):
+        return redirect('dashboard')
+    socio_obj = Socio.para_usuario(user)
     membresia_actual = (
         MembresiaSocio.objects.filter(socio=socio_obj, activa=True, fecha_fin__gte=hoy)
         .select_related('plan')
@@ -1626,7 +1636,9 @@ def mis_pagos_socio(request):
 @login_required
 def mi_perfil_socio(request):
     user = request.user
-    socio_obj, _ = Socio.objects.get_or_create(usuario=user)
+    if not _es_socio(user):
+        return redirect('dashboard')
+    socio_obj = Socio.para_usuario(user)
     if request.method == 'POST' and request.POST.get('accion') == 'actualizar_perfil':
         user.first_name = request.POST.get('first_name', '').strip()
         user.last_name = request.POST.get('last_name', '').strip()

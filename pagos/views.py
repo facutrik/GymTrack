@@ -121,7 +121,7 @@ def pagos_empleado(request):
             messages.error(request, 'Seleccioná un plan o una actividad para cobrar.')
             return redirect('pagos_empleado')
 
-        socio_obj, _ = Socio.objects.get_or_create(usuario=socio_user)
+        socio_obj = Socio.para_usuario(socio_user)
         monto_total = 0
         if plan and getattr(plan, 'precio', None) is not None:
             monto_total += int(plan.precio)
