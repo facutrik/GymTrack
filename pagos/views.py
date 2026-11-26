@@ -130,15 +130,7 @@ def pagos_empleado(request):
 
         nueva_membresia = None
         if plan:
-            duracion = getattr(plan, 'duracion_dias', 30) or 30
-            MembresiaSocio.objects.filter(socio=socio_obj).update(activa=False)
-            nueva_membresia = MembresiaSocio.objects.create(
-                socio=socio_obj,
-                plan=plan,
-                fecha_inicio=hoy,
-                fecha_fin=hoy + timedelta(days=duracion),
-                activa=True,
-            )
+            nueva_membresia = MembresiaSocio.renovar(socio_obj, plan, hoy)
 
         pago_kwargs = {
             'socio': socio_obj,

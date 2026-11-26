@@ -147,6 +147,21 @@
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
                 <div class="flex items-center justify-between mb-4">
                     <div>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Disciplinas y Cupos</span>
+                        <h3 class="text-2xl font-black text-amber-300 mt-1">{{ total_actividades|default:0 }}</h3>
+                    </div>
+                    <div class="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </div>
+                </div>
+                <a href="{% url 'reservas_empleado' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-semibold rounded-xl text-center transition">
+                    Ver Reservas y Clases
+                </a>
+            </div>
+
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
                         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Cobros del Día</span>
                         <h3 class="text-2xl font-black text-emerald-400 mt-1">${{ total_cobros_hoy|default:0 }}</h3>
                     </div>
@@ -164,20 +179,7 @@
                 </div>
             </div>
 
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Disciplinas y Cupos</span>
-                        <h3 class="text-2xl font-black text-amber-300 mt-1">{{ total_actividades|default:0 }}</h3>
-                    </div>
-                    <div class="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
-                        <i class="fa-solid fa-calendar-days"></i>
-                    </div>
-                </div>
-                <a href="{% url 'reservas_empleado' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-semibold rounded-xl text-center transition">
-                    Ver Reservas y Clases
-                </a>
-            </div>
+
         </div>
 
         <!-- PERFILES Y JORNADAS DE PROFESORES -->
@@ -294,6 +296,225 @@
         </div>
 
     </main>
+
+    <!-- MODAL GESTIONAR RUTINAS -->
+    <div id="modalRutinaProfesor" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-5xl w-full p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[92vh]">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg border border-blue-500/20">
+                        <i class="fa-solid fa-dumbbell"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-white text-base">Gestión y Edición de Rutinas</h3>
+                        <p class="text-xs text-slate-400">Editá las 3 rutinas predefinidas o las rutinas personalizadas de cada socio</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('modalRutinaProfesor').classList.add('hidden')" class="text-slate-400 hover:text-white transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Formulario Agregar Ejercicio -->
+            <form method="POST" action="{% url 'dashboard' %}" class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="empleado_agregar_ejercicio_rutina">
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tipo de Rutina</label>
+                        <select name="destino" id="selectDestinoRutinaEmp" onchange="toggleDestinoRutinaEmp()" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                            <option value="basica">Rutina Predefinida (Adaptación / Hipertrofia / Fuerza)</option>
+                            <option value="socio">Rutina Personalizada de Socio</option>
+                        </select>
+                    </div>
+
+                    <div id="bloqueSelectBasicaEmp">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Rutina Predefinida</label>
+                        <select name="rutina_basica_id" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                            {% for rb in rutinas_basicas_empleado %}
+                                <option value="{{ rb.id }}">{{ rb.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div id="bloqueSelectSocioEmp" class="hidden">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Socio</label>
+                        <select name="socio_usuario_id" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                            {% for u in socios_usuarios_lista %}
+                                <option value="{{ u.id }}">{{ u.first_name }} {{ u.last_name }} (DNI: {{ u.username }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Día (Exacto o Nuevo)</label>
+                        <input type="text" name="nombre_dia" required placeholder="Ej: Día 1 - Torso y Brazos Base" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
+                    <div class="sm:col-span-2">
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nombre del Ejercicio</label>
+                        <input type="text" name="nombre_ejercicio" required placeholder="Ej: Banco plano con barra" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Series / Reps</label>
+                        <div class="flex gap-1.5">
+                            <input type="number" name="series" value="3" min="1" max="8" class="w-16 px-2 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono">
+                            <input type="text" name="repeticiones" value="8-12 reps" class="w-full px-2 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Descanso</label>
+                        <input type="text" name="descanso" value="90s" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono">
+                    </div>
+                    <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition cursor-pointer">
+                        <i class="fa-solid fa-plus mr-1"></i> Agregar
+                    </button>
+                </div>
+            </form>
+
+            <!-- Tabs: Predefinidas vs Personalizadas de Socios -->
+            <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
+                <button type="button" onclick="cambiarTabRutinasEmp('basicas')" id="btnTabRutinasBasicasEmp" class="px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl cursor-pointer">
+                    3 Rutinas Predefinidas
+                </button>
+                <button type="button" onclick="cambiarTabRutinasEmp('socios')" id="btnTabRutinasSociosEmp" class="px-4 py-2 bg-slate-800 text-slate-300 hover:text-white font-bold text-xs rounded-xl cursor-pointer">
+                    Rutinas Personalizadas de Socios ({{ rutinas_asignadas_empleado|length }})
+                </button>
+            </div>
+
+            <!-- Listado 1: 3 Rutinas Predefinidas -->
+            <div id="contenedorRutinasBasicasEmp" class="space-y-4 max-h-[46vh] overflow-y-auto pr-1">
+                {% for rb in rutinas_basicas_empleado %}
+                    <div class="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-3">
+                        <h5 class="font-extrabold text-white text-sm flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-blue-400"></span> {{ rb.nombre }}
+                        </h5>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            {% for d in rb.dias.all %}
+                                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                                    <span class="text-[11px] font-bold text-blue-400 block">{{ d.nombre_dia }}</span>
+                                    {% for ej in d.ejercicios.all %}
+                                        <div class="flex items-center justify-between gap-2 text-[11px] text-slate-300 border-t border-slate-800/70 pt-1.5">
+                                            <span class="truncate">{{ ej.nombre }} <strong class="text-white">({{ ej.series }}×{{ ej.repeticiones }})</strong></span>
+                                            <div class="flex items-center gap-1 shrink-0">
+                                                <button type="button"
+                                                        onclick="abrirModalEditarEjEmp(this)"
+                                                        data-id="{{ ej.id }}"
+                                                        data-nombre="{{ ej.nombre }}"
+                                                        data-series="{{ ej.series }}"
+                                                        data-reps="{{ ej.repeticiones }}"
+                                                        data-descanso="{{ ej.descanso|default:'90s' }}"
+                                                        class="text-slate-400 hover:text-blue-400 p-1 cursor-pointer" title="Editar">
+                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                </button>
+                                                <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="accion" value="empleado_eliminar_ejercicio_rutina">
+                                                    <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
+                                                    <button type="submit" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer" title="Eliminar">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Listado 2: Rutinas Personalizadas de Socios -->
+            <div id="contenedorRutinasSociosEmp" class="hidden space-y-4 max-h-[46vh] overflow-y-auto pr-1">
+                {% for rs in rutinas_asignadas_empleado %}
+                    <div class="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h5 class="font-extrabold text-white text-sm">{{ rs.socio.first_name }} {{ rs.socio.last_name }} <span class="text-xs font-mono text-slate-400">(DNI: {{ rs.socio.username }})</span></h5>
+                            <span class="text-[11px] text-blue-400 font-bold">{{ rs.nombre }}</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            {% for d in rs.dias.all %}
+                                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                                    <span class="text-[11px] font-bold text-blue-400 block">{{ d.nombre_dia }}</span>
+                                    {% for ej in d.ejercicios.all %}
+                                        <div class="flex items-center justify-between gap-2 text-[11px] text-slate-300 border-t border-slate-800/70 pt-1.5">
+                                            <span class="truncate">{{ ej.nombre }} <strong class="text-white">({{ ej.series }}×{{ ej.repeticiones }})</strong></span>
+                                            <div class="flex items-center gap-1 shrink-0">
+                                                <button type="button"
+                                                        onclick="abrirModalEditarEjEmp(this)"
+                                                        data-id="{{ ej.id }}"
+                                                        data-nombre="{{ ej.nombre }}"
+                                                        data-series="{{ ej.series }}"
+                                                        data-reps="{{ ej.repeticiones }}"
+                                                        data-descanso="{{ ej.descanso|default:'90s' }}"
+                                                        class="text-slate-400 hover:text-blue-400 p-1 cursor-pointer" title="Editar">
+                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                </button>
+                                                <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="accion" value="empleado_eliminar_ejercicio_rutina">
+                                                    <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
+                                                    <button type="submit" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer" title="Eliminar">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-center text-slate-500 text-xs py-6">Aún no hay rutinas personalizadas asignadas a socios.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sub-Modal Editar Ejercicio (Empleado) -->
+    <div id="modalEditarEjercicioEmp" class="fixed inset-0 z-[60] hidden bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-white text-base">Editar Ejercicio de Rutina</h3>
+                <button type="button" onclick="document.getElementById('modalEditarEjercicioEmp').classList.add('hidden')" class="text-slate-400 hover:text-white cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form method="POST" action="{% url 'dashboard' %}" class="space-y-3 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="empleado_editar_ejercicio_rutina">
+                <input type="hidden" name="ejercicio_id" id="empEditEjId">
+
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre del Ejercicio</label>
+                    <input type="text" name="nombre_ejercicio" id="empEditEjNombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Series</label>
+                        <input type="number" name="series" id="empEditEjSeries" min="1" max="10" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Repeticiones</label>
+                        <input type="text" name="repeticiones" id="empEditEjReps" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Descanso</label>
+                        <input type="text" name="descanso" id="empEditEjDescanso" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white font-mono">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="document.getElementById('modalEditarEjercicioEmp').classList.add('hidden')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow cursor-pointer">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- MODAL ARRANCAR JORNADA -->
     <div id="modalIniciarTurno" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -671,6 +892,7 @@
 
     {% include 'includes/footer.html' %}
 
+<script src="{% static 'js/empleado/rutinas.js' %}"></script>
 <script src="{% static 'js/empleado/cobros.js' %}"></script>
 <script src="{% static 'js/empleado/asistencia.js' %}"></script>
 <script src="{% static 'js/empleado/dashboard.js' %}"></script>

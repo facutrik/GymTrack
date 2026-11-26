@@ -10,9 +10,10 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib import messages
+from django.db import transaction
 from django.utils import timezone
 from django.db.models import Q, Sum
-from actividades.models import Actividad
+from actividades.models import Actividad, Clase
 from membresias.models import Plan, MembresiaSocio
 from usuarios.models import Usuario, AsistenciaEmpleado
 from asistencias.models import Asistencia
@@ -85,15 +86,7 @@ def dashboard(request):
                         if 1 <= dias_atraso <= 7:
                             dias_vigencia = max(1, 30 - dias_atraso)
 
-                    MembresiaSocio.objects.filter(socio=socio_obj).update(activa=False)
-
-                    nueva_memb = MembresiaSocio.objects.create(
-                        socio=socio_obj,
-                        plan=plan_obj,
-                        fecha_inicio=hoy_cobro,
-                        fecha_fin=hoy_cobro + timedelta(days=dias_vigencia),
-                        activa=True
-                    )
+                    nueva_memb = MembresiaSocio.renovar(socio_obj, plan_obj, hoy_cobro, dias_vigencia)
 
                 if act_obj:
                     monto_total += getattr(act_obj, 'precio', 0)
@@ -318,14 +311,7 @@ def dashboard(request):
                         if 1 <= dias_atraso <= 7:
                             dias_vigencia = max(1, 30 - dias_atraso)
 
-                    MembresiaSocio.objects.filter(socio=socio_obj).update(activa=False)
-                    nueva_memb = MembresiaSocio.objects.create(
-                        socio=socio_obj,
-                        plan=plan_obj,
-                        fecha_inicio=hoy,
-                        fecha_fin=hoy + timedelta(days=dias_vigencia),
-                        activa=True
-                    )
+                    nueva_memb = MembresiaSocio.renovar(socio_obj, plan_obj, hoy, dias_vigencia)
 
                 if act_obj:
                     monto_total += getattr(act_obj, 'precio', 0)
@@ -727,96 +713,6 @@ def dashboard(request):
         )
         cuota_al_dia = bool(membresia_actual) and getattr(socio_obj, 'estado_cuenta', 'VERDE') not in ['ROJO', 'VENCIDO']
 
-        if request.method == 'POST' and request.POST.get('accion') == 'inscribir_actividad':
-            act_id = request.POST.get('actividad_id')
-            act_obj = get_object_or_404(Actividad, id=act_id)
-
-            if not cuota_al_dia:
-                messages.error(request, "Tu cuota está vencida. Regularizá el pago en Perfil o en recepción para anotarte a clases.")
-            elif Reserva:
-                ya_anotado = False
-                campos_res = {f.name: f for f in Reserva._meta.get_fields()}
-                fk_horario = next((n for n in ('horario', 'clase', 'turno', 'horario_clase') if n in campos_res), None)
-                fk_actividad = 'actividad' if 'actividad' in campos_res else None
-
-                try:
-                    if fk_actividad:
-                        ya_anotado = Reserva.objects.filter(
-                            socio=socio_obj, actividad=act_obj, estado__in=['confirmada', 'activa', 'Confirmada', 'Activa']
-                        ).exists()
-                    elif fk_horario:
-                        ya_anotado = Reserva.objects.filter(
-                            **{'socio': socio_obj, f'{fk_horario}__actividad': act_obj, 'estado__in': ['confirmada', 'activa', 'Confirmada', 'Activa']}
-                        ).exists()
-                except Exception:
-                    ya_anotado = False
-
-                if ya_anotado:
-                    messages.info(request, f"Ya estás anotado en {act_obj.nombre}.")
-                else:
-                    try:
-                        res_kwargs = {'socio': socio_obj}
-                        if 'fecha_reserva' in campos_res:
-                            res_kwargs['fecha_reserva'] = hoy
-                        if 'fecha' in campos_res:
-                            res_kwargs['fecha'] = hoy
-                        if 'estado' in campos_res:
-                            res_kwargs['estado'] = 'confirmada'
-
-                        if fk_actividad:
-                            res_kwargs[fk_actividad] = act_obj
-                            Reserva.objects.create(**res_kwargs)
-                        elif fk_horario:
-                            HorarioModel = campos_res[fk_horario].related_model
-                            primer_horario = HorarioModel.objects.filter(actividad=act_obj).first()
-
-                            if not primer_horario:
-                                campos_h = {f.name: f for f in HorarioModel._meta.get_fields()}
-                                h_kwargs = {'actividad': act_obj}
-                                if 'dia_semana' in campos_h:
-                                    h_kwargs['dia_semana'] = 'Lunes'
-                                elif 'dia' in campos_h:
-                                    h_kwargs['dia'] = 'Lunes'
-                                elif 'dias' in campos_h:
-                                    h_kwargs['dias'] = 'Lunes a Viernes'
-                                if 'hora_inicio' in campos_h:
-                                    h_kwargs['hora_inicio'] = time(18, 0)
-                                if 'hora_fin' in campos_h:
-                                    h_kwargs['hora_fin'] = time(19, 0)
-                                if 'cupo_maximo' in campos_h:
-                                    h_kwargs['cupo_maximo'] = 30
-                                elif 'cupo' in campos_h:
-                                    h_kwargs['cupo'] = 30
-                                primer_horario = HorarioModel.objects.create(**h_kwargs)
-
-                            res_kwargs[fk_horario] = primer_horario
-                            Reserva.objects.create(**res_kwargs)
-
-                        messages.success(request, f"¡Te anotaste con éxito en {act_obj.nombre}!")
-                    except Exception as e:
-                        messages.error(request, f"Error al inscribir en {act_obj.nombre}: {e}")
-            return redirect('/dashboard/?tab=actividades')
-
-        if request.method == 'POST' and request.POST.get('accion') == 'cancelar_actividad':
-            act_id = request.POST.get('actividad_id')
-            act_obj = get_object_or_404(Actividad, id=act_id)
-            if Reserva:
-                campos_res = {f.name: f for f in Reserva._meta.get_fields()}
-                fk_horario = next((n for n in ('horario', 'clase', 'turno', 'horario_clase') if n in campos_res), None)
-                try:
-                    if 'actividad' in campos_res:
-                        Reserva.objects.filter(
-                            socio=socio_obj, actividad=act_obj, estado__in=['confirmada', 'activa', 'Confirmada', 'Activa']
-                        ).update(estado='cancelada')
-                    elif fk_horario:
-                        Reserva.objects.filter(
-                            **{'socio': socio_obj, f'{fk_horario}__actividad': act_obj, 'estado__in': ['confirmada', 'activa', 'Confirmada', 'Activa']}
-                        ).update(estado='cancelada')
-                except Exception:
-                    pass
-                messages.success(request, f"Se canceló tu inscripción en {act_obj.nombre}.")
-            return redirect('/dashboard/?tab=actividades')
-
         if request.method == 'POST' and request.POST.get('accion') == 'actualizar_perfil':
             user.first_name = request.POST.get('first_name', '').strip()
             user.last_name = request.POST.get('last_name', '').strip()
@@ -946,59 +842,6 @@ def dashboard(request):
                     clave = 'sabado'
                 if clave in rutina_semanal:
                     rutina_semanal[clave] = d.ejercicios.all()
-
-        if request.method == 'POST' and request.POST.get('accion') == 'pagar_cuota_socio':
-            servicios_seleccionados = request.POST.getlist('servicios')
-            metodo = request.POST.get('metodo_pago', 'transferencia')
-            TARIFAS = {
-                'musculacion': {'nombre': 'Musculación (Pase Libre)', 'precio': 60000},
-                'clases': {'nombre': 'Pase Clases Grupales', 'precio': 45000},
-                'pilates_1': {'nombre': 'Pilates (1 vez/semana)', 'precio': 35000},
-                'pilates_2': {'nombre': 'Pilates (2 veces/semana)', 'precio': 42000},
-                'pilates_3': {'nombre': 'Pilates (3 veces/semana)', 'precio': 50000},
-            }
-            total_a_pagar = 0
-            nombres_items = []
-            for s in servicios_seleccionados:
-                if s in TARIFAS:
-                    total_a_pagar += TARIFAS[s]['precio']
-                    nombres_items.append(TARIFAS[s]['nombre'])
-            if total_a_pagar <= 0:
-                messages.error(request, 'Debes seleccionar al menos una clase o disciplina para abonar.')
-            else:
-                detalle_items = " + ".join(nombres_items)
-                plan_obj, _ = Plan.objects.get_or_create(
-                    nombre=detalle_items,
-                    defaults={'precio': total_a_pagar, 'duracion_dias': 30}
-                )
-                MembresiaSocio.objects.filter(socio=socio_obj).update(activa=False)
-                nueva_membresia = MembresiaSocio.objects.create(
-                    socio=socio_obj,
-                    plan=plan_obj,
-                    fecha_inicio=hoy,
-                    fecha_fin=hoy + timedelta(days=30),
-                    activa=True
-                )
-                Pago.objects.create(
-                    socio=socio_obj,
-                    membresia=nueva_membresia,
-                    monto=total_a_pagar,
-                    metodo_pago=metodo,
-                    fecha_pago=timezone.now()
-                )
-                if hasattr(socio_obj, 'estado_cuenta'):
-                    socio_obj.estado_cuenta = 'VERDE'
-                    socio_obj.save()
-                if hasattr(user, 'estado_cuenta'):
-                    user.estado_cuenta = 'VERDE'
-                    user.save()
-                detalle_items = ", ".join(nombres_items)
-                messages.success(
-                    request,
-                    f'¡Pago registrado con éxito por ${total_a_pagar:,.0f} ({metodo.capitalize()})! '
-                    f'Concepto: {detalle_items}. Tu cuenta ha quedado al día hasta el {nueva_membresia.fecha_fin.strftime("%d/%m/%Y")}.'
-                )
-            return redirect('/dashboard/?tab=perfil')
 
         historial_pagos = Pago.objects.filter(socio=socio_obj).order_by('-fecha_pago') if socio_obj else []
         context = {
@@ -1136,6 +979,20 @@ def admin_empleados(request):
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 5. GESTIÓN DE ACTIVIDADES (PANEL ADMIN)
+def _guardar_cupo(actividad, valor):
+    if actividad.sin_turno:
+        if actividad.requiere_reserva:
+            actividad.requiere_reserva = False
+            actividad.save(update_fields=['requiere_reserva'])
+        return
+    valor = (valor or '').strip()
+    if not valor.isdigit() or int(valor) < 1:
+        return
+    clase = Clase.objects.filter(actividad=actividad).order_by('id').first() or Clase(actividad=actividad)
+    clase.cupo_maximo = min(int(valor), 1000)
+    clase.save()
+
+
 @login_required
 def admin_actividades(request):
     user = request.user
@@ -1158,12 +1015,13 @@ def admin_actividades(request):
             nombre = request.POST.get('nombre', '').strip()
             desc = request.POST.get('descripcion', '').strip()
             req_reserva = request.POST.get('requiere_reserva') == 'on'
-            Actividad.objects.create(
+            actividad = Actividad.objects.create(
                 nombre=nombre,
                 descripcion=desc,
                 requiere_reserva=req_reserva,
                 activa=True
             )
+            _guardar_cupo(actividad, request.POST.get('cupo_maximo'))
             messages.success(request, f"Actividad '{nombre}' creada correctamente.")
             return redirect('admin_actividades')
         elif accion == 'editar':
@@ -1173,6 +1031,7 @@ def admin_actividades(request):
             act.descripcion = request.POST.get('descripcion', '').strip()
             act.requiere_reserva = request.POST.get('requiere_reserva') == 'on'
             act.save()
+            _guardar_cupo(act, request.POST.get('cupo_maximo'))
             messages.success(request, f"Actividad '{act.nombre}' actualizada exitosamente.")
             return redirect('admin_actividades')
         elif accion == 'eliminar':
@@ -1199,6 +1058,7 @@ def admin_actividades(request):
             concurrencia_mes = Asistencia.objects.filter(fecha_hora__gte=inicio_mes).count()
         actividades_data.append({
             'objeto': act,
+            'cupo': Reserva.cupo_de(act) if Reserva else 20,
             'concurrencia_mes': concurrencia_mes
         })
     context = {
@@ -1212,25 +1072,28 @@ def admin_actividades(request):
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 6. GESTIÓN DE MEMBRESÍAS / PLANES (PANEL ADMIN)
+def _ruta_descripciones_planes():
+    return os.path.join(settings.BASE_DIR, 'planes_descripciones.json')
+
+
+def _leer_descripciones_planes():
+    try:
+        with open(_ruta_descripciones_planes(), 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
 @login_required
 def admin_membresias(request):
     user = request.user
     if not (user.is_superuser or getattr(user, 'rol', None) == 'admin'):
         return redirect('dashboard')
     tiene_descripcion_bd = hasattr(Plan, 'descripcion')
-    ruta_json_desc = os.path.join(settings.BASE_DIR, 'planes_descripciones.json')
-
-    def leer_descripciones_json():
-        if os.path.exists(ruta_json_desc):
-            try:
-                with open(ruta_json_desc, 'r', encoding='utf-8') as f:
-                    return json.load(f)
-            except Exception:
-                return {}
-        return {}
+    ruta_json_desc = _ruta_descripciones_planes()
 
     def guardar_descripcion_json(plan_id, texto):
-        datos = leer_descripciones_json()
+        datos = _leer_descripciones_planes()
         datos[str(plan_id)] = texto
         with open(ruta_json_desc, 'w', encoding='utf-8') as f:
             json.dump(datos, f, ensure_ascii=False, indent=2)
@@ -1284,7 +1147,7 @@ def admin_membresias(request):
         planes_qs,
         key=lambda p: (1 if 'pilates' in p.nombre.lower() else 0, p.precio, p.nombre)
     )
-    descripciones_guardadas = leer_descripciones_json()
+    descripciones_guardadas = _leer_descripciones_planes()
     for p in planes_ordenados:
         desc_bd = getattr(p, 'descripcion', '').strip() if tiene_descripcion_bd else ''
         desc_json = descripciones_guardadas.get(str(p.id), '').strip()
@@ -1455,61 +1318,21 @@ def mis_reservas_socio(request):
         if not cuota_al_dia:
             messages.error(request, "Tu cuota está vencida. Regularizá el pago para anotarte a clases.")
         elif Reserva:
-            campos_res = {f.name: f for f in Reserva._meta.get_fields()}
-            fk_horario = next((n for n in ('horario', 'clase', 'turno', 'horario_clase') if n in campos_res), None)
-            fk_actividad = 'actividad' if 'actividad' in campos_res else None
-            ya_anotado = False
-            try:
-                if fk_actividad:
-                    ya_anotado = Reserva.objects.filter(
-                        socio=socio_obj, actividad=act_obj, estado__in=['confirmada', 'activa', 'Confirmada', 'Activa']
-                    ).exists()
-                elif fk_horario:
-                    ya_anotado = Reserva.objects.filter(
-                        **{'socio': socio_obj, f'{fk_horario}__actividad': act_obj, 'estado__in': ['confirmada', 'activa', 'Confirmada', 'Activa']}
-                    ).exists()
-            except Exception:
-                ya_anotado = False
-            if ya_anotado:
-                messages.info(request, f"Ya estás anotado en {act_obj.nombre}.")
-            else:
-                try:
-                    res_kwargs = {'socio': socio_obj}
-                    if 'fecha_reserva' in campos_res:
-                        res_kwargs['fecha_reserva'] = hoy
-                    if 'fecha' in campos_res:
-                        res_kwargs['fecha'] = hoy
-                    if 'estado' in campos_res:
-                        res_kwargs['estado'] = 'confirmada'
-                    if fk_actividad:
-                        res_kwargs[fk_actividad] = act_obj
-                        Reserva.objects.create(**res_kwargs)
-                    elif fk_horario:
-                        HorarioModel = campos_res[fk_horario].related_model
-                        primer_horario = HorarioModel.objects.filter(actividad=act_obj).first()
-                        if not primer_horario:
-                            campos_h = {f.name: f for f in HorarioModel._meta.get_fields()}
-                            h_kwargs = {'actividad': act_obj}
-                            if 'dia_semana' in campos_h:
-                                h_kwargs['dia_semana'] = 'Lunes'
-                            elif 'dia' in campos_h:
-                                h_kwargs['dia'] = 'Lunes'
-                            elif 'dias' in campos_h:
-                                h_kwargs['dias'] = 'Lunes a Viernes'
-                            if 'hora_inicio' in campos_h:
-                                h_kwargs['hora_inicio'] = time(18, 0)
-                            if 'hora_fin' in campos_h:
-                                h_kwargs['hora_fin'] = time(19, 0)
-                            if 'cupo_maximo' in campos_h:
-                                h_kwargs['cupo_maximo'] = 30
-                            elif 'cupo' in campos_h:
-                                h_kwargs['cupo'] = 30
-                            primer_horario = HorarioModel.objects.create(**h_kwargs)
-                        res_kwargs[fk_horario] = primer_horario
-                        Reserva.objects.create(**res_kwargs)
+            with transaction.atomic():
+                # Bloquea la actividad para que dos socios no ocupen a la vez el último lugar
+                Actividad.objects.select_for_update().get(pk=act_obj.pk)
+                if act_obj.sin_turno:
+                    messages.info(request, f"{act_obj.nombre} es de acceso libre: no hace falta sacar turno.")
+                elif Reserva.objects.filter(socio=socio_obj, clase__actividad=act_obj, estado='confirmada').exists():
+                    messages.info(request, f"Ya estás anotado en {act_obj.nombre}.")
+                elif not act_obj.activa:
+                    messages.error(request, f"{act_obj.nombre} no está disponible en este momento.")
+                elif act_obj.requiere_reserva and Reserva.anotados_en(act_obj) >= Reserva.cupo_de(act_obj):
+                    messages.error(request, f"No quedan cupos en {act_obj.nombre}.")
+                else:
+                    clase = Reserva.clase_de(act_obj) or Clase.objects.create(actividad=act_obj)
+                    Reserva.objects.create(socio=socio_obj, clase=clase, fecha_reserva=hoy)
                     messages.success(request, f"¡Te anotaste con éxito en {act_obj.nombre}!")
-                except Exception as e:
-                    messages.error(request, f"Error al inscribir en {act_obj.nombre}: {e}")
         return redirect('mis_reservas')
     if request.method == 'POST' and request.POST.get('accion') == 'cancelar_actividad':
         act_id = request.POST.get('actividad_id')
@@ -1548,8 +1371,13 @@ def mis_reservas_socio(request):
                         ids_anotadas.add(obj_h.actividad_id)
         except Exception:
             pass
+    ids_anotadas -= {a.id for a in todas_actividades if a.sin_turno}
     actividades_anotadas = [a for a in todas_actividades if a.id in ids_anotadas]
     actividades_disponibles = [a for a in todas_actividades if a.id not in ids_anotadas]
+    for act in actividades_disponibles:
+        if Reserva and act.requiere_reserva and not act.sin_turno:
+            act.cupo = Reserva.cupo_de(act)
+            act.cupos_libres = max(act.cupo - Reserva.anotados_en(act), 0)
     context = {
         'socio': socio_obj,
         'membresia_actual': membresia_actual,
@@ -1558,6 +1386,20 @@ def mis_reservas_socio(request):
         'actividades_disponibles': actividades_disponibles,
     }
     return render(request, 'socio/mis_reservas.html', context)
+
+def _planes_para_socio():
+    """Planes que el socio puede pagar solo: el familiar se cobra en recepción y los combinados no son planes reales."""
+    return Plan.objects.exclude(nombre__icontains='familiar').exclude(nombre__contains=' + ')
+
+
+def _descripcion_corta(plan):
+    nombre = plan.nombre.lower()
+    if 'musculacion' in nombre or 'musculación' in nombre:
+        return 'Acceso a máquinas y todas las áreas'
+    if 'clase' in nombre:
+        return 'Funcional, Spinning, Zumba, Cardio'
+    return f'Pase habilitado por {plan.duracion_dias} días'
+
 
 @login_required
 def mis_pagos_socio(request):
@@ -1576,60 +1418,46 @@ def mis_pagos_socio(request):
     if request.method == 'POST' and request.POST.get('accion') == 'pagar_cuota_socio':
         servicios_seleccionados = request.POST.getlist('servicios')
         metodo = request.POST.get('metodo_pago', 'transferencia')
-        TARIFAS = {
-            'musculacion': {'nombre': 'Musculación (Pase Libre)', 'precio': 60000},
-            'clases': {'nombre': 'Pase Clases Grupales', 'precio': 45000},
-            'pilates_1': {'nombre': 'Pilates (1 vez/semana)', 'precio': 35000},
-            'pilates_2': {'nombre': 'Pilates (2 veces/semana)', 'precio': 42000},
-            'pilates_3': {'nombre': 'Pilates (3 veces/semana)', 'precio': 50000},
-        }
-        total_a_pagar = 0
-        nombres_items = []
-        for s in servicios_seleccionados:
-            if s in TARIFAS:
-                total_a_pagar += TARIFAS[s]['precio']
-                nombres_items.append(TARIFAS[s]['nombre'])
-        if total_a_pagar <= 0:
+        if metodo not in dict(Pago.METODOS):
+            metodo = 'transferencia'
+        ids = [s for s in servicios_seleccionados if s.isdigit()]
+        planes = list(_planes_para_socio().filter(id__in=ids).order_by('precio'))
+
+        if not planes:
             messages.error(request, 'Debes seleccionar al menos una clase o disciplina para abonar.')
         else:
-            detalle_plan = " + ".join(nombres_items)
-            plan_obj, _ = Plan.objects.get_or_create(
-                nombre=detalle_plan,
-                defaults={'precio': total_a_pagar, 'duracion_dias': 30},
-            )
-            MembresiaSocio.objects.filter(socio=socio_obj).update(activa=False)
-            nueva_membresia = MembresiaSocio.objects.create(
-                socio=socio_obj,
-                plan=plan_obj,
-                fecha_inicio=hoy,
-                fecha_fin=hoy + timedelta(days=30),
-                activa=True,
-            )
-            Pago.objects.create(
-                socio=socio_obj,
-                membresia=nueva_membresia,
-                monto=total_a_pagar,
-                metodo_pago=metodo,
-                fecha_pago=timezone.now(),
-            )
-            if hasattr(socio_obj, 'estado_cuenta'):
-                socio_obj.estado_cuenta = 'VERDE'
-                socio_obj.save()
-            if hasattr(user, 'estado_cuenta'):
-                user.estado_cuenta = 'VERDE'
-                user.save()
+            renovadas = []
+            with transaction.atomic():
+                for plan in planes:
+                    membresia = MembresiaSocio.renovar(socio_obj, plan, hoy)
+                    Pago.objects.create(socio=socio_obj, membresia=membresia, monto=plan.precio, metodo_pago=metodo)
+                    renovadas.append(membresia)
+
+            total_a_pagar = sum(p.precio for p in planes)
+            detalle = ', '.join(f"{m.plan.nombre} (hasta el {m.fecha_fin.strftime('%d/%m/%Y')})" for m in renovadas)
             messages.success(
                 request,
-                f"¡Pago registrado con éxito por ${total_a_pagar:,.0f} ({metodo.capitalize()})! "
-                f"Concepto: {', '.join(nombres_items)}. Tu cuenta ha quedado al día hasta el {nueva_membresia.fecha_fin.strftime('%d/%m/%Y')}.",
+                f"¡Pago registrado con éxito por ${total_a_pagar:,.0f} ({metodo.capitalize()})! Concepto: {detalle}."
             )
         return redirect('mis_pagos')
-    historial_pagos = Pago.objects.filter(socio=socio_obj).order_by('-fecha_pago')
+    historial_pagos = Pago.objects.filter(socio=socio_obj).select_related('membresia__plan').order_by('-fecha_pago')
+
+    planes = list(_planes_para_socio().order_by('precio', 'nombre'))
+    descripciones = _leer_descripciones_planes()
+    for plan in planes:
+        plan.descripcion_mostrar = descripciones.get(str(plan.id), '').strip() or _descripcion_corta(plan)
+    planes_activos = MembresiaSocio.objects.filter(
+        socio=socio_obj, activa=True, fecha_fin__gte=hoy
+    ).select_related('plan').order_by('-fecha_fin')
+
     context = {
         'socio': socio_obj,
         'membresia_actual': membresia_actual,
+        'nombres_planes_activos': ', '.join(dict.fromkeys(m.plan.nombre for m in planes_activos)),
         'cuota_al_dia': cuota_al_dia,
         'historial_pagos': historial_pagos,
+        'planes_sueltos': [p for p in planes if 'pilates' not in p.nombre.lower()],
+        'planes_pilates': [p for p in planes if 'pilates' in p.nombre.lower()],
     }
     return render(request, 'socio/mis_pagos.html', context)
 

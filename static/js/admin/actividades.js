@@ -8,5 +8,6 @@ function abrirModalEditarDesdeBoton(btn) {
     document.getElementById('editNombre').value = nombre;
     document.getElementById('editDescripcion').value = descripcion;
     document.getElementById('editChkReserva').checked = requiereReserva;
+    document.getElementById('editCupo').value = btn.getAttribute('data-cupo');
     document.getElementById('modalEditarActividad').classList.remove('hidden');
 }

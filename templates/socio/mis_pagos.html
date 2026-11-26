@@ -76,7 +76,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h4 class="text-base font-bold text-white">Pase Mensual Activo</h4>
-                        <p class="text-xs text-slate-400 mt-0.5">Acceso a: {{ membresia_actual.plan.nombre|default:"Sin pase activo" }}</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Acceso a: {{ nombres_planes_activos|default:"Sin pase activo" }}</p>
                     </div>
                     <div>
                         {% if cuota_al_dia and membresia_actual %}
@@ -183,46 +183,40 @@
                 <div>
                     <label class="block text-slate-400 font-bold uppercase text-[10px] mb-2 tracking-wider">¿Qué disciplinas vas a abonar?</label>
                     <div class="space-y-2">
+                        {% for plan in planes_sueltos %}
                         <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
                             <div class="flex items-center gap-3">
-                                <input type="checkbox" name="servicios" value="musculacion" data-precio="60000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
+                                <input type="checkbox" name="servicios" value="{{ plan.id }}" data-precio="{{ plan.precio|floatformat:0 }}" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
                                 <div>
-                                    <span class="font-bold text-white block">🏋️‍♂️ Musculación (Pase Libre)</span>
-                                    <span class="text-[10px] text-slate-400">Acceso a máquinas y todas las áreas</span>
+                                    <span class="font-bold text-white block">{{ plan.nombre }}</span>
+                                    <span class="text-[10px] text-slate-400">{{ plan.descripcion_mostrar }}</span>
                                 </div>
                             </div>
-                            <span class="font-mono font-bold text-blue-400 text-sm">$60.000</span>
+                            <span class="font-mono font-bold text-blue-400 text-sm">${{ plan.precio|floatformat:"0g" }}</span>
                         </label>
+                        {% endfor %}
+                        {% if planes_pilates %}
                         <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
                             <div class="flex items-center gap-3">
-                                <input type="checkbox" name="servicios" value="clases" data-precio="45000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
-                                <div>
-                                    <span class="font-bold text-white block">🧘 Clases Grupales</span>
-                                    <span class="text-[10px] text-slate-400">Funcional, Spinning, Zumba, Cardio</span>
-                                </div>
-                            </div>
-                            <span class="font-mono font-bold text-blue-400 text-sm">$45.000</span>
-                        </label>
-                        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
-                            <div class="flex items-center gap-3">
-                                <input type="checkbox" id="chkPilates" name="servicios" value="pilates_1" data-precio="35000" onchange="actualizarPilates()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
+                                <input type="checkbox" id="chkPilates" name="servicios" value="{{ planes_pilates.0.id }}" data-precio="{{ planes_pilates.0.precio|floatformat:0 }}" onchange="actualizarPilates()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
                                 <div>
                                     <span class="font-bold text-white block">🤸 Pilates</span>
                                     <span class="text-[10px] text-slate-400">Elegí cuántos días por semana vas</span>
                                 </div>
                             </div>
-                            <span id="precioPilates" class="font-mono font-bold text-blue-400 text-sm">Desde $35.000</span>
+                            <span id="precioPilates" class="font-mono font-bold text-blue-400 text-sm">Desde ${{ planes_pilates.0.precio|floatformat:"0g" }}</span>
                         </label>
                         <div id="bloqueFrecuenciaPilates" class="hidden p-3.5 rounded-2xl bg-blue-950/30 border border-blue-500/30 space-y-2">
                             <label for="selectFrecuenciaPilates" class="block text-blue-400 uppercase text-[10px] font-bold tracking-wider">
                                 <i class="fa-regular fa-calendar mr-1"></i> Frecuencia semanal de Pilates:
                             </label>
                             <select id="selectFrecuenciaPilates" onchange="actualizarPilates()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-blue-500">
-                                <option value="pilates_1" data-precio="35000">1 vez por semana — $35.000 / mes</option>
-                                <option value="pilates_2" data-precio="42000">2 veces por semana — $42.000 / mes</option>
-                                <option value="pilates_3" data-precio="50000">3 veces por semana — $50.000 / mes</option>
+                                {% for plan in planes_pilates %}
+                                <option value="{{ plan.id }}" data-precio="{{ plan.precio|floatformat:0 }}">{{ plan.nombre }} — ${{ plan.precio|floatformat:"0g" }} / mes</option>
+                                {% endfor %}
                             </select>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="p-3.5 rounded-xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-between">

@@ -119,6 +119,7 @@
                                     data-id="{{ item.objeto.id }}" 
                                     data-nombre="{{ item.objeto.nombre }}" 
                                     data-descripcion="{{ item.objeto.descripcion|default:'' }}" 
+                                    data-cupo="{{ item.cupo }}"
                                     data-reserva="{{ item.objeto.requiere_reserva|yesno:'true,false' }}" 
                                     onclick="abrirModalEditarDesdeBoton(this)" 
                                     class="text-white hover:text-blue-400 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
@@ -179,7 +180,11 @@
                 </div>
                 <div>
                     <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Descripción / Días y Horarios</label>
-                    <textarea name="descripcion" rows="3" required placeholder="Lunes, Miércoles y Viernes 19:00 hs..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></textarea>
+                    <textarea name="descripcion" rows="3" required placeholder="Lunes, Miércoles y Viernes 19:00 hs (Prof. Nombre Apellido)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></textarea>
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Cupo máximo (si requiere reserva)</label>
+                    <input type="number" name="cupo_maximo" value="20" min="1" max="1000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
                 </div>
                 <div class="flex items-center gap-2 pt-1">
                     <input type="checkbox" name="requiere_reserva" id="chkReserva" class="rounded bg-slate-950 border-slate-800 text-blue-600 focus:ring-0">
@@ -214,6 +219,10 @@
                     <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Descripción / Días y Horarios</label>
                     <textarea name="descripcion" id="editDescripcion" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></textarea>
                 </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Cupo máximo (si requiere reserva)</label>
+                    <input type="number" name="cupo_maximo" id="editCupo" value="20" min="1" max="1000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
+                </div>
                 <div class="flex items-center gap-2 pt-1">
                     <input type="checkbox" name="requiere_reserva" id="editChkReserva" class="rounded bg-slate-950 border-slate-800 text-blue-600 focus:ring-0">
                     <label for="editChkReserva" class="text-slate-300 font-semibold text-xs">Requiere reserva previa de cupo</label>
@@ -226,6 +235,6 @@
         </div>
     </div>
 
-    <script src="{% static 'js/admin/actividades.js' %}"></script>
+    <script src="{% static 'js/admin/actividades.js' %}?v=2"></script>
 </body>
 </html>
