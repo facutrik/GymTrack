@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Sum
@@ -19,6 +19,17 @@ def _formatear_ars(valor):
         .replace('.', ',')
         .replace('X', '.')
     )
+
+
+def _pagos_ultimos_dias(dias, hoy, campo_fecha):
+    """Cobros de los últimos `dias` días contando hoy, y la fecha desde la que se cuentan."""
+    desde = hoy - timedelta(days=dias - 1)
+    inicio = timezone.make_aware(datetime.combine(desde, time.min))
+    return Pago.objects.filter(**{f'{campo_fecha}__gte': inicio}), desde
+
+
+def _sumar(pagos):
+    return pagos.aggregate(total=Sum('monto'))['total'] or 0
 
 
 @login_required
@@ -53,22 +64,25 @@ def admin_pagos(request):
     if medio_filtro and medio_filtro != 'todos':
         pagos_qs = pagos_qs.filter(metodo_pago=medio_filtro)
 
-    total_periodo = pagos_qs.aggregate(total=Sum('monto'))['total'] or 0
-    total_efectivo = (
-        pagos_qs.filter(metodo_pago='efectivo').aggregate(total=Sum('monto'))['total']
-        or 0
-    )
-    total_transferencia = (
-        pagos_qs.filter(metodo_pago='transferencia').aggregate(total=Sum('monto'))['total']
-        or 0
-    )
+    # Las tarjetas muestran períodos fijos hasta hoy; los filtros solo afectan a la tabla
+    pagos_semana, desde_semana = _pagos_ultimos_dias(7, hoy, campo_fecha)
+    pagos_mes, desde_mes = _pagos_ultimos_dias(30, hoy, campo_fecha)
+    pagos_anio, desde_anio = _pagos_ultimos_dias(365, hoy, campo_fecha)
 
     context = {
         'pagos': pagos_qs,
-        'total_periodo': _formatear_ars(total_periodo),
-        'total_efectivo': _formatear_ars(total_efectivo),
-        'total_transferencia': _formatear_ars(total_transferencia),
-        'total_cobros': pagos_qs.count(),
+        'total_mes': _formatear_ars(_sumar(pagos_mes)),
+        'total_efectivo': _formatear_ars(_sumar(pagos_mes.filter(metodo_pago='efectivo'))),
+        'total_transferencia': _formatear_ars(_sumar(pagos_mes.filter(metodo_pago='transferencia'))),
+        'total_semana': _formatear_ars(_sumar(pagos_semana)),
+        'total_anio': _formatear_ars(_sumar(pagos_anio)),
+        'cobros_mes': pagos_mes.count(),
+        'cobros_semana': pagos_semana.count(),
+        'cobros_anio': pagos_anio.count(),
+        'desde_mes': desde_mes,
+        'desde_semana': desde_semana,
+        'desde_anio': desde_anio,
+        'hasta': hoy,
         'mes_seleccionado': mes_filtro,
         'anio_seleccionado': anio_filtro,
         'medio_seleccionado': medio_filtro,

@@ -69,21 +69,19 @@
             </button>
         </div>
 
-        <!-- TARJETAS SUPERIORES DE TOTALES (Efectivo y Transferencia) -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
-            
-            <!-- TOTAL PERÍODO -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
+        <!-- TARJETAS DE INGRESOS: último mes arriba; última semana y último año abajo -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+
+            <!-- TOTAL DEL MES (ocupa el doble) -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 sm:col-span-2">
                 <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">TOTAL PERÍODO</span>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">TOTAL ÚLTIMOS 30 DÍAS</span>
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 </div>
-                <h3 class="text-3xl font-black text-emerald-400 font-mono mt-3">
-                    ${{ total_periodo|default:"0" }}
+                <h3 class="text-3xl font-black text-emerald-400 font-mono mt-3 break-words">
+                    ${{ total_mes|default:"0" }}
                 </h3>
-                <p class="text-xs text-slate-500 mt-1">
-                    {{ total_cobros|default:0 }} cobros registrados
-                </p>
+                <p class="text-xs text-slate-500 mt-1">{{ cobros_mes|default:0 }} cobros · del {{ desde_mes|date:"d/m/Y" }} al {{ hasta|date:"d/m/Y" }}</p>
             </div>
 
             <!-- EFECTIVO -->
@@ -92,10 +90,10 @@
                     <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">EFECTIVO</span>
                     <span class="text-emerald-400 text-lg">💵</span>
                 </div>
-                <h3 class="text-3xl font-black text-white font-mono mt-3">
+                <h3 class="text-3xl font-black text-white font-mono mt-3 break-words">
                     ${{ total_efectivo|default:"0" }}
                 </h3>
-                <p class="text-xs text-slate-500 mt-1">Caja física de mostrador</p>
+                <p class="text-xs text-slate-500 mt-1">Caja física · últimos 30 días</p>
             </div>
 
             <!-- TRANSFERENCIAS -->
@@ -104,16 +102,40 @@
                     <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">TRANSFERENCIAS</span>
                     <span class="text-blue-400 text-lg"><i class="fa-solid fa-building-columns"></i></span>
                 </div>
-                <h3 class="text-3xl font-black text-white font-mono mt-3">
+                <h3 class="text-3xl font-black text-white font-mono mt-3 break-words">
                     ${{ total_transferencia|default:"0" }}
                 </h3>
-                <p class="text-xs text-slate-500 mt-1">Bancos / Alias / MP</p>
+                <p class="text-xs text-slate-500 mt-1">Bancos / Alias / MP · últimos 30 días</p>
+            </div>
+
+            <!-- ÚLTIMA SEMANA -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 lg:col-span-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">INGRESOS ÚLTIMA SEMANA</span>
+                    <span class="text-amber-400 text-lg"><i class="fa-solid fa-calendar-week"></i></span>
+                </div>
+                <h3 class="text-3xl font-black text-white font-mono mt-3 break-words">
+                    ${{ total_semana|default:"0" }}
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">{{ cobros_semana|default:0 }} cobros · del {{ desde_semana|date:"d/m/Y" }} al {{ hasta|date:"d/m/Y" }}</p>
+            </div>
+
+            <!-- ÚLTIMO AÑO -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 lg:col-span-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">INGRESOS ÚLTIMO AÑO</span>
+                    <span class="text-purple-400 text-lg"><i class="fa-solid fa-calendar-days"></i></span>
+                </div>
+                <h3 class="text-3xl font-black text-white font-mono mt-3 break-words">
+                    ${{ total_anio|default:"0" }}
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">{{ cobros_anio|default:0 }} cobros · del {{ desde_anio|date:"d/m/Y" }} al {{ hasta|date:"d/m/Y" }}</p>
             </div>
 
             <!--
             ========================================================================
             TARJETA DÉBITO / POSNET (COMENTADA TEMPORALMENTE - LISTA PARA ACTIVAR)
-            Para volver a habilitarla: descomentar este bloque y cambiar grid-cols-3 a grid-cols-4
+            Para volver a habilitarla: descomentar este bloque y sumar total_debito en la vista
             ========================================================================
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
                 <div class="flex items-center justify-between">

@@ -211,7 +211,7 @@
 
                 <div>
                     <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nueva Contraseña (Opcional)</label>
-                    <input type="password" name="password" placeholder="Dejar en blanco para conservar actual" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
+                    <input type="password" name="password" minlength="8" autocomplete="new-password" placeholder="Dejar en blanco para conservar actual" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
                 </div>
 
                 <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
@@ -268,6 +268,11 @@
                         <option value="recepcion">Recepción / Mostrador</option>
                         <option value="admin">Administrador</option>
                     </select>
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Contraseña</label>
+                    <input type="password" name="password" required minlength="8" autocomplete="new-password" placeholder="Mínimo 8 caracteres, no solo números" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white">
                 </div>
 
                 <div class="flex justify-end gap-2 pt-3">

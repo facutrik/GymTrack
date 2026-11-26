@@ -205,34 +205,24 @@
                         </label>
                         <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
                             <div class="flex items-center gap-3">
-                                <input type="checkbox" name="servicios" value="pilates_1" data-precio="35000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
+                                <input type="checkbox" id="chkPilates" name="servicios" value="pilates_1" data-precio="35000" onchange="actualizarPilates()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
                                 <div>
-                                    <span class="font-bold text-white block">🤸 Pilates (1 vez por semana)</span>
-                                    <span class="text-[10px] text-slate-400">1 turno semanal reservado</span>
+                                    <span class="font-bold text-white block">🤸 Pilates</span>
+                                    <span class="text-[10px] text-slate-400">Elegí cuántos días por semana vas</span>
                                 </div>
                             </div>
-                            <span class="font-mono font-bold text-blue-400 text-sm">$35.000</span>
+                            <span id="precioPilates" class="font-mono font-bold text-blue-400 text-sm">Desde $35.000</span>
                         </label>
-                        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
-                            <div class="flex items-center gap-3">
-                                <input type="checkbox" name="servicios" value="pilates_2" data-precio="42000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
-                                <div>
-                                    <span class="font-bold text-white block">🤸 Pilates (2 veces por semana)</span>
-                                    <span class="text-[10px] text-slate-400">2 turnos semanales reservados</span>
-                                </div>
-                            </div>
-                            <span class="font-mono font-bold text-blue-400 text-sm">$42.000</span>
-                        </label>
-                        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
-                            <div class="flex items-center gap-3">
-                                <input type="checkbox" name="servicios" value="pilates_3" data-precio="50000" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
-                                <div>
-                                    <span class="font-bold text-white block">🤸 Pilates (3 veces por semana)</span>
-                                    <span class="text-[10px] text-slate-400">3 turnos semanales reservados</span>
-                                </div>
-                            </div>
-                            <span class="font-mono font-bold text-blue-400 text-sm">$50.000</span>
-                        </label>
+                        <div id="bloqueFrecuenciaPilates" class="hidden p-3.5 rounded-2xl bg-blue-950/30 border border-blue-500/30 space-y-2">
+                            <label for="selectFrecuenciaPilates" class="block text-blue-400 uppercase text-[10px] font-bold tracking-wider">
+                                <i class="fa-regular fa-calendar mr-1"></i> Frecuencia semanal de Pilates:
+                            </label>
+                            <select id="selectFrecuenciaPilates" onchange="actualizarPilates()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-blue-500">
+                                <option value="pilates_1" data-precio="35000">1 vez por semana — $35.000 / mes</option>
+                                <option value="pilates_2" data-precio="42000">2 veces por semana — $42.000 / mes</option>
+                                <option value="pilates_3" data-precio="50000">3 veces por semana — $50.000 / mes</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="p-3.5 rounded-xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-between">
@@ -267,6 +257,6 @@
 
     {% include 'includes/footer.html' %}
 
-    <script src="{% static 'js/socio/mis_pagos.js' %}"></script>
+    <script src="{% static 'js/socio/mis_pagos.js' %}?v=2"></script>
 </body>
 </html>

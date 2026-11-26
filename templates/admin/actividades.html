@@ -121,7 +121,7 @@
                                     data-descripcion="{{ item.objeto.descripcion|default:'' }}" 
                                     data-reserva="{{ item.objeto.requiere_reserva|yesno:'true,false' }}" 
                                     onclick="abrirModalEditarDesdeBoton(this)" 
-                                    class="text-blue-400 hover:text-blue-300 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
+                                    class="text-white hover:text-blue-400 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
                                 <i class="fa-solid fa-pen text-[11px]"></i> Editar
                             </button>
 
@@ -131,11 +131,11 @@
                                 <input type="hidden" name="accion" value="toggle_baja">
                                 <input type="hidden" name="actividad_id" value="{{ item.objeto.id }}">
                                 {% if item.objeto.activa %}
-                                    <button type="submit" class="text-amber-400 hover:text-amber-300 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
+                                    <button type="submit" class="text-white hover:text-amber-400 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
                                         <i class="fa-solid fa-pause text-[11px]"></i> Pausar
                                     </button>
                                 {% else %}
-                                    <button type="submit" class="text-emerald-400 hover:text-emerald-300 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
+                                    <button type="submit" class="text-white hover:text-emerald-400 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
                                         <i class="fa-solid fa-play text-[11px]"></i> Reactivar
                                     </button>
                                 {% endif %}
@@ -147,7 +147,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="accion" value="eliminar">
                             <input type="hidden" name="actividad_id" value="{{ item.objeto.id }}">
-                            <button type="submit" class="text-rose-400 hover:text-rose-300 font-semibold text-xs flex items-center gap-1 transition cursor-pointer" title="Eliminar definitivamente">
+                            <button type="submit" class="text-white hover:text-rose-400 font-semibold text-xs flex items-center gap-1 transition cursor-pointer" title="Eliminar definitivamente">
                                 <i class="fa-regular fa-trash-can"></i>
                             </button>
                         </form>

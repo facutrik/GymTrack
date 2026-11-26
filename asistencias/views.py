@@ -159,10 +159,7 @@ def registrar_asistencia(request):
         inicio_dia = timezone.make_aware(datetime.combine(hoy, time.min))
         fin_dia = timezone.make_aware(datetime.combine(hoy, time.max))
 
-        usuario_socio = (
-            Usuario.objects.filter(username=dni, rol='socio').first()
-            or Usuario.objects.filter(username=dni).first()
-        )
+        usuario_socio = Usuario.objects.filter(username=dni, rol='socio', is_superuser=False).first()
         if not usuario_socio:
             messages.error(request, f"No se encontró ningún socio registrado con el DNI {dni}.")
             return redirect('dashboard')

@@ -7,6 +7,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q, Sum
@@ -356,7 +358,7 @@ def dashboard(request):
         # B. REGISTRAR ASISTENCIA DE SOCIO
         if request.method == 'POST' and request.POST.get('accion') == 'registrar_asistencia':
             dni = request.POST.get('dni', '').strip()
-            usuario_socio = Usuario.objects.filter(username=dni, rol='socio').first() or Usuario.objects.filter(username=dni).first()
+            usuario_socio = Usuario.objects.filter(username=dni, rol='socio', is_superuser=False).first()
             if not usuario_socio:
                 messages.error(request, f"No se encontró ningún socio registrado con el DNI {dni}.")
                 return redirect('dashboard')
@@ -470,7 +472,7 @@ def dashboard(request):
                 pass_in = request.POST.get('password_verif', '').strip()
                 if profe_obj.username != dni_in and getattr(profe_obj, 'dni', '') != dni_in:
                     messages.error(request, f"El DNI o usuario no coincide con el profesor {profe_obj.first_name}.")
-                elif not profe_obj.check_password(pass_in) and pass_in not in ('123', 'admin', profe_obj.username):
+                elif not profe_obj.check_password(pass_in):
                     messages.error(request, f"Contraseña incorrecta para {profe_obj.first_name}.")
                 else:
                     turno_activo = AsistenciaEmpleado.objects.filter(
@@ -1020,6 +1022,17 @@ def dashboard(request):
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 4. GESTIÓN DE PERSONAL / EMPLEADOS (PANEL ADMIN)
+def _error_de_clave(clave, usuario):
+    """Motivo por el que la contraseña no sirve, o cadena vacía si es válida."""
+    if not clave:
+        return "La contraseña es obligatoria."
+    try:
+        validate_password(clave, usuario)
+    except ValidationError as error:
+        return " ".join(error.messages)
+    return ""
+
+
 @login_required
 def admin_empleados(request):
     user = request.user
@@ -1046,9 +1059,12 @@ def admin_empleados(request):
             apellido = request.POST.get('apellido', '').strip()
             email = request.POST.get('email', '').strip()
             rol = request.POST.get('rol', 'entrenador').strip()
-            password = request.POST.get('password', '').strip() or '123'
+            password = request.POST.get('password', '').strip()
+            datos = Usuario(username=username, email=email, first_name=nombre, last_name=apellido)
             if Usuario.objects.filter(username=username).exists():
                 messages.error(request, f"El usuario o DNI {username} ya existe.")
+            elif error_clave := _error_de_clave(password, datos):
+                messages.error(request, f"No se registró el empleado. {error_clave}")
             else:
                 nuevo_emp = Usuario.objects.create_user(
                     username=username,
@@ -1071,8 +1087,13 @@ def admin_empleados(request):
             empleado.rol = request.POST.get('rol', empleado.rol).strip()
             nueva_clave = request.POST.get('password', '').strip()
             if nueva_clave:
+                if error_clave := _error_de_clave(nueva_clave, empleado):
+                    messages.error(request, f"No se guardaron los cambios. {error_clave}")
+                    return redirect('admin_empleados')
                 empleado.set_password(nueva_clave)
             empleado.save()
+            if nueva_clave and empleado == user:
+                update_session_auth_hash(request, empleado)
             messages.success(request, f"Datos de {empleado.first_name} {empleado.last_name} actualizados.")
             return redirect('admin_empleados')
     query = request.GET.get('q', '').strip()
