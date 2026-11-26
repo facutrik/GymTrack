@@ -3,7 +3,6 @@ import os
 import re
 from datetime import datetime, time, timedelta
 from django.conf import settings
-from django.http import request
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -21,7 +20,6 @@ from rutinas.models import Rutina, DiaEntrenamiento, Ejercicio
 from rutinas.views import obtener_recordatorios
 
 
-# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 try:
     from reservas.models import Reserva
 except ImportError:
@@ -33,7 +31,7 @@ except ImportError:
 def inicio_publico(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
-    
+
     actividades = Actividad.objects.all().order_by('nombre')
     planes = Plan.objects.all().order_by('precio')
     context = {
@@ -54,9 +52,6 @@ def dashboard(request):
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 1. ADMINISTRADOR
     if user.is_superuser or getattr(user, 'rol', None) == 'admin':
-        # ==========================================================
-        # 💵 PROCESAR COBRO DIRECTO DESDE PANEL ADMIN
-        # ==========================================================
         if request.method == 'POST' and request.POST.get('accion') == 'cobrar_desde_admin':
             socio_id = request.POST.get('socio_id')
             plan_id = request.POST.get('plan_id')
@@ -133,9 +128,6 @@ def dashboard(request):
                 )
             return redirect('dashboard')
 
-        # ==========================================================
-        # 🏋️ GESTIÓN DE RUTINAS (3 BÁSICAS + PERSONALIZADAS SOCIOS)
-        # ==========================================================
         if request.method == 'POST' and request.POST.get('accion') == 'admin_agregar_ejercicio_rutina':
             destino = request.POST.get('destino')
             dia_nombre = request.POST.get('nombre_dia', 'Día 1').strip()
@@ -187,9 +179,6 @@ def dashboard(request):
             messages.success(request, "Ejercicio eliminado de la rutina.")
             return redirect('dashboard')
 
-        # ==========================================================
-        # 📊 MÉTRICAS DEL DASHBOARD ADMIN
-        # ==========================================================
         inicio_mes = timezone.make_aware(
             datetime(hoy.year, hoy.month, 1, 0, 0, 0)
         )
@@ -359,7 +348,7 @@ def dashboard(request):
 
                 nombre_socio = f"{socio_obj.usuario.first_name} {socio_obj.usuario.last_name}".strip() or socio_obj.usuario.username
                 messages.success(
-                    request, 
+                    request,
                     f"¡Cobro exitoso! Se registró el pago de ${monto_total:,.0f} ({metodo.capitalize()}) para {nombre_socio} — Concepto: {', '.join(conceptos)}."
                 )
             return redirect('dashboard')
@@ -408,7 +397,7 @@ def dashboard(request):
                 'foto_url': socio.foto.url if getattr(socio, 'foto', None) else None,
                 'dni': usuario_socio.username,
                 'email': usuario_socio.email or 'Sin email',
-                'plan_nombre': ultima_membresia.plan.nombre if (ultima_membresia and hasattr(ultima_membresia, 'plan')) else "Sin Plan Asignado",
+                'plan_nombre': ultima_membresia.plan.nombre if (ultima_membresia and getattr(ultima_membresia, 'plan', None)) else "Sin Plan Asignado",
                 'fecha_vencimiento': ultima_membresia.fecha_fin.strftime("%d/%m/%Y") if ultima_membresia else "N/A",
                 'al_dia': esta_al_dia,
                 'estado_texto': "AL DÍA" if esta_al_dia else "CUOTA VENCIDA",
@@ -638,7 +627,7 @@ def dashboard(request):
                 'cupo_maximo': getattr(act, 'cupo_maximo', None) or getattr(act, 'cupo', None),
             })
 
-        # F. ASISTENCIAS
+        # F. ASISTENCIAS (HOY + REPORTE POR MESES)
         total_asistencias_hoy = Asistencia.objects.filter(fecha_hora__range=(inicio_dia, fin_dia)).count()
         ultimas_asistencias = Asistencia.objects.select_related('socio__usuario').order_by('-fecha_hora')[:10]
         MESES_ES = {
@@ -648,7 +637,7 @@ def dashboard(request):
         }
         historial_asistencias_completo = []
         meses_vistos = {}
-        for a in Asistencia.objects.select_related('socio__usuario').order_by('-fecha_hora')[:300]:
+        for a in Asistencia.objects.select_related('socio__usuario').order_by('-fecha_hora')[:500]:
             dt_local = timezone.localtime(a.fecha_hora)
             clave_mes = dt_local.strftime('%Y-%m')
             if clave_mes not in meses_vistos:
@@ -726,8 +715,8 @@ def dashboard(request):
         socio_obj, _ = Socio.objects.get_or_create(usuario=user)
         membresia_actual = (
             MembresiaSocio.objects.filter(
-                socio=socio_obj, 
-                activa=True, 
+                socio=socio_obj,
+                activa=True,
                 fecha_fin__gte=hoy
             )
             .select_related('plan')
@@ -736,7 +725,6 @@ def dashboard(request):
         )
         cuota_al_dia = bool(membresia_actual) and getattr(socio_obj, 'estado_cuenta', 'VERDE') not in ['ROJO', 'VENCIDO']
 
-        # A. INSCRIPCIÓN / BAJA EN ACTIVIDADES DESDE PORTAL SOCIO
         if request.method == 'POST' and request.POST.get('accion') == 'inscribir_actividad':
             act_id = request.POST.get('actividad_id')
             act_obj = get_object_or_404(Actividad, id=act_id)
@@ -827,7 +815,6 @@ def dashboard(request):
                 messages.success(request, f"Se canceló tu inscripción en {act_obj.nombre}.")
             return redirect('/dashboard/?tab=actividades')
 
-        # B. ACTUALIZAR PERFIL Y CAMBIAR CONTRASEÑA SEGURA
         if request.method == 'POST' and request.POST.get('accion') == 'actualizar_perfil':
             user.first_name = request.POST.get('first_name', '').strip()
             user.last_name = request.POST.get('last_name', '').strip()
@@ -865,7 +852,6 @@ def dashboard(request):
                 messages.success(request, "¡Contraseña actualizada con éxito!")
             return redirect('/dashboard/?tab=perfil')
 
-        # C. LISTAS DE ACTIVIDADES INSCRIPTAS VS DISPONIBLES
         todas_actividades = list(Actividad.objects.filter(activa=True).order_by('nombre'))
         ids_anotadas = set()
         if Reserva and socio_obj:
@@ -889,7 +875,6 @@ def dashboard(request):
         actividades_anotadas = [a for a in todas_actividades if a.id in ids_anotadas]
         actividades_disponibles = [a for a in todas_actividades if a.id not in ids_anotadas]
 
-        # D. LÓGICA DE RUTINAS (3 BÁSICOS EN BD + PROFESOR + MI PROPIA RUTINA)
         rutina_adaptacion = Rutina.objects.filter(nombre__iexact='Adaptación', tipo='gimnasio').prefetch_related('dias__ejercicios').first()
         rutina_hipertrofia = Rutina.objects.filter(nombre__iexact='Hipertrofia', tipo='gimnasio').prefetch_related('dias__ejercicios').first()
         rutina_fuerza = Rutina.objects.filter(nombre__iexact='Fuerza', tipo='gimnasio').prefetch_related('dias__ejercicios').first()
@@ -960,7 +945,6 @@ def dashboard(request):
                 if clave in rutina_semanal:
                     rutina_semanal[clave] = d.ejercicios.all()
 
-        # E. LÓGICA DE AUTOGESTIÓN DE PAGOS
         if request.method == 'POST' and request.POST.get('accion') == 'pagar_cuota_socio':
             servicios_seleccionados = request.POST.getlist('servicios')
             metodo = request.POST.get('metodo_pago', 'transferencia')
@@ -1014,7 +998,6 @@ def dashboard(request):
                 )
             return redirect('/dashboard/?tab=perfil')
 
-        # F. RESPUESTA GET / RENDER
         historial_pagos = Pago.objects.filter(socio=socio_obj).order_by('-fecha_pago') if socio_obj else []
         context = {
             'socio': socio_obj,

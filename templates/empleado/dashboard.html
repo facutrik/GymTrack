@@ -42,7 +42,7 @@
                         {% if user.is_authenticated %}
                             <span class="text-xs font-light text-slate-500">×</span>
                             <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                                BODYNAMIC
+                                {{ nombre_gimnasio|default:"BODYNAMIC" }}
                             </span>
                         {% endif %}
                     </div>
@@ -71,7 +71,7 @@
 
     <!-- MENSAJES -->
     {% if messages %}
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full space-y-2">
             {% for message in messages %}
                 <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% elif message.tags == 'warning' %}bg-amber-950/60 border border-amber-500/40 text-amber-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
                     <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
@@ -99,12 +99,6 @@
                 <button type="button" onclick="document.getElementById('modalRutinaProfesor').classList.remove('hidden')" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-dumbbell"></i> Gestionar Rutinas
                 </button>
-                <a href="{% url 'pagos_empleado' %}" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center gap-2">
-                    <i class="fa-solid fa-cash-register"></i> Pagos y Caja
-                </a>
-                <a href="{% url 'reservas_empleado' %}" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-amber-600/30 transition flex items-center gap-2">
-                    <i class="fa-solid fa-calendar-check"></i> Reservas y Clases
-                </a>
             </div>
         </div>
 
@@ -130,7 +124,7 @@
                 </div>
             </div>
 
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Padrón de Socios</span>
@@ -140,9 +134,14 @@
                         <i class="fa-solid fa-address-book"></i>
                     </div>
                 </div>
-                <a href="{% url 'padron_socios_empleado' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition">
-                    Ver Socios
-                </a>
+                <div class="flex items-center gap-2">
+                    <a href="{% url 'padron_socios_empleado' %}" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl text-center transition">
+                        Ver Socios
+                    </a>
+                    <a href="{% url 'padron_socios_empleado' %}?nuevo=1" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition flex items-center gap-1" title="Registrar Nuevo Socio">
+                        <i class="fa-solid fa-user-plus text-[11px]"></i> Nuevo
+                    </a>
+                </div>
             </div>
 
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
@@ -155,9 +154,14 @@
                         <i class="fa-solid fa-cash-register"></i>
                     </div>
                 </div>
-                <a href="{% url 'pagos_empleado' %}" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-semibold rounded-xl text-center transition">
-                    Ir a Pagos y Caja
-                </a>
+                <div class="flex items-center gap-2">
+                    <a href="{% url 'pagos_empleado' %}" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-semibold rounded-xl text-center transition">
+                        Ir a Pagos y Caja
+                    </a>
+                    <button type="button" onclick="abrirModalCobroUnificado()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1" title="Registrar Cobro a Socio">
+                        <i class="fa-solid fa-plus text-[11px]"></i> Cobrar
+                    </button>
+                </div>
             </div>
 
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
@@ -175,6 +179,80 @@
                 </a>
             </div>
         </div>
+
+        <!-- PERFILES Y JORNADAS DE PROFESORES -->
+        {% if profesores_cards %}
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-chalkboard-user text-blue-400"></i> Perfiles y Jornadas de Profesores
+                    </h3>
+                    <p class="text-[11px] text-slate-400">Arrancá o cortá la jornada del staff directamente desde recepción</p>
+                </div>
+                <span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 w-fit">
+                    {{ profesores_cards|length }} profesores
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for p in profesores_cards %}
+                <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between gap-3">
+                    <div>
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-300 flex items-center justify-center font-extrabold text-sm shrink-0">
+                                    {{ p.usuario.first_name|slice:":1"|default:p.usuario.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-extrabold text-white">
+                                        {{ p.usuario.first_name }} {{ p.usuario.last_name|default:p.usuario.username }}
+                                    </h4>
+                                    <p class="text-[11px] text-blue-400 font-semibold">{{ p.rol_desc }}</p>
+                                </div>
+                            </div>
+
+                            {% if p.en_turno %}
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">
+                                    En turno ({{ p.turno.hora_entrada|date:"H:i" }} hs)
+                                </span>
+                            {% else %}
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700 shrink-0">
+                                    Fuera de turno
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <p class="text-[11px] text-slate-400 mt-2.5 leading-relaxed">{{ p.detalle }}</p>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                        <span class="text-[11px] text-slate-400 font-mono">
+                            Acum: <strong class="text-slate-200">{{ p.horas_acumuladas|default:"0h 0m" }}</strong>
+                        </span>
+
+                        {% if p.en_turno %}
+                            <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion_profesor" value="cortar">
+                                <input type="hidden" name="profesor_id" value="{{ p.usuario.id }}">
+                                <button type="submit" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] rounded-xl transition cursor-pointer flex items-center gap-1.5">
+                                    <i class="fa-solid fa-stop"></i> Cortar Turno
+                                </button>
+                            </form>
+                        {% else %}
+                            <button type="button"
+                                    onclick="abrirModalIniciarTurno('{{ p.usuario.id }}', '{{ p.usuario.first_name }} {{ p.usuario.last_name }}', '{{ p.usuario.dni|default:p.usuario.username }}')"
+                                    class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] rounded-xl transition cursor-pointer flex items-center gap-1.5">
+                                <i class="fa-solid fa-play"></i> Arrancar Jornada
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
 
         <!-- TABLA DE INGRESOS DE HOY -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
@@ -217,14 +295,67 @@
 
     </main>
 
+    <!-- MODAL ARRANCAR JORNADA -->
+    <div id="modalIniciarTurno" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="text-base font-extrabold text-white">Arrancar Jornada</h3>
+                    <p id="modalProfeNombre" class="text-xs text-blue-400 font-semibold mt-0.5"></p>
+                </div>
+                <button type="button" onclick="document.getElementById('modalIniciarTurno').classList.add('hidden')" class="text-slate-400 hover:text-white cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{% url 'dashboard' %}" class="space-y-3.5">
+                {% csrf_token %}
+                <input type="hidden" name="accion_profesor" value="iniciar">
+                <input type="hidden" id="modalProfeId" name="profesor_id">
+
+                <div>
+                    <label for="modalProfeDni" class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                        DNI / Usuario
+                    </label>
+                    <input type="text" id="modalProfeDni" name="dni_verif" required
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white font-mono">
+                </div>
+
+                <div>
+                    <label for="modalProfePass" class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                        Contraseña
+                    </label>
+                    <input type="password" id="modalProfePass" name="password_verif" required placeholder="••••••••"
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white">
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="document.getElementById('modalIniciarTurno').classList.add('hidden')"
+                            class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                            class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl cursor-pointer">
+                        Confirmar Entrada
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL ASISTENCIA RÁPIDA -->
     <div id="asistenciaModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="text-base font-extrabold text-white">Control de Asistencia por DNI</h3>
-                <button type="button" onclick="closeAsistenciaModal()" class="text-slate-400 hover:text-white cursor-pointer">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="abrirModalHistorialAsistencias()" class="h-9 px-3 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 text-[11px] font-bold rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Historial
+                    </button>
+                    <button type="button" onclick="closeAsistenciaModal()" class="text-slate-400 hover:text-white cursor-pointer">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
             </div>
             <form method="POST" action="{% url 'dashboard' %}" class="space-y-4">
                 {% csrf_token %}
@@ -239,8 +370,309 @@
         </div>
     </div>
 
+    <!-- MODAL HISTORIAL DE ASISTENCIAS (REPORTE POR MESES) -->
+    <div id="modalHistorialAsistencias" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-3xl w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-400 flex items-center justify-center text-lg border border-blue-500/20">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-white text-base">Historial General de Asistencias</h3>
+                        <p class="text-xs text-slate-400">Consultá todo el reporte o filtrá por mes, socio o DNI.</p>
+                    </div>
+                </div>
+                <button type="button" onclick="cerrarModalHistorialAsistencias()" class="text-slate-400 hover:text-white transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnTabAsistMes" onclick="filtrarHistorialAsist('mes')" class="px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl transition cursor-pointer">
+                        Historial por Meses
+                    </button>
+                    <button type="button" id="btnTabAsistHoy" onclick="filtrarHistorialAsist('hoy')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition cursor-pointer">
+                        Hoy ({{ asistencias_hoy|default:0 }})
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <select id="selectMesAsist" onchange="aplicarFiltroAsist()" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-semibold">
+                        <option value="todos">Todos los meses</option>
+                        {% for m in meses_asistencias %}
+                            <option value="{{ m.valor }}">{{ m.etiqueta }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" id="inputBuscarAsist" onkeyup="aplicarFiltroAsist()" placeholder="Buscar socio o DNI..."
+                           class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white w-44 focus:border-blue-500 focus:outline-none">
+                </div>
+            </div>
+
+            <div class="max-h-[55vh] overflow-y-auto border border-slate-800/80 rounded-2xl">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-950/90 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800 sticky top-0">
+                        <tr>
+                            <th class="py-3 px-4">Fecha</th>
+                            <th class="py-3 px-4">Hora</th>
+                            <th class="py-3 px-4">Socio</th>
+                            <th class="py-3 px-4">DNI</th>
+                            <th class="py-3 px-4 text-right">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyHistorialAsist" class="divide-y divide-slate-800/60 text-slate-300">
+                        {% for a in historial_asistencias_completo %}
+                            <tr class="fila-asist hover:bg-slate-800/30 transition"
+                                data-es-hoy="{% if a.es_hoy %}1{% else %}0{% endif %}"
+                                data-mes="{{ a.mes_anio }}"
+                                data-busqueda="{{ a.socio_nombre|lower }} {{ a.dni }}">
+                                <td class="py-2.5 px-4 font-mono text-slate-300">{{ a.fecha_str }}</td>
+                                <td class="py-2.5 px-4 font-bold text-blue-400">{{ a.hora_str }} hs</td>
+                                <td class="py-2.5 px-4 text-white font-medium">{{ a.socio_nombre }}</td>
+                                <td class="py-2.5 px-4 font-mono text-slate-400">{{ a.dni }}</td>
+                                <td class="py-2.5 px-4 text-right">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Presente</span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-slate-500 text-xs">No hay registros de asistencias cargados.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                <span id="contadorFiltroAsist" class="text-xs text-slate-400 font-medium"></span>
+                <button type="button" onclick="cerrarModalHistorialAsistencias()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition cursor-pointer">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PERFIL DEL SOCIO TRAS MARCAR ASISTENCIA -->
+    {% if perfil_socio_acceso %}
+    <div id="modalPerfilSocioAsistencia" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative overflow-hidden space-y-5">
+            <div class="absolute top-0 left-0 right-0 h-1 bg-slate-800">
+                <div id="barraAutoCierreSocio" class="h-full bg-blue-500 w-full"></div>
+            </div>
+
+            <div class="flex items-start justify-between gap-4 border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3.5">
+                    {% if perfil_socio_acceso.foto_url %}
+                        <img src="{{ perfil_socio_acceso.foto_url }}" alt="{{ perfil_socio_acceso.nombre_completo }}" class="w-14 h-14 rounded-2xl object-cover border border-slate-700">
+                    {% else %}
+                        <div class="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/30 text-blue-300 flex items-center justify-center text-lg font-extrabold">
+                            {{ perfil_socio_acceso.iniciales }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full {% if perfil_socio_acceso.acceso_permitido %}bg-emerald-500/15 text-emerald-400 border border-emerald-500/30{% else %}bg-rose-500/15 text-rose-400 border border-rose-500/30{% endif %}">
+                            {% if perfil_socio_acceso.acceso_permitido %}🟢 Acceso Permitido{% else %}🔴 Acceso Denegado{% endif %}
+                        </span>
+                        <h3 class="text-lg font-extrabold text-white mt-1">{{ perfil_socio_acceso.nombre_completo }}</h3>
+                        <p class="text-xs text-slate-400 font-mono">DNI: {{ perfil_socio_acceso.dni }}</p>
+                    </div>
+                </div>
+                <button type="button"
+                        data-cerrar-perfil-socio
+                        onclick="if (typeof cerrarModalPerfilSocio === 'function') { cerrarModalPerfilSocio(); } else { var m = document.getElementById('modalPerfilSocioAsistencia'); if (m) m.remove(); }"
+                        class="text-slate-400 hover:text-white cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs">
+                <div class="p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
+                    <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Estado de Cuota</span>
+                    <span class="font-bold {% if perfil_socio_acceso.al_dia %}text-emerald-400{% else %}text-rose-400{% endif %}">
+                        {{ perfil_socio_acceso.estado_texto }}
+                    </span>
+                </div>
+                <div class="p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
+                    <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Plan / Vencimiento</span>
+                    <span class="font-bold text-white">{{ perfil_socio_acceso.plan_nombre }}</span>
+                    <span class="text-[11px] text-slate-400 block">Vence: {{ perfil_socio_acceso.fecha_vencimiento }}</span>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-2xl text-xs {% if perfil_socio_acceso.acceso_permitido %}bg-emerald-950/30 border border-emerald-500/30 text-emerald-200{% else %}bg-rose-950/30 border border-rose-500/30 text-rose-200{% endif %}">
+                <p class="font-semibold">{{ perfil_socio_acceso.motivo }}</p>
+                {% if perfil_socio_acceso.actividades %}
+                    <p class="text-[11px] text-slate-300 mt-1"><strong>Actividades:</strong> {{ perfil_socio_acceso.actividades|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            {% if perfil_socio_acceso.historial_asistencias %}
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Últimos ingresos</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        {% for h in perfil_socio_acceso.historial_asistencias %}
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-300">{{ h }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px] text-slate-400">
+                <span>Se cierra automáticamente en <strong id="contadorSegundosSocio" class="text-white">5</strong>s</span>
+                <button type="button"
+                        data-cerrar-perfil-socio
+                        onclick="if (typeof cerrarModalPerfilSocio === 'function') { cerrarModalPerfilSocio(); } else { var m = document.getElementById('modalPerfilSocioAsistencia'); if (m) m.remove(); }"
+                        class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl cursor-pointer">
+                    Cerrar ahora
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- MODAL COBRO UNIFICADO -->
+    <div id="modalRegistrarPago" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[92vh]">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h3 class="font-extrabold text-white text-base">Registrar Cobro a Socio</h3>
+                <button type="button" onclick="cerrarModalCobroUnificado()" class="text-slate-400 hover:text-white cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{% url 'dashboard' %}" onsubmit="return validarSocioSeleccionadoUnificado()" class="space-y-4 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="cobrar_membresia_empleado">
+                <input type="hidden" name="socio_id" id="cobroUnificadoSocioId">
+                <input type="hidden" name="plan_id" id="cobroUnificadoPlanIdReal">
+
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
+                        1. Buscar y Seleccionar Socio
+                    </label>
+                    <input type="text" id="buscadorSocioCobro" onkeyup="filtrarSociosCobroUnificado()"
+                        placeholder="Escribí nombre, apellido o DNI..."
+                        class="w-full bg-slate-950 border border-amber-500/70 focus:border-amber-400 focus:outline-none rounded-xl px-3.5 py-2.5 text-white mb-2.5">
+
+                    <div id="listaSociosCobro" class="max-h-44 overflow-y-auto space-y-2 pr-1">
+                        {% for s in socios_para_cobro %}
+                            <div onclick="seleccionarSocioCobroUnificado(this, '{{ s.id }}')"
+                                data-busqueda="{{ s.nombre|lower }} {{ s.dni|lower }}"
+                                data-dni="{{ s.dni }}"
+                                class="tarjeta-socio-cobro flex items-center justify-between px-4 py-3 rounded-xl bg-slate-950/90 border border-slate-800 hover:border-slate-700 cursor-pointer transition">
+                                <div class="flex items-baseline gap-2">
+                                    <span class="font-bold text-white text-sm">{{ s.nombre }}</span>
+                                    <span class="text-[11px] font-mono text-slate-400">DNI: {{ s.dni }}</span>
+                                </div>
+                                {% if s.al_dia %}
+                                    <span class="text-xs font-bold text-emerald-400">Al Día</span>
+                                {% else %}
+                                    <span class="text-xs font-bold text-rose-400">Vencido</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-800">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
+                            2. Membresía / Plan
+                        </label>
+                        <select id="selectCategoriaPaseUnificado" onchange="actualizarSelectorPaseUnificado()"
+                                class="w-full bg-slate-950 border border-emerald-500/60 focus:border-emerald-400 focus:outline-none rounded-xl px-3.5 py-2.5 text-white font-semibold">
+                            <option value="" data-precio="0">-- Ninguna / Solo actividad --</option>
+                            {% for p in planes_disponibles %}
+                                {% if 'pilates' not in p.nombre|lower %}
+                                    <option value="{{ p.id }}" data-precio="{{ p.precio|floatformat:0 }}" data-nombre="{{ p.nombre|lower }}">
+                                        {{ p.nombre }} — ${{ p.precio|floatformat:0 }}
+                                    </option>
+                                {% endif %}
+                            {% endfor %}
+                            <option value="grupo_pilates" data-precio="0">Pilates (Elegir días por semana)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
+                            3. Actividad Adicional (Opcional)
+                        </label>
+                        <select name="actividad_id" id="selectActividadUnificado" onchange="recalcularTotalCobroUnificado()"
+                                class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                            <option value="" data-precio="0">-- Ninguna / Incluida en el plan --</option>
+                            {% for act in actividades_disponibles %}
+                                <option value="{{ act.id }}" data-precio="{{ act.precio|default:0|floatformat:0 }}">
+                                    {{ act.nombre }}{% if act.precio %} — ${{ act.precio|floatformat:0 }}{% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div id="bloqueFrecuenciaPilatesUnificado" class="hidden p-4 rounded-2xl bg-blue-950/30 border border-blue-500/40 space-y-2">
+                    <label class="block text-blue-400 uppercase text-[10px] font-bold tracking-wider">
+                        <i class="fa-regular fa-calendar mr-1"></i> Frecuencia Semanal de Pilates:
+                    </label>
+                    <select id="selectSubPlanPilatesUnificado" onchange="recalcularTotalCobroUnificado()"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-semibold">
+                        {% for p in planes_disponibles %}
+                            {% if 'pilates' in p.nombre|lower %}
+                                <option value="{{ p.id }}" data-precio="{{ p.precio|floatformat:0 }}" data-nombre="{{ p.nombre|lower }}">
+                                    {{ p.nombre }} — ${{ p.precio|floatformat:0 }} / mes
+                                </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="cajaInfoPaseUnificado" class="hidden p-4 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-1.5">
+                    <h4 id="tituloInfoPaseUnificado" class="font-bold text-emerald-400 text-xs"></h4>
+                    <p id="descInfoPaseUnificado" class="text-[11px] text-slate-300 leading-relaxed"></p>
+                    <p class="text-[10px] text-slate-500 pt-1.5 border-t border-slate-800/80">
+                        <i class="fa-regular fa-clock mr-1"></i> Horario del gimnasio: Lun a Vie 07:00 a 22:00 hs • Sáb 09:00 a 13:00 hs
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center pt-3 border-t border-slate-800">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
+                            4. Medio de Pago
+                        </label>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <label class="flex items-center justify-center gap-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
+                                <input type="radio" name="metodo_pago" value="efectivo" checked class="text-emerald-500">
+                                <span class="font-bold text-slate-200">💵 Efectivo</span>
+                            </label>
+                            <label class="flex items-center justify-center gap-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
+                                <input type="radio" name="metodo_pago" value="transferencia" class="text-emerald-500">
+                                <span class="font-bold text-slate-200">📱 Transferencia</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-300">Total a Cobrar:</span>
+                        <span id="labelTotalCobroUnificado" class="text-xl font-black text-emerald-400 font-mono">$0</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="cerrarModalCobroUnificado()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition cursor-pointer">
+                        Confirmar Cobro
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {% include 'includes/footer.html' %}
 
+<script src="{% static 'js/empleado/cobros.js' %}"></script>
+<script src="{% static 'js/empleado/asistencia.js' %}"></script>
 <script src="{% static 'js/empleado/dashboard.js' %}"></script>
 
 </body>

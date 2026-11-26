@@ -66,14 +66,16 @@
 
     <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
-        
+
         <!-- CABECERA -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-extrabold text-white tracking-tight">Padrón de Socios 📋</h1>
                 <p class="text-xs text-slate-400 mt-1">Alta rápida en mostrador con cobro inicial, edición de datos y control de acceso.</p>
             </div>
-            <button type="button" onclick="document.getElementById('modalAltaSocio').classList.remove('hidden')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 w-fit cursor-pointer">
+            <button type="button"
+                    onclick="if (typeof mostrarModalAltaSocio === 'function') { mostrarModalAltaSocio(); } else { const m = document.getElementById('modalAltaSocio'); if (m) { m.classList.remove('hidden'); m.classList.add('flex'); m.style.setProperty('display', 'flex', 'important'); } }"
+                    class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 w-fit cursor-pointer">
                 <i class="fa-solid fa-user-plus"></i> Registrar Nuevo Socio
             </button>
         </div>
@@ -163,11 +165,13 @@
     <!-- ============================================================== -->
     <!-- MODAL: REGISTRAR NUEVO SOCIO (CON PASE INTELIGENTE + ACTIVIDAD)-->
     <!-- ============================================================== -->
-    <div id="modalAltaSocio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="modalAltaSocio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="text-lg font-extrabold text-white">Registrar Nuevo Socio</h3>
-                <button type="button" onclick="document.getElementById('modalAltaSocio').classList.add('hidden')" class="text-slate-400 hover:text-white transition cursor-pointer">
+                <button type="button"
+                        onclick="if (typeof ocultarModalAltaSocio === 'function') { ocultarModalAltaSocio(); } else { const m = document.getElementById('modalAltaSocio'); if (m) { m.classList.add('hidden'); m.classList.remove('flex'); m.style.setProperty('display', 'none', 'important'); } }"
+                        class="text-slate-400 hover:text-white transition cursor-pointer">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
@@ -283,7 +287,9 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800">
-                    <button type="button" onclick="document.getElementById('modalAltaSocio').classList.add('hidden')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
+                    <button type="button"
+                            onclick="if (typeof ocultarModalAltaSocio === 'function') { ocultarModalAltaSocio(); } else { const m = document.getElementById('modalAltaSocio'); if (m) { m.classList.add('hidden'); m.classList.remove('flex'); m.style.setProperty('display', 'none', 'important'); } }"
+                            class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
                         Cancelar
                     </button>
                     <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition cursor-pointer">
@@ -295,7 +301,7 @@
     </div>
 
     <!-- MODAL EDITAR SOCIO -->
-    <div id="modalEditarSocio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="modalEditarSocio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="text-lg font-extrabold text-white">Editar Datos del Socio</h3>
@@ -332,6 +338,25 @@
     </div>
 
 <script src="{% static 'js/empleado/socios.js' %}"></script>
+<script>
+(function () {
+    if (new URLSearchParams(window.location.search).get('nuevo') !== '1') return;
+    function abrirAltaPorQuery() {
+        var modal = document.getElementById('modalAltaSocio');
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        modal.style.setProperty('display', 'flex', 'important');
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', abrirAltaPorQuery);
+    } else {
+        abrirAltaPorQuery();
+    }
+})();
+</script>
 
 </body>
 </html>
+
+ocultarModalAltaSocio

@@ -121,7 +121,7 @@
     </main>
 
     <!-- MODAL COBRO UNIFICADO -->
-    <div id="modalRegistrarPago" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="modalRegistrarPago" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[92vh]">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                 <h3 class="font-extrabold text-white text-base">Registrar Cobro a Socio</h3>
@@ -130,31 +130,35 @@
                 </button>
             </div>
 
-            <form method="POST" action="{% url 'pagos_empleado' %}" class="space-y-5 text-xs">
+            <form method="POST" action="{% url 'pagos_empleado' %}" onsubmit="return validarSocioSeleccionadoUnificado()" class="space-y-4 text-xs">
                 {% csrf_token %}
                 <input type="hidden" name="accion" value="cobrar_membresia_empleado">
                 <input type="hidden" name="socio_id" id="cobroUnificadoSocioId">
                 <input type="hidden" name="plan_id" id="cobroUnificadoPlanIdReal">
 
-                <div class="space-y-2">
-                    <label class="block text-slate-400 uppercase text-[10px] font-bold">1. Buscar y Seleccionar Socio</label>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
+                        1. Buscar y Seleccionar Socio
+                    </label>
                     <input type="text" id="buscadorSocioCobro" onkeyup="filtrarSociosCobroUnificado()"
-                           placeholder="Escribí nombre, apellido o DNI..."
-                           class="w-full bg-slate-950 border border-emerald-500/40 rounded-xl px-4 py-2.5 text-white">
+                        placeholder="Escribí nombre, apellido o DNI..."
+                        class="w-full bg-slate-950 border border-amber-500/70 focus:border-amber-400 focus:outline-none rounded-xl px-3.5 py-2.5 text-white mb-2.5">
 
                     <div id="listaSociosCobro" class="max-h-44 overflow-y-auto space-y-2 pr-1">
                         {% for s in socios_para_cobro %}
                             <div onclick="seleccionarSocioCobroUnificado(this, '{{ s.id }}')"
-                                 data-busqueda="{{ s.nombre|lower }} {{ s.dni }}"
-                                 data-dni="{{ s.dni }}"
-                                 class="tarjeta-socio-cobro p-3 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/50 cursor-pointer transition flex items-center justify-between">
-                                <div>
+                                data-busqueda="{{ s.nombre|lower }} {{ s.dni|lower }}"
+                                data-dni="{{ s.dni }}"
+                                class="tarjeta-socio-cobro flex items-center justify-between px-4 py-3 rounded-xl bg-slate-950/90 border border-slate-800 hover:border-slate-700 cursor-pointer transition">
+                                <div class="flex items-baseline gap-2">
                                     <span class="font-bold text-white text-sm">{{ s.nombre }}</span>
-                                    <span class="text-[10px] font-mono text-slate-400 ml-2">DNI: {{ s.dni }}</span>
+                                    <span class="text-[11px] font-mono text-slate-400">DNI: {{ s.dni }}</span>
                                 </div>
-                                <span class="text-[10px] font-bold {% if s.al_dia %}text-emerald-400{% else %}text-rose-400{% endif %}">
-                                    {% if s.al_dia %}Al Día{% else %}Vencido{% endif %}
-                                </span>
+                                {% if s.al_dia %}
+                                    <span class="text-xs font-bold text-emerald-400">Al Día</span>
+                                {% else %}
+                                    <span class="text-xs font-bold text-rose-400">Vencido</span>
+                                {% endif %}
                             </div>
                         {% endfor %}
                     </div>
@@ -162,54 +166,93 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-800">
                     <div>
-                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5">2. Membresía / Plan</label>
-                        <select id="selectCategoriaPaseUnificado" onchange="actualizarSelectorPaseUnificado()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
+                            2. Membresía / Plan
+                        </label>
+                        <select id="selectCategoriaPaseUnificado" onchange="actualizarSelectorPaseUnificado()"
+                                class="w-full bg-slate-950 border border-emerald-500/60 focus:border-emerald-400 focus:outline-none rounded-xl px-3.5 py-2.5 text-white font-semibold">
                             <option value="" data-precio="0">-- Ninguna / Solo actividad --</option>
                             {% for p in planes_disponibles %}
-                                <option value="{{ p.id }}" data-precio="{{ p.precio|floatformat:0 }}">{{ p.nombre }} — ${{ p.precio|floatformat:0 }}</option>
+                                {% if 'pilates' not in p.nombre|lower %}
+                                    <option value="{{ p.id }}" data-precio="{{ p.precio|floatformat:0 }}" data-nombre="{{ p.nombre|lower }}">
+                                        {{ p.nombre }} — ${{ p.precio|floatformat:0 }}
+                                    </option>
+                                {% endif %}
                             {% endfor %}
+                            <option value="grupo_pilates" data-precio="0">Pilates (Elegir días por semana)</option>
                         </select>
                     </div>
+
                     <div>
-                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5">3. Actividad Adicional</label>
-                        <select name="actividad_id" id="selectActividadUnificado" onchange="recalcularTotalCobroUnificado()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
-                            <option value="" data-precio="0">-- Ninguna --</option>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
+                            3. Actividad Adicional (Opcional)
+                        </label>
+                        <select name="actividad_id" id="selectActividadUnificado" onchange="recalcularTotalCobroUnificado()"
+                                class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                            <option value="" data-precio="0">-- Ninguna / Incluida en el plan --</option>
                             {% for act in actividades_disponibles %}
-                                <option value="{{ act.id }}" data-precio="{{ act.precio|default:0|floatformat:0 }}">{{ act.nombre }}</option>
+                                <option value="{{ act.id }}" data-precio="{{ act.precio|default:0|floatformat:0 }}">
+                                    {{ act.nombre }}{% if act.precio %} — ${{ act.precio|floatformat:0 }}{% endif %}
+                                </option>
                             {% endfor %}
                         </select>
                     </div>
+                </div>
+
+                <div id="bloqueFrecuenciaPilatesUnificado" class="hidden p-4 rounded-2xl bg-blue-950/30 border border-blue-500/40 space-y-2">
+                    <label class="block text-blue-400 uppercase text-[10px] font-bold tracking-wider">
+                        <i class="fa-regular fa-calendar mr-1"></i> Frecuencia Semanal de Pilates:
+                    </label>
+                    <select id="selectSubPlanPilatesUnificado" onchange="recalcularTotalCobroUnificado()"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-semibold">
+                        {% for p in planes_disponibles %}
+                            {% if 'pilates' in p.nombre|lower %}
+                                <option value="{{ p.id }}" data-precio="{{ p.precio|floatformat:0 }}" data-nombre="{{ p.nombre|lower }}">
+                                    {{ p.nombre }} — ${{ p.precio|floatformat:0 }} / mes
+                                </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="cajaInfoPaseUnificado" class="hidden p-4 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-1.5">
+                    <h4 id="tituloInfoPaseUnificado" class="font-bold text-emerald-400 text-xs"></h4>
+                    <p id="descInfoPaseUnificado" class="text-[11px] text-slate-300 leading-relaxed"></p>
+                    <p class="text-[10px] text-slate-500 pt-1.5 border-t border-slate-800/80">
+                        <i class="fa-regular fa-clock mr-1"></i> Horario del gimnasio: Lun a Vie 07:00 a 22:00 hs • Sáb 09:00 a 13:00 hs
+                    </p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center pt-3 border-t border-slate-800">
                     <div>
-                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5">4. Medio de Pago</label>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">
+                            4. Medio de Pago
+                        </label>
                         <div class="grid grid-cols-2 gap-2.5">
-                            <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
-                                <input type="radio" name="metodo_pago" value="efectivo" checked>
-                                <span class="font-bold text-white">💵 Efectivo</span>
+                            <label class="flex items-center justify-center gap-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
+                                <input type="radio" name="metodo_pago" value="efectivo" checked class="text-emerald-500">
+                                <span class="font-bold text-slate-200">💵 Efectivo</span>
                             </label>
-                            <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
-                                <input type="radio" name="metodo_pago" value="transferencia">
-                                <span class="font-bold text-white">📱 Transferencia</span>
+                            <label class="flex items-center justify-center gap-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
+                                <input type="radio" name="metodo_pago" value="transferencia" class="text-emerald-500">
+                                <span class="font-bold text-slate-200">📱 Transferencia</span>
                             </label>
-                            <!--
-                            <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer">
-                                <input type="radio" name="metodo_pago" value="tarjeta">
-                                <span class="font-bold text-white">💳 Tarjeta</span>
-                            </label>
-                            -->
                         </div>
                     </div>
-                    <div class="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 flex items-center justify-between">
-                        <span class="font-bold text-slate-300 text-xs">Total a Cobrar:</span>
-                        <span id="labelTotalCobroUnificado" class="text-2xl font-black text-emerald-400 font-mono">$0</span>
+
+                    <div class="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-300">Total a Cobrar:</span>
+                        <span id="labelTotalCobroUnificado" class="text-xl font-black text-emerald-400 font-mono">$0</span>
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
-                    <button type="button" onclick="cerrarModalCobroUnificado()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl cursor-pointer">Cancelar</button>
-                    <button type="submit" onclick="return validarSocioSeleccionadoUnificado()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl cursor-pointer">Confirmar Cobro</button>
+                <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="cerrarModalCobroUnificado()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition cursor-pointer">
+                        Confirmar Cobro
+                    </button>
                 </div>
             </form>
         </div>

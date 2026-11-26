@@ -1,16 +1,25 @@
 function abrirModalCobroUnificado() {
-    document.getElementById('modalRegistrarPago').classList.remove('hidden');
+    const modal = document.getElementById('modalRegistrarPago');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        modal.style.setProperty('display', 'flex', 'important');
+    }
     const buscador = document.getElementById('buscadorSocioCobro');
     if (buscador) buscador.focus();
 }
 
 function cerrarModalCobroUnificado() {
     const modal = document.getElementById('modalRegistrarPago');
-    if (modal) modal.classList.add('hidden');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        modal.style.setProperty('display', 'none', 'important');
+    }
 }
 
 function filtrarSociosCobroUnificado() {
-    const q = (document.getElementById('buscadorSocioCobro').value || '').toLowerCase().trim();
+    const q = (document.getElementById('buscadorSocioCobro')?.value || '').toLowerCase().trim();
     document.querySelectorAll('.tarjeta-socio-cobro').forEach(card => {
         const texto = card.getAttribute('data-busqueda') || '';
         card.style.display = texto.includes(q) ? 'flex' : 'none';
@@ -24,11 +33,13 @@ function seleccionarSocioCobroUnificado(el, socioId) {
     });
     el.classList.remove('border-slate-800');
     el.classList.add('border-emerald-500', 'bg-emerald-950/20');
-    document.getElementById('cobroUnificadoSocioId').value = socioId;
+    const inputSocio = document.getElementById('cobroUnificadoSocioId');
+    if (inputSocio) inputSocio.value = socioId;
 }
 
 function validarSocioSeleccionadoUnificado() {
-    if (!document.getElementById('cobroUnificadoSocioId').value) {
+    const val = document.getElementById('cobroUnificadoSocioId')?.value;
+    if (!val) {
         alert('Por favor seleccioná un socio de la lista antes de confirmar el cobro.');
         return false;
     }
@@ -36,14 +47,10 @@ function validarSocioSeleccionadoUnificado() {
 }
 
 function actualizarSelectorPaseUnificado() {
-    const cat = document.getElementById('selectCategoriaPaseUnificado').value;
+    const cat = document.getElementById('selectCategoriaPaseUnificado')?.value;
     const bloquePilates = document.getElementById('bloqueFrecuenciaPilatesUnificado');
     if (bloquePilates) {
-        if (cat === 'grupo_pilates') {
-            bloquePilates.classList.remove('hidden');
-        } else {
-            bloquePilates.classList.add('hidden');
-        }
+        bloquePilates.classList.toggle('hidden', cat !== 'grupo_pilates');
     }
     recalcularTotalCobroUnificado();
 }
@@ -64,12 +71,12 @@ function recalcularTotalCobroUnificado() {
     if (selCat && selCat.value === 'grupo_pilates' && selPilates && selPilates.options.length > 0) {
         const optP = selPilates.options[selPilates.selectedIndex];
         if (inputPlanReal) inputPlanReal.value = optP.value;
-        precioPlan = parseInt(optP.getAttribute('data-precio') || 0, 10) || 0;
+        precioPlan = parseInt(optP.getAttribute('data-precio') || 0);
         nombrePlan = optP.text.split('—')[0].trim();
-    } else if (selCat && selCat.value && selCat.selectedIndex >= 0) {
+    } else if (selCat && selCat.value) {
         const optC = selCat.options[selCat.selectedIndex];
         if (inputPlanReal) inputPlanReal.value = optC.value;
-        precioPlan = parseInt(optC.getAttribute('data-precio') || 0, 10) || 0;
+        precioPlan = parseInt(optC.getAttribute('data-precio') || 0);
         nombrePlan = optC.text.split('—')[0].trim();
     } else if (inputPlanReal) {
         inputPlanReal.value = '';
@@ -97,9 +104,15 @@ function recalcularTotalCobroUnificado() {
     }
 
     const optA = selAct && selAct.selectedIndex >= 0 ? selAct.options[selAct.selectedIndex] : null;
-    const precioAct = optA ? (parseInt(optA.getAttribute('data-precio') || 0, 10) || 0) : 0;
+    const precioAct = optA ? parseInt(optA.getAttribute('data-precio') || 0) : 0;
     const labelTotal = document.getElementById('labelTotalCobroUnificado');
     if (labelTotal) {
         labelTotal.textContent = '$' + (precioPlan + precioAct).toLocaleString('es-AR');
     }
 }
+
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        cerrarModalCobroUnificado();
+    }
+});
