@@ -38,6 +38,10 @@ DEBUG = _env('DJANGO_DEBUG', 'True').lower() in ('1', 'true', 'si', 'yes')
 ALLOWED_HOSTS = [h.strip() for h in _env('DJANGO_ALLOWED_HOSTS').split(',') if h.strip()]
 CSRF_TRUSTED_ORIGINS = [f'https://{h}' for h in ALLOWED_HOSTS if h not in ('localhost', '127.0.0.1')]
 if not DEBUG:
+    from django.core.exceptions import ImproperlyConfigured
+    if SECRET_KEY.startswith('django-insecure'):
+        # La clave por defecto está publicada en GitHub: en el hosting tiene que venir del .env
+        raise ImproperlyConfigured('Falta DJANGO_SECRET_KEY en el .env del servidor.')
     # En el hosting el sitio va por HTTPS detrás de un proxy: así los links de los mails salen con https
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
@@ -106,8 +110,22 @@ DATABASES = {
         'PASSWORD': _env('DB_PASSWORD', ''),
         'HOST': _env('DB_HOST', 'localhost'),
         'PORT': _env('DB_PORT', '3306'),
+        'OPTIONS': {
+            # utf8mb4: acentos, ñ y cualquier carácter; modo estricto: MySQL no recorta datos en silencio
+            'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
+# Hosting sin MySQL (ej: cuenta gratis de PythonAnywhere): con DB_ENGINE=sqlite en el .env
+# se usa un archivo de base de datos en la carpeta del proyecto, sin instalar nada.
+if _env('DB_ENGINE').lower() == 'sqlite':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
