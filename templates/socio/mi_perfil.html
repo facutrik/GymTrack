@@ -1,73 +1,14 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymTrack - Mi Perfil</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Squada+One&family=Staatliches&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; 
-        }
-        .font-brand {
-            font-family: 'Barlow Condensed', sans-serif; 
-        }
-        .marca-GymTrack {
-            font-family: "Squada One", sans-serif;
-        }
-    </style>
-</head>
-<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-    <!-- NAVBAR -->
-    <nav class="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 text-white shadow-md">        
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3.5">
-                    <img src="{% static 'img/logo-gymtrack.svg' %}"
-                        alt="Logo GymTrack"
-                        class="h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(59,76,202,0.45)]">
-                    <div class="flex items-baseline gap-2.5">
-                        <span class="font-brand italic font-extrabold text-3xl sm:text-4xl tracking-wide">
-                            <span class="marca-GymTrack text-[#3f51d6] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">GYM</span><span class="marca-GymTrack text-white">track</span>
-                        </span>
-                        <span class="text-xs font-light text-slate-500">×</span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                            Bodynamic
-                        </span>
-                    </div>
-                </div>
+{% block title %}Mi Perfil{% endblock %}
 
-                <!-- Botón Volver al Panel -->
-                <div class="flex items-center gap-4">
-                    <a href="{% url 'dashboard' %}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left text-[10px]"></i> Volver al Panel
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
+{% block content %}
     <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
-
-        {% if messages %}
-            <div class="w-full space-y-2">
-                {% for message in messages %}
-                    <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% elif message.tags == 'warning' or message.tags == 'info' %}bg-amber-950/60 border border-amber-500/40 text-amber-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
-                        <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+        <div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Mi Perfil</h1>
+            <p class="text-slate-400 text-sm mt-1">Tus datos de contacto y la contraseña de acceso al portal.</p>
+        </div>
 
         <!-- DATOS PERSONALES -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
@@ -153,7 +94,4 @@
         </div>
 
     </main>
-
-    {% include 'includes/footer.html' %}
-</body>
-</html>
+{% endblock %}

@@ -1,3 +1,8 @@
+// Ancho de las barras de cupo (el porcentaje viene del template en data-porcentaje)
+document.querySelectorAll('.barra-cupo').forEach(barra => {
+    barra.style.width = (parseFloat(barra.dataset.porcentaje) || 0) + '%';
+});
+
 // Busca sin distinguir mayúsculas ni tildes
 function filtrarDisciplinas() {
     const normalizar = (t) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');

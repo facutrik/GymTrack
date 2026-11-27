@@ -1,0 +1,162 @@
+{% comment %}
+    Modal único para registrar un cobro a un socio (panel admin, panel empleado y Pagos).
+    Uso: {% include 'includes/modal_cobro.html' with url_cobro='pagos_empleado' %}
+    Necesita en el contexto lo que arma pagos.cobros.contexto_cobro() y cargar js/includes/cobros.js.
+    Se abre con abrirModalCobroUnificado().
+{% endcomment %}
+<div id="modalRegistrarPago" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[92vh]">
+        <div class="flex items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                    <i class="fa-solid fa-cash-register"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white text-base">Registrar Cobro a Socio</h3>
+                    <p class="text-xs text-slate-400">Buscá al socio, revisá su estado y elegí qué abona.</p>
+                </div>
+            </div>
+            <button type="button" onclick="cerrarModalCobroUnificado()" class="text-slate-400 hover:text-white transition cursor-pointer" aria-label="Cerrar">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="{% url url_cobro|default:'dashboard' %}" onsubmit="return validarSocioSeleccionadoUnificado()" class="space-y-5 text-xs">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="registrar_cobro">
+            <input type="hidden" name="socio_id" id="cobroUnificadoSocioId">
+            <input type="hidden" name="plan_id" id="cobroUnificadoPlanIdReal">
+
+            <div class="space-y-2.5">
+                <label class="block text-slate-400 uppercase text-[10px] font-bold tracking-wider">1. Seleccionar socio</label>
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                    <input type="text" id="buscadorSocioCobro" oninput="filtrarSociosCobroUnificado()"
+                           placeholder="Escribí nombre, apellido o DNI..."
+                           class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-slate-500 focus:outline-none">
+                </div>
+
+                <div id="listaSociosCobro" class="max-h-48 overflow-y-auto space-y-2 pr-1">
+                    {% for s in socios_para_cobro %}
+                        <div onclick="seleccionarSocioCobroUnificado(this, '{{ s.id }}')"
+                             data-busqueda="{{ s.nombre|lower }} {{ s.dni }}"
+                             data-dni="{{ s.dni }}"
+                             class="tarjeta-socio-cobro p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/50 cursor-pointer transition flex items-center justify-between gap-3">
+                            <div class="space-y-1.5">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="font-bold text-white text-sm">{{ s.nombre }}</span>
+                                    <span class="text-[10px] font-mono text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded">DNI: {{ s.dni }}</span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <span class="text-[10px] text-slate-500">Anotado en:</span>
+                                    {% for item in s.anotado_en %}
+                                        <span class="text-[10px] font-bold text-blue-300 bg-blue-500/10 border border-blue-500/30 px-2 py-0.5 rounded-md">{{ item }}</span>
+                                    {% empty %}
+                                        <span class="text-[10px] text-slate-500 italic">Sin planes ni clases</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                {% if s.al_dia %}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Al día
+                                    </span>
+                                    <p class="text-[10px] text-slate-500 mt-1">Vence: {{ s.vence }}</p>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Vencida
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-center text-slate-500 py-4">No hay socios activos registrados.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-800">
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">2. Membresía / plan</label>
+                    <select id="selectCategoriaPaseUnificado" onchange="actualizarSelectorPaseUnificado()"
+                            class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white font-semibold">
+                        <option value="" data-precio="0">-- Ninguna / Solo actividad --</option>
+                        {% for p in planes_disponibles %}
+                            {% if 'pilates' not in p.nombre|lower %}
+                                <option value="{{ p.id }}" data-precio="{{ p.precio|floatformat:0 }}" data-nombre="{{ p.nombre|lower }}">
+                                    {{ p.nombre }} — ${{ p.precio|floatformat:0 }}
+                                </option>
+                            {% endif %}
+                        {% endfor %}
+                        <option value="grupo_pilates" data-precio="0">Pilates (elegir días por semana)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">3. Anotar en actividad (opcional)</label>
+                    <select name="actividad_id" id="selectActividadUnificado" onchange="recalcularTotalCobroUnificado()"
+                            class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                        <option value="" data-precio="0">-- Ninguna / Incluida en el plan --</option>
+                        {% for act in actividades_disponibles %}
+                            <option value="{{ act.id }}" data-precio="{{ act.precio|default:0|floatformat:0 }}">
+                                {{ act.nombre }}{% if act.precio %} — ${{ act.precio|floatformat:0 }}{% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div id="bloqueFrecuenciaPilatesUnificado" class="hidden p-3.5 rounded-xl bg-slate-950 border border-blue-500/40 space-y-2">
+                <label class="block text-blue-400 uppercase text-[10px] font-bold tracking-wider">
+                    <i class="fa-regular fa-calendar mr-1"></i> Frecuencia semanal de Pilates
+                </label>
+                <select id="selectSubPlanPilatesUnificado" onchange="recalcularTotalCobroUnificado()"
+                        class="w-full bg-slate-900 border border-slate-700 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white font-semibold">
+                    {% for p in planes_disponibles %}
+                        {% if 'pilates' in p.nombre|lower %}
+                            <option value="{{ p.id }}" data-precio="{{ p.precio|floatformat:0 }}" data-nombre="{{ p.nombre|lower }}">
+                                {{ p.nombre }} — ${{ p.precio|floatformat:0 }} / mes
+                            </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="cajaInfoPaseUnificado" class="hidden p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 space-y-1.5">
+                <h4 id="tituloInfoPaseUnificado" class="font-bold text-emerald-400 text-xs"></h4>
+                <p id="descInfoPaseUnificado" class="text-[11px] text-slate-300 leading-relaxed"></p>
+                <p class="text-[10px] text-slate-500 pt-1 border-t border-slate-800/80">
+                    <i class="fa-regular fa-clock mr-1"></i> Horario del gimnasio: Lun a Vie 07:00 a 22:00 hs • Sáb 09:00 a 13:00 hs
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center pt-3 border-t border-slate-800">
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1.5 tracking-wider">4. Medio de pago</label>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <label class="flex items-center justify-center gap-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
+                            <input type="radio" name="metodo_pago" value="efectivo" checked class="text-emerald-500">
+                            <span class="font-bold text-slate-200"><i class="fa-solid fa-money-bill-wave text-emerald-400 mr-1"></i> Efectivo</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
+                            <input type="radio" name="metodo_pago" value="transferencia" class="text-emerald-500">
+                            <span class="font-bold text-slate-200"><i class="fa-solid fa-building-columns text-blue-400 mr-1"></i> Transferencia</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+                    <span class="font-bold text-slate-300 text-xs">Total a cobrar:</span>
+                    <span id="labelTotalCobroUnificado" class="text-xl font-black text-emerald-400 font-mono">$0</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800">
+                <button type="button" onclick="cerrarModalCobroUnificado()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
+                    Cancelar
+                </button>
+                <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition cursor-pointer">
+                    Confirmar Cobro
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

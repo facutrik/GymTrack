@@ -1,0 +1,55 @@
+{% comment %}
+    Campana de novedades del nav (todas las páginas internas). Los datos salen de
+    novedades/context_processors.py; el personal ve además el acceso para publicar.
+{% endcomment %}
+<div class="relative">
+    <button type="button" id="btnCampanaNovedades" data-url-leidas="{% url 'novedades_leidas' %}"
+            class="relative p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/80 transition cursor-pointer"
+            title="Novedades" aria-label="Novedades{% if novedades_no_leidas %} ({{ novedades_no_leidas }} sin leer){% endif %}" aria-expanded="false">
+        <i class="fa-solid fa-bell text-base"></i>
+        {% if novedades_no_leidas %}
+            <span id="badgeNovedades" class="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-slate-900">
+                {{ novedades_no_leidas }}
+            </span>
+        {% endif %}
+    </button>
+
+    <div id="panelNovedades" class="hidden fixed inset-x-4 top-[4.5rem] sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-96 z-50 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl shadow-black/40 overflow-hidden">
+        <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-slate-800">
+            <div>
+                <p class="text-sm font-bold text-white">Novedades</p>
+                <p class="text-[11px] text-slate-400">Avisos del gimnasio</p>
+            </div>
+            {% if puede_publicar_novedades %}
+                <a href="{% url 'novedades' %}" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold rounded-lg transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus text-[10px]"></i> Publicar
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="max-h-[60vh] overflow-y-auto divide-y divide-slate-800/70">
+            {% for n in novedades_campana %}
+                <div class="px-4 py-3.5 flex gap-3 {% if n.nueva %}bg-blue-500/5{% endif %}">
+                    <div class="w-9 h-9 shrink-0 rounded-xl bg-{{ n.color }}-500/10 text-{{ n.color }}-400 flex items-center justify-center">
+                        <i class="fa-solid {{ n.icono }} text-sm"></i>
+                    </div>
+                    <div class="min-w-0 space-y-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <p class="text-xs font-bold text-white">{{ n.titulo }}</p>
+                            {% if n.nueva %}<span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-rose-500/15 text-rose-300">Nueva</span>{% endif %}
+                        </div>
+                        <p class="text-[11px] text-slate-300 leading-relaxed whitespace-pre-line">{{ n.mensaje }}</p>
+                        <p class="text-[10px] text-slate-500">
+                            {{ n.get_categoria_display }} · {{ n.publicada|date:"d/m/Y" }}{% if n.visible_hasta %} · hasta el {{ n.visible_hasta|date:"d/m" }}{% endif %}
+                        </p>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="px-4 py-10 text-center">
+                    <i class="fa-regular fa-bell-slash text-2xl text-slate-600"></i>
+                    <p class="text-xs text-slate-400 mt-2">No hay novedades por ahora.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

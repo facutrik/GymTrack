@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GymTrack - Tu entrenamiento inteligente</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/logo-gymtrack.svg' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -53,7 +54,7 @@
                 <div class="flex items-center gap-6">
                     <a href="#sobre-nosotros" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Experiencia Digital</a>
                     <a href="#actividades-membresias" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Funcionalidades</a>
-                    <a href="#planes-saas" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Planes SaaS</a>
+                    <a href="#planes" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Planes</a>
                     <a href="#clientes" class="hidden md:block text-sm font-medium text-slate-300 hover:text-white transition">Gimnasios</a>
                     <a href="{% url 'login' %}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-600/30 hover:shadow-blue-500/50 transition duration-200 flex items-center gap-2">
                         <i class="fa-solid fa-right-to-bracket text-xs"></i>
@@ -86,7 +87,7 @@
         <div class="max-w-2xl">
             <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-6 backdrop-blur-md">
                 <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-                Plataforma SaaS para Centros Deportivos
+                Plataforma de gestión para gimnasios
             </div>
 
             <div class="flex items-center gap-4 mb-5">
@@ -103,8 +104,8 @@
                 <a href="#actividades-membresias" class="px-7 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 transition duration-200 flex items-center gap-2">
                     Ver Funcionalidades <i class="fa-solid fa-arrow-down text-sm"></i>
                 </a>
-                <a href="#planes-saas" class="px-7 py-3.5 bg-slate-800/80 hover:bg-slate-700/80 text-white font-semibold rounded-xl border border-slate-700 backdrop-blur-md transition duration-200 flex items-center gap-2">
-                    Planes SaaS <i class="fa-solid fa-layer-group text-sm text-blue-400"></i>
+                <a href="#planes" class="px-7 py-3.5 bg-slate-800/80 hover:bg-slate-700/80 text-white font-semibold rounded-xl border border-slate-700 backdrop-blur-md transition duration-200 flex items-center gap-2">
+                    Ver planes <i class="fa-solid fa-layer-group text-sm text-blue-400"></i>
                 </a>
             </div>
         </div>
@@ -189,7 +190,7 @@
                         <a href="{% url 'login' %}" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition">
                             Ingresar a mi cuenta
                         </a>
-                        <a href="#planes-saas" class="text-xs text-slate-400 hover:text-white underline">
+                        <a href="#planes" class="text-xs text-slate-400 hover:text-white underline">
                             Conocer planes disponibles
                         </a>
                     </div>
@@ -283,7 +284,7 @@
                         </div>
                     </div>
                     <div class="mt-6 pt-4 border-t border-slate-800">
-                        <a href="#planes-saas" class="block text-center w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl shadow transition">
+                        <a href="#planes" class="block text-center w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl shadow transition">
                             Ver Planes de Suscripción
                         </a>
                     </div>
@@ -332,14 +333,14 @@
 
 <!-- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
 <!-- SECCIÓN 4: PLANES DE SUSCRIPCIÓN -->
-    <section id="planes-saas" class="relative py-20 bg-slate-900 border-t border-slate-800">
+    <section id="planes" class="relative py-20 bg-slate-900 border-t border-slate-800">
         <img src="{% static 'img/logo-gymtrack.svg' %}"
             alt=""
             aria-hidden="true"
-            class="pointer-events-none select-none hidden md:block absolute -top-56 -left-14 w-[480px] lg:w-[580px] h-auto opacity-[0.08] z-0">
+            class="pointer-events-none select-none absolute -top-20 -left-6 w-56 sm:-top-32 sm:-left-10 sm:w-80 md:-top-56 md:-left-14 md:w-[480px] lg:w-[580px] h-auto opacity-[0.08] z-0">
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">MODELO SAAS B2B</span>
+                <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">PLANES Y PRECIOS</span>
                 <h2 class="text-3xl font-extrabold text-white tracking-tight mt-1">Planes para Centros Deportivos</h2>
                 <p class="text-slate-400 mt-2 text-sm">Elegí la suscripción mensual que mejor se adapte al volumen de socios de tu gimnasio.</p>
             </div>
@@ -448,7 +449,7 @@
                     <div class="space-y-3 text-xs text-slate-300 mb-6">
                         <p class="flex items-center gap-2.5">
                             <i class="fa-solid fa-location-dot text-blue-400 w-4 text-center"></i>
-                            <span><strong>Ubicación:</strong> Av. San Martín 2975, Rosario, Santa Fe</span>
+                            <span><strong>Ubicación:</strong> {{ gimnasio.domicilio }}</span>
                         </p>
                         <p class="flex items-center gap-2.5">
                             <i class="fa-solid fa-clock text-blue-400 w-4 text-center"></i>
@@ -534,7 +535,7 @@
                     </ul>
                 </div>
                 <div class="pt-4 border-t border-slate-800/80">
-                    <a href="#planes-saas" class="block text-center w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition">
+                    <a href="#planes" class="block text-center w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow transition">
                         Conocer Planes de Suscripción
                     </a>
                 </div>

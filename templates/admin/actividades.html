@@ -1,78 +1,14 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymTrack - Gestión de Actividades</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Squada+One&family=Staatliches&display=swap" rel="stylesheet">
 
-    <style>
-    body { 
-        font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; 
-    }
-    .marca-GymTrack {
-        font-family: "Squada One", sans-serif;
-    }
-    </style>
-    
-</head>
-<body class="text-slate-100 min-h-screen flex flex-col antialiased">
+{% block title %}Gestión de Actividades{% endblock %}
 
-    <!-- NAVBAR ADMIN -->
-    <nav class="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 text-white shadow-md">        
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3.5">
-                    <img src="{% static 'img/logo-gymtrack.svg' %}"
-                        alt="Logo GymTrack"
-                        class="h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(59,76,202,0.45)]">
-                    <div class="flex items-baseline gap-2.5">
-                        <span class="font-brand italic font-extrabold text-3xl sm:text-4xl tracking-wide">
-                            <span class="marca-GymTrack text-[#3f51d6] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">GYM</span><span class="marca-GymTrack text-white">track</span>
-                        </span>
-                        <span class="text-xs font-light text-slate-500">×</span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                            Bodynamic
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Botón Volver al Panel -->
-                <div class="flex items-center gap-4">
-                    <a href="{% url 'dashboard' %}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left text-[10px]"></i> Volver al Panel
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- MENSAJES -->
-    {% if messages %}
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-            {% for message in messages %}
-                <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% elif message.tags == 'warning' %}bg-amber-950/60 border border-amber-500/40 text-amber-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
-                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
+{% block content %}
     <!-- CONTENEDOR PRINCIPAL -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <h1 class="text-3xl font-extrabold text-white tracking-tight">Actividades & Clases Grupales 🏋️‍♂️</h1>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">Actividades & Clases Grupales</h1>
                 <p class="text-slate-400 text-sm mt-1">Disciplinas dictadas, métricas mensuales de concurrencia y control de estado.</p>
             </div>
             <button onclick="document.getElementById('modalNuevaActividad').classList.remove('hidden')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer">
@@ -122,33 +58,47 @@
                                     data-cupo="{{ item.cupo }}"
                                     data-reserva="{{ item.objeto.requiere_reserva|yesno:'true,false' }}" 
                                     onclick="abrirModalEditarDesdeBoton(this)" 
-                                    class="text-white hover:text-blue-400 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
-                                <i class="fa-solid fa-pen text-[11px]"></i> Editar
+                                    class="btn-accion btn-accion--editar">
+                                <i class="fa-solid fa-pen-to-square"></i> Editar
                             </button>
 
                             <!-- Toggle Pausar / Reactivar -->
-                            <form method="POST" class="inline">
+                            <form method="POST" class="inline"
+                                  {% if item.objeto.activa %}
+                                  data-confirmar="¿Deseás pausar {{ item.objeto.nombre }}? Los socios no van a poder anotarse mientras esté pausada."
+                                  data-confirmar-titulo="Pausar actividad"
+                                  data-confirmar-boton="Sí, pausar"
+                                  data-confirmar-tipo="peligro"
+                                  {% else %}
+                                  data-confirmar="¿Deseás reactivar {{ item.objeto.nombre }}?"
+                                  data-confirmar-titulo="Reactivar actividad"
+                                  data-confirmar-boton="Sí, reactivar"
+                                  data-confirmar-tipo="exito"
+                                  {% endif %}>
                                 {% csrf_token %}
                                 <input type="hidden" name="accion" value="toggle_baja">
                                 <input type="hidden" name="actividad_id" value="{{ item.objeto.id }}">
                                 {% if item.objeto.activa %}
-                                    <button type="submit" class="text-white hover:text-amber-400 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
-                                        <i class="fa-solid fa-pause text-[11px]"></i> Pausar
+                                    <button type="submit" class="btn-accion btn-accion--pausar">
+                                        <i class="fa-solid fa-pause"></i> Pausar
                                     </button>
                                 {% else %}
-                                    <button type="submit" class="text-white hover:text-emerald-400 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer">
-                                        <i class="fa-solid fa-play text-[11px]"></i> Reactivar
+                                    <button type="submit" class="btn-accion btn-accion--exito">
+                                        <i class="fa-solid fa-play"></i> Reactivar
                                     </button>
                                 {% endif %}
                             </form>
                         </div>
 
                         <!-- Eliminar Definitivamente -->
-                        <form method="POST" onsubmit="return confirm('¿Seguro que deseás eliminar definitivamente esta actividad?');" class="inline">
+                        <form method="POST" class="inline"
+                              data-confirmar="¿Seguro que deseás eliminar definitivamente {{ item.objeto.nombre }}? Esta acción no se puede deshacer."
+                              data-confirmar-titulo="Eliminar actividad"
+                              data-confirmar-boton="Sí, eliminar">
                             {% csrf_token %}
                             <input type="hidden" name="accion" value="eliminar">
                             <input type="hidden" name="actividad_id" value="{{ item.objeto.id }}">
-                            <button type="submit" class="text-white hover:text-rose-400 font-semibold text-xs flex items-center gap-1 transition cursor-pointer" title="Eliminar definitivamente">
+                            <button type="submit" class="btn-accion btn-accion--peligro btn-accion--icono" title="Eliminar definitivamente" aria-label="Eliminar definitivamente">
                                 <i class="fa-regular fa-trash-can"></i>
                             </button>
                         </form>
@@ -164,7 +114,7 @@
 
     <!-- MODAL NUEVA ACTIVIDAD -->
     <div id="modalNuevaActividad" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="font-bold text-white text-base">Crear Nueva Actividad</h3>
                 <button type="button" onclick="document.getElementById('modalNuevaActividad').classList.add('hidden')" class="text-slate-400 hover:text-white transition">
@@ -200,7 +150,7 @@
 
     <!-- MODAL EDITAR ACTIVIDAD -->
     <div id="modalEditarActividad" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="font-bold text-white text-base">Editar Actividad</h3>
                 <button type="button" onclick="document.getElementById('modalEditarActividad').classList.add('hidden')" class="text-slate-400 hover:text-white transition">
@@ -234,7 +184,8 @@
             </form>
         </div>
     </div>
+{% endblock %}
 
+{% block scripts %}
     <script src="{% static 'js/admin/actividades.js' %}?v=2"></script>
-</body>
-</html>
+{% endblock %}

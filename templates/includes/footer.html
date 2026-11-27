@@ -1,32 +1,34 @@
 {% load static %}
-<!-- FOOTER (PUBLICO, SOCIO, EMPLEADO Y ADMIN) -->
+{% comment %}
+    Footer de todo el sitio (público, socio, empleado y admin) con los textos legales.
+    Los datos del gimnasio (razón social, CUIT, domicilio, contacto) salen de settings.DATOS_GIMNASIO.
+{% endcomment %}
 <footer class="bg-slate-900 border-t border-slate-800 text-slate-500 py-6 text-xs mt-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-6">
-<!-- Izquierda -->
-        <div class="flex flex-wrap items-center justify-center md:justify-start gap-2.5 text-center md:text-left">
-            <img src="{% static 'img/logo-gymtrack.svg' %}"
-                alt="Isotipo GT"
-                class="h-14 w-auto object-contain opacity-95 hover:opacity-100 transition drop-shadow-[0_2px_10px_rgba(63,81,214,0.4)]">
-            <span class="text-slate-600">—</span>
-            <span class="text-slate-400 font-medium">© 2026 Plataforma de Gestión Deportiva.</span>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+        <!-- Marca y datos del prestador -->
+        <div class="flex items-center gap-3 min-w-0">
+            <img src="{% static 'img/logo-gymtrack.svg' %}" alt="Isotipo GT"
+                 class="h-12 w-auto shrink-0 object-contain opacity-95 drop-shadow-[0_2px_10px_rgba(63,81,214,0.4)]">
+            <div class="leading-relaxed">
+                <p class="text-slate-300 font-semibold">© 2026 {{ gimnasio.razon_social }}</p>
+                <p class="text-[11px] text-slate-500">CUIT {{ gimnasio.cuit }} · {{ gimnasio.domicilio }}</p>
+            </div>
         </div>
-<!-- Medio -->
-        <div class="flex justify-center">
 
-        </div>
-<!-- Derecha -->
-        <div class="flex flex-wrap lg:flex-nowrap items-center justify-center md:justify-end gap-3 text-slate-400 whitespace-nowrap">
-            <button type="button" onclick="abrirModalLegalGlobal('modal-terminos-global')" class="hover:text-white transition cursor-pointer">
+        <!-- Links legales -->
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-2.5 text-slate-400">
+            <button type="button" onclick="abrirModalLegalGlobal('modal-terminos-global')" class="hover:text-white transition cursor-pointer whitespace-nowrap">
                 Términos y Condiciones
             </button>
-            <span class="text-slate-700">•</span>
-            <button type="button" onclick="abrirModalLegalGlobal('modal-privacidad-global')" class="hover:text-white transition cursor-pointer">
+            <button type="button" onclick="abrirModalLegalGlobal('modal-privacidad-global')" class="hover:text-white transition cursor-pointer whitespace-nowrap">
                 Política de Privacidad
             </button>
-            <span class="text-slate-700">•</span>
-            <button type="button" onclick="abrirModalLegalGlobal('modal-arrepentimiento-global')" class="hover:text-blue-400 transition cursor-pointer">
-                Botón de Arrepentimiento
-            </button>
+            <a href="https://www.argentina.gob.ar/produccion/defensadelconsumidor" target="_blank" rel="noopener" class="hover:text-white transition whitespace-nowrap">
+                Defensa del Consumidor <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-0.5"></i>
+            </a>
+            <a href="{% url 'arrepentimiento' %}" class="px-3 py-1.5 rounded-lg border border-blue-500/40 bg-blue-500/10 text-blue-300 hover:text-white hover:bg-blue-500/20 font-semibold transition whitespace-nowrap">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Botón de Arrepentimiento
+            </a>
         </div>
     </div>
 </footer>
@@ -36,18 +38,52 @@
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl">
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800">
             <h3 class="text-base font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-file-contract text-blue-400"></i> Términos y Condiciones de Uso — GYMtrack
+                <i class="fa-solid fa-file-contract text-blue-400"></i> Términos y Condiciones
             </h3>
-            <button type="button" onclick="cerrarModalLegalGlobal('modal-terminos-global')" class="text-slate-400 hover:text-white text-lg cursor-pointer">
+            <button type="button" onclick="cerrarModalLegalGlobal('modal-terminos-global')" class="text-slate-400 hover:text-white text-lg cursor-pointer" aria-label="Cerrar">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
         <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-300 leading-relaxed">
-            <p><strong class="text-white">1. Alcance de la Plataforma:</strong> GYMtrack es un sistema integral de gestión deportiva y autogestión de entrenamientos. El acceso mediante usuario y contraseña es personal e intransferible.</p>
-            <p><strong class="text-white">2. Apto Físico Obligatorio:</strong> Conforme a la normativa municipal vigente para establecimientos de actividad física, todo socio debe presentar certificado de aptitud médica vigente para entrenar en sala o participar en clases grupales.</p>
-            <p><strong class="text-white">3. Responsabilidad en Rutinas de Entrenamiento:</strong> Las rutinas precargadas (<em>Adaptación, Hipertrofia, Fuerza</em>), las rutinas asignadas por instructores y el registro de cargas constituyen una guía de seguimiento digital y no reemplazan la evaluación médica ni la supervisión presencial en sala.</p>
-            <p><strong class="text-white">4. Membresías, Vigencia y Comprobantes:</strong> Los pases mensuales tienen una vigencia de 30 días corridos. Los comprobantes internos (#REC) acreditan el registro en caja; la facturación fiscal electrónica es emitida por el establecimiento conforme a la normativa de ARCA.</p>
-            <p><strong class="text-white">5. Operación Interna y Turnos:</strong> El personal operativo y administrativo debe resguardar la confidencialidad de los datos de socios y respetar los registros horarios de jornada laboral.</p>
+            <p class="text-slate-500">Última actualización: {{ gimnasio.terminos_actualizados }}</p>
+
+            <p><strong class="text-white">1. Prestador del servicio.</strong> Los servicios del gimnasio {{ gimnasio.nombre_fantasia }} son prestados por
+                <strong class="text-white">{{ gimnasio.razon_social }}</strong>, CUIT {{ gimnasio.cuit }}, con domicilio en {{ gimnasio.domicilio }}.
+                Contacto: {{ gimnasio.email }} · {{ gimnasio.telefono }} · Atención: {{ gimnasio.horario_atencion }}.
+                GYMtrack es el sistema de gestión que utiliza el gimnasio.</p>
+
+            <p><strong class="text-white">2. Cuenta de usuario.</strong> Al darte de alta se crea una cuenta personal e intransferible: tu usuario es tu DNI y la contraseña inicial
+                también. Te recomendamos cambiarla desde "Mi perfil". Sos responsable por el uso de tu cuenta.</p>
+
+            <p><strong class="text-white">3. Apto físico.</strong> Para entrenar en sala o participar de clases tenés que presentar en recepción un certificado de aptitud
+                física vigente, según la normativa aplicable en {{ gimnasio.ciudad }}.</p>
+
+            <p><strong class="text-white">4. Membresías, precios y pagos.</strong> Los planes tienen una vigencia de 30 días corridos (o la indicada en cada plan) y sus precios
+                finales se informan en el sistema antes de pagar. Se puede pagar en efectivo en recepción o por transferencia. Los pagos que hacés desde la web
+                quedan <em>pendientes</em> y el plan se activa cuando recepción verifica que se recibió el dinero: si pagás por transferencia
+                tenés que adjuntar el comprobante, y si elegís pagar en recepción, el plan se activa cuando abonás. Si renovás dentro de los 7 días posteriores al
+                vencimiento, el nuevo período se cuenta desde el vencimiento anterior. Los comprobantes internos (#REC) acreditan el registro del pago; la factura
+                electrónica la emite el gimnasio según la normativa de ARCA.</p>
+
+            <p><strong class="text-white">5. Inactividad.</strong> Si una cuenta pasa más de 90 días sin un plan vigente, se da de baja automáticamente. Podés reactivarla en
+                recepción cuando quieras; tus datos e historial se conservan.</p>
+
+            <p><strong class="text-white">6. Clases y reservas.</strong> Las clases con cupo se reservan desde "Mis clases" y se pueden cancelar desde el mismo lugar. El cupo
+                se asigna por orden de inscripción.</p>
+
+            <p><strong class="text-white">7. Rutinas.</strong> Las rutinas del sistema (básicas, asignadas por profesores o armadas por vos) y el registro de cargas son una guía
+                de seguimiento: no reemplazan la evaluación médica ni la supervisión de un profesional en sala.</p>
+
+            <p><strong class="text-white">8. Derecho de arrepentimiento.</strong> Si contrataste o renovaste un plan a distancia (desde la web), podés revocar la contratación
+                dentro de los 10 días corridos, sin costo ni necesidad de explicar el motivo (art. 34 de la Ley 24.240 y art. 1110 del Código Civil y Comercial),
+                usando el <a href="{% url 'arrepentimiento' %}" class="text-blue-400 hover:text-blue-300 underline">Botón de Arrepentimiento</a>.</p>
+
+            <p><strong class="text-white">9. Cambios en estos términos.</strong> Si modificamos estos términos, lo informaremos en el sistema con anticipación. Los cambios no
+                afectan los planes que ya pagaste.</p>
+
+            <p><strong class="text-white">10. Reclamos.</strong> Podés hacer cualquier reclamo en recepción o a {{ gimnasio.email }}. También podés recurrir a
+                <a href="https://www.argentina.gob.ar/produccion/defensadelconsumidor" target="_blank" rel="noopener" class="text-blue-400 hover:text-blue-300 underline">Defensa de las y los Consumidores</a>.
+                Se aplica la legislación argentina, sin perjuicio de los derechos que te reconoce la Ley 24.240 de Defensa del Consumidor.</p>
         </div>
         <div class="px-6 py-4 border-t border-slate-800 flex justify-end">
             <button type="button" onclick="cerrarModalLegalGlobal('modal-terminos-global')" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition cursor-pointer">
@@ -56,6 +92,7 @@
         </div>
     </div>
 </div>
+
 <!-- POLÍTICA DE PRIVACIDAD -->
 <div id="modal-privacidad-global" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl">
@@ -63,43 +100,44 @@
             <h3 class="text-base font-bold text-white flex items-center gap-2">
                 <i class="fa-solid fa-shield-halved text-emerald-400"></i> Política de Privacidad y Protección de Datos
             </h3>
-            <button type="button" onclick="cerrarModalLegalGlobal('modal-privacidad-global')" class="text-slate-400 hover:text-white text-lg cursor-pointer">
+            <button type="button" onclick="cerrarModalLegalGlobal('modal-privacidad-global')" class="text-slate-400 hover:text-white text-lg cursor-pointer" aria-label="Cerrar">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
         <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-300 leading-relaxed">
-            <p><strong class="text-white">1. Marco Legal:</strong> El almacenamiento y tratamiento de datos personales en GYMtrack se rige por la <strong class="text-white">Ley N.º 25.326 de Protección de Datos Personales</strong> de la República Argentina.</p>
-            <p><strong class="text-white">2. Finalidad de los Datos:</strong> Los datos recopilados (DNI, nombre, contacto, asistencias, pagos y rutinas) se utilizan exclusivamente para la gestión operativa, deportiva y contable del establecimiento.</p>
-            <p><strong class="text-white">3. Seguridad y Secreto Profesional:</strong> Las contraseñas se almacenan cifradas y todo el personal autorizado está sujeto al deber de confidencialidad previsto en el Art. 10 de la Ley N.º 25.326.</p>
-            <p><strong class="text-white">4. Derechos ARCO:</strong> El titular de los datos puede ejercer sus derechos de acceso, rectificación y supresión en cualquier momento desde su perfil o en recepción. La Agencia de Acceso a la Información Pública (AAIP) es el órgano de control de la Ley N.º 25.326.</p>
+            <p class="text-slate-500">Última actualización: {{ gimnasio.terminos_actualizados }}</p>
+
+            <p><strong class="text-white">1. Responsable de los datos.</strong> {{ gimnasio.razon_social }} (CUIT {{ gimnasio.cuit }}), con domicilio en {{ gimnasio.domicilio }},
+                es responsable de la base de datos de socios y personal, en los términos de la Ley N.º 25.326 de Protección de los Datos Personales.
+                Inscripción en el Registro Nacional de Bases de Datos: {{ gimnasio.registro_base_datos }}.</p>
+
+            <p><strong class="text-white">2. Qué datos guardamos.</strong> Nombre y apellido, DNI, email, teléfono, fecha de nacimiento (si la informás), fecha de alta, planes contratados y pagos (incluidos los comprobantes de transferencia que subas, que solo ve el personal autorizado y vos), asistencias,
+                reservas de clases y las rutinas y cargas que registres. No guardamos datos de tarjetas ni el certificado de apto físico.</p>
+
+            <p><strong class="text-white">3. Para qué los usamos.</strong> Solo para gestionar tu membresía, controlar el ingreso, organizar clases y rutinas, registrar pagos y
+                cumplir obligaciones contables y legales. Los datos son necesarios para prestar el servicio: sin ellos no podemos darte de alta.</p>
+
+            <p><strong class="text-white">4. Con quién los compartimos.</strong> No vendemos ni cedemos tus datos a terceros, salvo obligación legal o requerimiento de autoridad
+                competente. Solo acceden el personal autorizado del gimnasio, que tiene deber de confidencialidad (art. 10 de la Ley 25.326).</p>
+
+            <p><strong class="text-white">5. Seguridad.</strong> El acceso al sistema es con usuario y contraseña, y las contraseñas se guardan con un hash irreversible (nadie,
+                ni siquiera el gimnasio, puede verlas). Cada rol accede solo a la información que necesita (art. 9 de la Ley 25.326).</p>
+
+            <p><strong class="text-white">6. Tus derechos.</strong> Podés pedir acceder a tus datos, rectificarlos, actualizarlos o suprimirlos en recepción o escribiendo a
+                {{ gimnasio.email }}. Nombre, email y teléfono también los podés corregir desde "Mi perfil". Respondemos los pedidos de acceso dentro de los
+                10 días corridos y los de rectificación, actualización o supresión dentro de los 5 días hábiles (arts. 14 y 16 de la Ley 25.326).
+                La supresión no procede si hay una obligación legal de conservar el dato (por ejemplo, registros contables de pagos).</p>
+
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 text-[11px] text-slate-400">
+                <p>El titular de los datos personales tiene la facultad de ejercer el derecho de acceso a los mismos en forma gratuita a intervalos no inferiores
+                    a seis meses, salvo que se acredite un interés legítimo al efecto conforme lo establecido en el artículo 14, inciso 3 de la Ley N.º 25.326.</p>
+                <p>La AGENCIA DE ACCESO A LA INFORMACIÓN PÚBLICA, en su carácter de Órgano de Control de la Ley N.º 25.326, tiene la atribución de atender
+                    las denuncias y reclamos que interpongan quienes resulten afectados en sus derechos por incumplimiento de las normas vigentes en materia
+                    de protección de datos personales.</p>
+            </div>
         </div>
         <div class="px-6 py-4 border-t border-slate-800 flex justify-end">
             <button type="button" onclick="cerrarModalLegalGlobal('modal-privacidad-global')" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition cursor-pointer">
-                Cerrar
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- BOTÓN DE ARREPENTIMIENTO -->
-<div id="modal-arrepentimiento-global" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h3 class="text-base font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-rotate-left text-amber-400"></i> Solicitud de Revocación / Arrepentimiento
-            </h3>
-            <button type="button" onclick="cerrarModalLegalGlobal('modal-arrepentimiento-global')" class="text-slate-400 hover:text-white text-lg cursor-pointer">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
-            <p>De conformidad con el <strong class="text-white">Art. 34 de la Ley N.º 24.240</strong> y la <strong class="text-white">Resolución 424/2020</strong>, si contrataste o renovaste una membresía de forma online, tenés derecho a revocar la operación dentro de los <strong class="text-white">10 días corridos</strong> contados desde la fecha de pago, siempre que el servicio no haya sido utilizado.</p>
-            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1 text-[11px]">
-                <p><span class="text-slate-400">Canal de gestión:</span> Presentate en recepción o enviá tu número de recibo (<span class="font-mono text-blue-400">#REC</span>) junto con tu DNI para procesar la revocación.</p>
-            </div>
-        </div>
-        <div class="pt-3 border-t border-slate-800 flex justify-end">
-            <button type="button" onclick="cerrarModalLegalGlobal('modal-arrepentimiento-global')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition cursor-pointer">
                 Cerrar
             </button>
         </div>

@@ -1,73 +1,14 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymTrack - Mis Reservas y Actividades</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Squada+One&family=Staatliches&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; 
-        }
-        .font-brand {
-            font-family: 'Barlow Condensed', sans-serif; 
-        }
-        .marca-GymTrack {
-            font-family: "Squada One", sans-serif;
-        }
-    </style>
-</head>
-<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-    <!-- NAVBAR -->
-    <nav class="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 text-white shadow-md">        
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3.5">
-                    <img src="{% static 'img/logo-gymtrack.svg' %}"
-                        alt="Logo GymTrack"
-                        class="h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(59,76,202,0.45)]">
-                    <div class="flex items-baseline gap-2.5">
-                        <span class="font-brand italic font-extrabold text-3xl sm:text-4xl tracking-wide">
-                            <span class="marca-GymTrack text-[#3f51d6] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">GYM</span><span class="marca-GymTrack text-white">track</span>
-                        </span>
-                        <span class="text-xs font-light text-slate-500">×</span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                            Bodynamic
-                        </span>
-                    </div>
-                </div>
+{% block title %}Mis Reservas y Actividades{% endblock %}
 
-                <!-- Botón Volver al Panel -->
-                <div class="flex items-center gap-4">
-                    <a href="{% url 'dashboard' %}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left text-[10px]"></i> Volver al Panel
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
+{% block content %}
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
-
-        {% if messages %}
-            <div class="w-full space-y-2">
-                {% for message in messages %}
-                    <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% elif message.tags == 'warning' or message.tags == 'info' %}bg-amber-950/60 border border-amber-500/40 text-amber-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
-                        <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+        <div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Mis Clases</h1>
+            <p class="text-slate-400 text-sm mt-1">Las clases en las que estás anotado y las disciplinas disponibles.</p>
+        </div>
 
         <!-- MIS CLASES INSCRIPTAS -->
         <div class="space-y-4">
@@ -85,7 +26,7 @@
                     <div class="p-6 rounded-2xl bg-slate-900/80 border-2 border-emerald-500/40 shadow-lg shadow-emerald-950/10 flex flex-col justify-between space-y-4">
                         <div class="space-y-3">
                             <div class="flex justify-between items-start">
-                                <span class="text-2xl">🏋️‍♂️</span>
+                                <div class="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg"><i class="fa-solid {{ act.icono }}"></i></div>
                                 <span class="text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
                                     Inscripto
                                 </span>
@@ -95,14 +36,16 @@
                                 <p class="text-xs text-slate-400 mt-1 leading-relaxed">{{ act.descripcion|default:"Acceso habilitado según el cronograma semanal del gimnasio." }}</p>
                             </div>
                         </div>
-                        <form method="POST" action="{% url 'mis_reservas' %}" class="pt-2">
+                        <form method="POST" action="{% url 'mis_reservas' %}" class="pt-2"
+                              data-confirmar="¿Deseás darte de baja de {{ act.nombre }}?"
+                              data-confirmar-titulo="Confirmar cancelación"
+                              data-confirmar-boton="Sí, darme de baja">
                             {% csrf_token %}
                             <input type="hidden" name="accion" value="cancelar_actividad">
                             <input type="hidden" name="actividad_id" value="{{ act.id }}">
-                            <button type="button"
-                                data-disciplina="{{ act.nombre }}"
-                                class="btn-cancelar-inscripcion w-full py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold text-xs rounded-xl transition cursor-pointer">
-                                <i class="fa-solid fa-xmark mr-1"></i> Cancelar Inscripción
+                            <button type="submit"
+                                class="btn-accion btn-accion--peligro w-full py-2">
+                                <i class="fa-solid fa-xmark"></i> Cancelar Inscripción
                             </button>
                         </form>
                     </div>
@@ -137,7 +80,7 @@
                     <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition">
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
-                                <span class="text-2xl">🔥</span>
+                                <div class="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg"><i class="fa-solid {{ act.icono }}"></i></div>
                                 {% if act.requiere_reserva and not act.sin_turno %}
                                     <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
                                         Con Reserva
@@ -192,42 +135,4 @@
         </div>
 
     </main>
-
-    <!-- Modal de Confirmación de Baja -->
-    <div id="modalCancelarInscripcion" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4">
-        <div class="w-full max-w-md rounded-2xl bg-slate-900 border border-slate-800 p-6 text-white shadow-2xl">
-            <div class="flex items-start justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400">
-                        <i class="fa-solid fa-triangle-exclamation text-sm"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-bold text-white">Confirmar cancelación</h3>
-                        <p id="textoConfirmarBaja" class="mt-1 text-sm text-slate-300">
-                            ¿Deseás darte de baja de esta actividad?
-                        </p>
-                    </div>
-                </div>
-                <button type="button" data-cerrar-modal-baja class="text-slate-400 hover:text-white transition">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <div class="mt-6 flex items-center justify-end gap-3">
-                <button type="button" data-cerrar-modal-baja
-                    class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition">
-                    Cancelar
-                </button>
-                <button type="button" id="btnConfirmarBaja"
-                    class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-md shadow-rose-600/20 transition">
-                    Sí, darme de baja
-                </button>
-            </div>
-        </div>
-    </div>
-
-    {% include 'includes/footer.html' %}
-
-    <script src="{% static 'js/socio/mis_reservas.js' %}"></script>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+{% comment %}
+    Novedades: el personal (admin y empleados) publica avisos que todos ven en la campana del nav.
+{% endcomment %}
+
+{% block title %}Novedades{% endblock %}
+
+{% block content %}
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+        <div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Novedades</h1>
+            <p class="text-slate-400 text-sm mt-1">Avisos para los socios y el personal: aparecen en la campana del nav de todos.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-6 items-start">
+
+            <!-- FORMULARIO: PUBLICAR / EDITAR -->
+            <form id="formNovedad" method="POST" action="{% url 'novedades' %}" class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4 text-xs lg:sticky lg:top-24">
+                {% csrf_token %}
+                <input type="hidden" name="accion" id="novedadAccion" value="crear">
+                <input type="hidden" name="novedad_id" id="novedadId">
+                <div class="flex items-center gap-3 border-b border-slate-800 pb-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center"><i class="fa-solid fa-bullhorn"></i></div>
+                    <div>
+                        <h2 id="tituloFormNovedad" class="text-base font-bold text-white">Publicar novedad</h2>
+                        <p class="text-xs text-slate-400">Ej: "Desde diciembre aumenta la cuota".</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="novedadTitulo" class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Título *</label>
+                    <input id="novedadTitulo" type="text" name="titulo" required maxlength="120" placeholder="Nuevos precios desde diciembre"
+                           class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                </div>
+                <div>
+                    <label for="novedadCategoria" class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Categoría</label>
+                    <select id="novedadCategoria" name="categoria" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                        {% for valor, nombre in categorias %}
+                            <option value="{{ valor }}">{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="novedadMensaje" class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Mensaje *</label>
+                    <textarea id="novedadMensaje" name="mensaje" required rows="5"
+                              placeholder="A partir del 1 de diciembre el Pase Clases pasa a $50.000 y el de Musculación a $65.000. Si renovás antes, mantenés el precio actual."
+                              class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white leading-relaxed"></textarea>
+                </div>
+                <div>
+                    <label for="novedadHasta" class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Mostrar hasta (opcional)</label>
+                    <input id="novedadHasta" type="date" name="visible_hasta" min="{{ hoy|date:'Y-m-d' }}"
+                           class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white [color-scheme:dark]">
+                    <p class="text-[10px] text-slate-500 mt-1">Si lo dejás vacío, se muestra hasta que la archives.</p>
+                </div>
+                <label class="flex items-start gap-2.5 p-3 rounded-xl bg-slate-950/60 border border-slate-800 cursor-pointer has-[:checked]:border-blue-500/60">
+                    <input type="checkbox" name="avisar_mail" value="1" class="mt-0.5 accent-blue-600">
+                    <span>
+                        <span class="block font-bold text-white">Avisar también por mail a los socios</span>
+                        <span class="text-[11px] text-slate-400">Para avisos importantes, como un cambio de precio. Se manda un solo mail con los socios activos en copia oculta.</span>
+                    </span>
+                </label>
+
+                <div class="flex gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" id="btnCancelarEdicion" onclick="cancelarEdicionNovedad()" class="hidden flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btnGuardarNovedad" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition cursor-pointer flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Publicar
+                    </button>
+                </div>
+            </form>
+
+            <!-- LISTA DE NOVEDADES -->
+            <div class="space-y-3">
+                {% for n in novedades %}
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-3 {% if not n.visible %}opacity-60{% endif %}">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-3 min-w-0">
+                                <div class="w-10 h-10 shrink-0 rounded-xl bg-{{ n.color }}-500/10 text-{{ n.color }}-400 flex items-center justify-center">
+                                    <i class="fa-solid {{ n.icono }}"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-sm font-bold text-white">{{ n.titulo }}</p>
+                                    <p class="text-[11px] text-slate-500 mt-0.5">
+                                        {{ n.get_categoria_display }} · {{ n.publicada|date:"d/m/Y H:i" }}{% if n.autor %} · {{ n.autor.get_full_name|default:n.autor.username }}{% endif %}
+                                        {% if n.avisada_por_mail %} · <i class="fa-solid fa-envelope-circle-check text-emerald-400"></i> avisada por mail{% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            {% if n.visible %}
+                                <span class="shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Visible{% if n.visible_hasta %} hasta {{ n.visible_hasta|date:"d/m" }}{% endif %}</span>
+                            {% elif not n.activa %}
+                                <span class="shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">Archivada</span>
+                            {% else %}
+                                <span class="shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Venció el {{ n.visible_hasta|date:"d/m" }}</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">{{ n.mensaje }}</p>
+                        <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
+                            <button type="button" class="btn-accion btn-accion--editar"
+                                    data-id="{{ n.id }}" data-titulo="{{ n.titulo }}" data-categoria="{{ n.categoria }}"
+                                    data-mensaje="{{ n.mensaje }}" data-hasta="{{ n.visible_hasta|date:'Y-m-d' }}"
+                                    onclick="editarNovedad(this)">
+                                <i class="fa-solid fa-pen-to-square"></i> Editar
+                            </button>
+                            <form method="POST" action="{% url 'novedades' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="archivar">
+                                <input type="hidden" name="novedad_id" value="{{ n.id }}">
+                                {% if n.activa %}
+                                    <button type="submit" class="btn-accion btn-accion--pausar"><i class="fa-solid fa-box-archive"></i> Archivar</button>
+                                {% else %}
+                                    <button type="submit" class="btn-accion btn-accion--exito"><i class="fa-solid fa-eye"></i> Mostrar de nuevo</button>
+                                {% endif %}
+                            </form>
+                            <form method="POST" action="{% url 'novedades' %}"
+                                  data-confirmar="¿Eliminar la novedad &quot;{{ n.titulo }}&quot;? Si solo querés que deje de verse, archivala."
+                                  data-confirmar-titulo="Eliminar novedad" data-confirmar-boton="Sí, eliminar">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="eliminar">
+                                <input type="hidden" name="novedad_id" value="{{ n.id }}">
+                                <button type="submit" class="btn-accion btn-accion--peligro btn-accion--icono" title="Eliminar" aria-label="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="bg-slate-900/60 border border-dashed border-slate-800 rounded-2xl p-10 text-center">
+                        <i class="fa-regular fa-bell text-3xl text-slate-600"></i>
+                        <p class="text-sm font-bold text-white mt-3">Todavía no hay novedades</p>
+                        <p class="text-xs text-slate-400 mt-1">Publicá la primera con el formulario: la van a ver todos en la campana.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        function editarNovedad(boton) {
+            const d = boton.dataset;
+            document.getElementById('novedadAccion').value = 'editar';
+            document.getElementById('novedadId').value = d.id;
+            document.getElementById('novedadTitulo').value = d.titulo;
+            document.getElementById('novedadCategoria').value = d.categoria;
+            document.getElementById('novedadMensaje').value = d.mensaje;
+            document.getElementById('novedadHasta').value = d.hasta || '';
+            document.getElementById('tituloFormNovedad').textContent = 'Editar novedad';
+            document.getElementById('btnGuardarNovedad').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Guardar cambios';
+            document.getElementById('btnCancelarEdicion').classList.remove('hidden');
+            document.getElementById('formNovedad').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('novedadTitulo').focus();
+        }
+
+        function cancelarEdicionNovedad() {
+            const form = document.getElementById('formNovedad');
+            form.reset();
+            document.getElementById('novedadAccion').value = 'crear';
+            document.getElementById('novedadId').value = '';
+            document.getElementById('tituloFormNovedad').textContent = 'Publicar novedad';
+            document.getElementById('btnGuardarNovedad').innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publicar';
+            document.getElementById('btnCancelarEdicion').classList.add('hidden');
+        }
+    </script>
+{% endblock %}

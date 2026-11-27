@@ -1,89 +1,15 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymTrack - Portal Socio</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Squada+One&family=Staatliches&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; 
-        }
-        .font-brand {
-            font-family: 'Barlow Condensed', sans-serif; 
-        }
-        .marca-GymTrack {
-            font-family: "Squada One", sans-serif;
-        }
-    </style>
-</head>
-<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-    <!-- NAVBAR -->
-    <nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <!-- LOGO -->
-                <div class="flex items-center gap-3.5">
-                    <img src="{% static 'img/logo-gymtrack.svg' %}"
-                        alt="Logo GymTrack"
-                        class="h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(59,76,202,0.45)]">
-                    <div class="flex items-baseline gap-2.5">
-                        <span class="font-brand italic font-extrabold text-3xl sm:text-4xl tracking-wide">
-                            <span class="marca-GymTrack text-[#3f51d6] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">GYM</span><span class="marca-GymTrack text-white">track</span>
-                        </span> 
-                        {% if user.is_authenticated %}
-                            <span class="text-xs font-light text-slate-500">×</span>
-                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                                BODYNAMIC
-                            </span>
-                        {% endif %}
-                    </div>
-                </div>
+{% block title %}Portal Socio{% endblock %}
 
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold shadow-md">
-                            {{ user.first_name|slice:":1"|default:"S"|upper }}
-                        </div>
-                        <div class="hidden sm:block text-left leading-tight">
-                            <p class="text-xs font-bold text-white">{{ user.first_name|default:user.username }} {{ user.last_name }}</p>
-                            <p class="text-[10px] text-blue-400 font-semibold font-mono">Portal Socio • DNI: {{ user.username }}</p>
-                        </div>
-                    </div>
-                    <button type="button" onclick="toggleModalNovedades()" class="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition cursor-pointer" title="Novedades y Anuncios">
-                        <i class="fa-solid fa-bell text-sm"></i>
-                        <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                    </button>
-                    <form action="{% url 'logout' %}" method="post" class="inline">
-                        {% csrf_token %}
-                        <button type="submit" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition cursor-pointer" title="Cerrar sesión">
-                            <i class="fa-solid fa-arrow-right-from-bracket text-base"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </nav>
-
+{% block content %}
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
 
         <!-- CABECERA -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2">
-                    <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-                    Autogestión de Miembro
-                </span>
-                <h1 class="text-3xl font-extrabold text-white tracking-tight">Hola, {{ user.first_name|default:user.username }} 👋</h1>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">Hola, {{ user.first_name|default:user.username }}</h1>
                 <p class="text-slate-400 text-sm mt-1">Elegí una sección para gestionar tus entrenamientos, clases, pagos y perfil.</p>
             </div>
             <div class="sm:self-end">
@@ -108,17 +34,7 @@
             </div>
         </div>
 
-        <!-- MENSAJES -->
-        {% if messages %}
-            <div class="w-full space-y-2">
-                {% for message in messages %}
-                    <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% elif message.tags == 'warning' or message.tags == 'info' %}bg-amber-950/60 border border-amber-500/40 text-amber-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
-                        <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+
 
         <!-- TARJETAS DE ACCESO -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -128,7 +44,7 @@
                         <i class="fa-solid fa-dumbbell"></i>
                     </div>
                     <span class="text-[11px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2.5 py-1 rounded-full">
-                        Hevy Tracker
+                        Series y cargas
                     </span>
                 </div>
                 <h3 class="text-lg font-bold text-white mb-1">Mi Rutina</h3>
@@ -143,7 +59,7 @@
                         <i class="fa-solid fa-heart-pulse"></i>
                     </div>
                     <span class="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
-                        {{ actividades_anotadas|length }} Anotada(s)
+                        {{ actividades_anotadas|length }} clase{{ actividades_anotadas|length|pluralize }}
                     </span>
                 </div>
                 <h3 class="text-lg font-bold text-white mb-1">Mis Reservas</h3>
@@ -185,38 +101,8 @@
 
     </main>
 
-    <!-- MODAL DE NOVEDADES -->
-    <div id="modal-novedades" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-5">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
-                        <i class="fa-solid fa-bullhorn"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-bold text-white">Tablón de Novedades</h3>
-                        <p class="text-xs text-slate-400">Avisos importantes de GymTrack</p>
-                    </div>
-                </div>
-                <button type="button" onclick="toggleModalNovedades()" class="text-slate-400 hover:text-white text-lg p-1 transition cursor-pointer">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
-                <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-1.5">
-                    <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">Institucional</span>
-                    <h4 class="text-xs font-bold text-white">Mantenimiento en Sala de Musculación</h4>
-                    <p class="text-[11px] text-slate-400 leading-relaxed">Este sábado se realizarán tareas preventivas en poleas y cintas. El resto de las áreas funcionará con normalidad.</p>
-                </div>
-            </div>
-            <div class="pt-2 border-t border-slate-800 flex justify-end">
-                <button type="button" onclick="toggleModalNovedades()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition cursor-pointer">Entendido</button>
-            </div>
-        </div>
-    </div>
+{% endblock %}
 
-    {% include 'includes/footer.html' %}
-
+{% block scripts %}
     <script src="{% static 'js/socio/dashboard.js' %}"></script>
-</body>
-</html>
+{% endblock %}

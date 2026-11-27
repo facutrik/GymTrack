@@ -1,126 +1,88 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymTrack - Mis Pagos y Estado de Cuenta</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Squada+One&family=Staatliches&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; 
-        }
-        .font-brand {
-            font-family: 'Barlow Condensed', sans-serif; 
-        }
-        .marca-GymTrack {
-            font-family: "Squada One", sans-serif;
-        }
-    </style>
-</head>
-<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-    <!-- NAVBAR -->
-    <nav class="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 text-white shadow-md">        
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3.5">
-                    <img src="{% static 'img/logo-gymtrack.svg' %}"
-                        alt="Logo GymTrack"
-                        class="h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(59,76,202,0.45)]">
-                    <div class="flex items-baseline gap-2.5">
-                        <span class="font-brand italic font-extrabold text-3xl sm:text-4xl tracking-wide">
-                            <span class="marca-GymTrack text-[#3f51d6] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">GYM</span><span class="marca-GymTrack text-white">track</span>
-                        </span>
-                        <span class="text-xs font-light text-slate-500">×</span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                            Bodynamic
-                        </span>
-                    </div>
-                </div>
+{% block title %}Mis Pagos y Estado de Cuenta{% endblock %}
 
-                <!-- Botón Volver al Panel -->
-                <div class="flex items-center gap-4">
-                    <a href="{% url 'dashboard' %}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left text-[10px]"></i> Volver al Panel
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
+{% block content %}
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
-
-        {% if messages %}
-            <div class="w-full space-y-2">
-                {% for message in messages %}
-                    <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% elif message.tags == 'warning' or message.tags == 'info' %}bg-amber-950/60 border border-amber-500/40 text-amber-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
-                        <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+        <div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Mis Pagos</h1>
+            <p class="text-slate-400 text-sm mt-1">Estado de tu membresía, renovación de cuota y comprobantes.</p>
+        </div>
 
         <!-- ESTADO DE CUENTA -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
-            <h3 class="text-base font-bold text-white">Estado de Cuenta</h3>
-            <div class="p-5 rounded-2xl bg-gradient-to-br from-blue-900/30 to-indigo-900/30 border border-blue-500/30 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h4 class="text-base font-bold text-white">Pase Mensual Activo</h4>
-                        <p class="text-xs text-slate-400 mt-0.5">Acceso a: {{ nombres_planes_activos|default:"Sin pase activo" }}</p>
+        {% with e=estado_cuenta %}
+        <div class="bg-slate-900/60 border rounded-2xl p-6 space-y-5 {% if e.estado == 'al_dia' %}border-emerald-500/30{% elif e.estado == 'por_vencer' %}border-amber-500/40{% else %}border-rose-500/40{% endif %}">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-lg
+                        {% if e.estado == 'al_dia' %}bg-emerald-500/10 text-emerald-400{% elif e.estado == 'por_vencer' %}bg-amber-500/10 text-amber-400{% else %}bg-rose-500/10 text-rose-400{% endif %}">
+                        <i class="fa-solid {% if e.estado == 'al_dia' %}fa-circle-check{% elif e.estado == 'por_vencer' %}fa-hourglass-half{% else %}fa-circle-exclamation{% endif %}"></i>
                     </div>
                     <div>
-                        {% if cuota_al_dia and membresia_actual %}
-                            <span class="px-3 py-1 rounded-full text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                Cuota Abonada
-                            </span>
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Estado de cuenta</p>
+                        {% if e.estado == 'al_dia' %}
+                            <p class="text-lg font-bold text-white">Cuota al día</p>
+                            <p class="text-xs text-slate-400">Podés entrenar con normalidad. Te avisamos acá cuando se acerque el vencimiento.</p>
+                        {% elif e.estado == 'por_vencer' %}
+                            <p class="text-lg font-bold text-white">Tu cuota vence pronto</p>
+                            <p class="text-xs text-slate-400">Renová antes del vencimiento para no perder el acceso.</p>
+                        {% elif e.ultima_vencida %}
+                            <p class="text-lg font-bold text-white">Cuota vencida</p>
+                            <p class="text-xs text-slate-400">
+                                {{ e.ultima_vencida.plan.nombre }} venció el {{ e.ultima_vencida.fecha_fin|date:"d/m/Y" }}
+                                {% if e.dias_vencida %}(hace {{ e.dias_vencida }} día{{ e.dias_vencida|pluralize }}){% endif %}. Pagá para volver a entrenar.
+                            </p>
                         {% else %}
-                            <span class="px-3 py-1 rounded-full text-xs font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                                Cuota Vencida
-                            </span>
+                            <p class="text-lg font-bold text-white">Todavía no tenés un plan</p>
+                            <p class="text-xs text-slate-400">Elegí un pase para empezar a entrenar.</p>
                         {% endif %}
                     </div>
                 </div>
-                <div class="mt-4 p-5 rounded-2xl bg-gradient-to-r from-blue-900/30 to-emerald-900/30 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center gap-3.5">
-                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl font-bold border border-emerald-500/20">
-                            <i class="fa-solid fa-receipt"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h4 class="text-sm font-bold text-white">Renovación Mensual</h4>
-                                {% if cuota_al_dia and membresia_actual %}
-                                    <span class="text-[10px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 rounded-full font-bold">Al día</span>
-                                {% else %}
-                                    <span class="text-[10px] bg-rose-500/10 border border-rose-500/30 text-rose-400 px-2 py-0.5 rounded-full font-bold">Vencida</span>
-                                {% endif %}
-                            </div>
-                            <p class="text-xs text-slate-400 mt-0.5">Elegí tus clases o membresía mensual para regularizar o extender tu pase.</p>
-                        </div>
-                    </div>
-                    <button type="button" onclick="abrirModalPagoSocio()" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2 cursor-pointer">
-                        <i class="fa-solid fa-credit-card"></i> Pagar Cuota
-                    </button>
-                </div>
+                <button type="button" onclick="abrirModalPagoSocio()" class="w-full sm:w-auto shrink-0 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-credit-card"></i> {% if e.estado == 'al_dia' %}Renovar o sumar un plan{% else %}Pagar cuota{% endif %}
+                </button>
             </div>
+
+            {% if e.membresias %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {% for m in e.membresias %}
+                        <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2.5">
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="text-sm font-bold text-white">{{ m.plan.nombre }}</span>
+                                <span class="text-xs text-slate-400 shrink-0">Vence el <strong class="text-white">{{ m.fecha_fin|date:"d/m/Y" }}</strong></span>
+                            </div>
+                            <div class="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
+                                <div class="barra-periodo h-full rounded-full {% if m.dias_restantes <= 7 %}bg-amber-400{% else %}bg-emerald-400{% endif %}" data-porcentaje="{{ m.progreso }}"></div>
+                            </div>
+                            <p class="text-[11px] {% if m.dias_restantes <= 7 %}text-amber-300{% else %}text-slate-500{% endif %}">
+                                {% if m.dias_restantes == 0 %}Vence hoy{% else %}Quedan {{ m.dias_restantes }} día{{ m.dias_restantes|pluralize }}{% endif %}
+                                · desde el {{ m.fecha_inicio|date:"d/m/Y" }}
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if e.pendientes %}
+                <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 space-y-1.5">
+                    <p class="font-bold"><i class="fa-solid fa-hourglass-half mr-1"></i> Pago{{ e.pendientes|length|pluralize }} esperando confirmación de recepción</p>
+                    {% for p in e.pendientes %}
+                        <p class="text-amber-300/90">
+                            {{ p.concepto }} · ${{ p.monto|floatformat:"0g" }} ·
+                            {% if p.metodo_pago == 'transferencia' %}transferencia enviada el {{ p.fecha_pago|date:"d/m" }}{% else %}a pagar en recepción{% endif %}
+                        </p>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
+        {% endwith %}
 
         <!-- HISTORIAL DE PAGOS -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
             <div class="flex items-center justify-between">
                 <h3 class="text-base font-bold text-white">Historial de Pagos</h3>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Comprobantes</span>
+                <a href="{% url 'arrepentimiento' %}" class="text-[11px] font-semibold text-blue-400 hover:text-blue-300"><i class="fa-solid fa-rotate-left mr-1"></i> Botón de Arrepentimiento</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs">
@@ -130,6 +92,7 @@
                             <th class="pb-3 px-2">Concepto</th>
                             <th class="pb-3 px-2">Monto</th>
                             <th class="pb-3 px-2">Medio</th>
+                            <th class="pb-3 px-2">Estado</th>
                             <th class="pb-3 px-2 text-right">Recibo</th>
                         </tr>
                     </thead>
@@ -137,20 +100,31 @@
                         {% for pago in historial_pagos %}
                             <tr class="hover:bg-slate-800/30 transition">
                                 <td class="py-3 px-2 font-mono text-slate-400">{{ pago.fecha_pago|date:"d/m/Y" }}</td>
-                                <td class="py-3 px-2 text-white font-medium">{{ pago.membresia.plan.nombre|default:"Cuota Mensual" }}</td>
-                                <td class="py-3 px-2 font-mono font-bold text-emerald-400">${{ pago.monto|floatformat:0 }}</td>
+                                <td class="py-3 px-2 text-white font-medium">{{ pago.concepto }}</td>
+                                <td class="py-3 px-2 font-mono font-bold {% if pago.estado == 'confirmado' %}text-emerald-400{% else %}text-slate-400{% endif %}">${{ pago.monto|floatformat:"0g" }}</td>
                                 <td class="py-3 px-2">
                                     <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase {% if pago.metodo_pago == 'efectivo' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% else %}bg-blue-500/10 text-blue-400 border border-blue-500/20{% endif %}">
                                         {{ pago.metodo_pago }}
                                     </span>
                                 </td>
+                                <td class="py-3 px-2">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold border {% if pago.estado == 'confirmado' %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20{% elif pago.estado == 'pendiente' %}bg-amber-500/10 text-amber-400 border-amber-500/20{% else %}bg-rose-500/10 text-rose-400 border-rose-500/20{% endif %}">
+                                        {{ pago.get_estado_display }}
+                                    </span>
+                                </td>
                                 <td class="py-3 px-2 text-right">
                                     <span class="text-blue-400 font-mono text-[11px]">#REC-{{ pago.id }}</span>
+                                    {% if pago.comprobante %}
+                                        <a href="{% url 'ver_comprobante' pago.id %}" target="_blank" rel="noopener" class="block text-[10px] text-slate-400 hover:text-blue-300 mt-0.5">Ver comprobante</a>
+                                    {% endif %}
+                                    {% if pago.puede_arrepentirse %}
+                                        <a href="{% url 'arrepentimiento' %}?recibo=REC-{{ pago.id }}" class="block text-[10px] text-slate-400 hover:text-blue-300 mt-0.5">Arrepentirme</a>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="5" class="py-6 text-center text-slate-500 text-xs">
+                                <td colspan="6" class="py-6 text-center text-slate-500 text-xs">
                                     No hay registros de cobros anteriores.
                                 </td>
                             </tr>
@@ -162,95 +136,152 @@
 
     </main>
 
-    <!-- MODAL RENOVACIÓN / PAGO -->
+    <!-- MODAL PAGO DE CUOTA (el pago queda pendiente hasta que recepción lo confirma) -->
     <div id="modalPagoSocio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl overflow-y-auto max-h-[90vh]">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div class="flex items-center gap-2.5">
-                    <span class="text-xl">💳</span>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[92vh]">
+            <div class="flex items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-credit-card"></i></div>
                     <div>
-                        <h3 class="font-extrabold text-white text-base">Abonar Cuota / Clases</h3>
-                        <p class="text-[11px] text-slate-400">Podés marcar una o varias disciplinas</p>
+                        <h3 class="font-bold text-white text-base">Pagar cuota</h3>
+                        <p class="text-xs text-slate-400">Elegí tu pase y, si querés, sumá Pilates.</p>
                     </div>
                 </div>
-                <button type="button" onclick="cerrarModalPagoSocio()" class="text-slate-400 hover:text-white transition cursor-pointer p-1">
+                <button type="button" onclick="cerrarModalPagoSocio()" class="text-slate-400 hover:text-white transition cursor-pointer" aria-label="Cerrar">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-            <form action="{% url 'mis_pagos' %}" method="POST" class="space-y-4 text-xs">
+
+            <form id="formPagoSocio" action="{% url 'mis_pagos' %}" method="POST" enctype="multipart/form-data" class="space-y-5 text-xs">
                 {% csrf_token %}
                 <input type="hidden" name="accion" value="pagar_cuota_socio">
-                <div>
-                    <label class="block text-slate-400 font-bold uppercase text-[10px] mb-2 tracking-wider">¿Qué disciplinas vas a abonar?</label>
-                    <div class="space-y-2">
-                        {% for plan in planes_sueltos %}
-                        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
-                            <div class="flex items-center gap-3">
-                                <input type="checkbox" name="servicios" value="{{ plan.id }}" data-precio="{{ plan.precio|floatformat:0 }}" onchange="recalcularTotalPago()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
-                                <div>
-                                    <span class="font-bold text-white block">{{ plan.nombre }}</span>
-                                    <span class="text-[10px] text-slate-400">{{ plan.descripcion_mostrar }}</span>
-                                </div>
-                            </div>
-                            <span class="font-mono font-bold text-blue-400 text-sm">${{ plan.precio|floatformat:"0g" }}</span>
+
+                <!-- 1. PASE MENSUAL (uno solo: Musculación ya incluye las clases) -->
+                <fieldset class="space-y-2">
+                    <legend class="block text-slate-400 font-bold uppercase text-[10px] tracking-wider mb-2">1. Pase mensual</legend>
+                    {% for plan in planes_sueltos %}
+                        <label class="group flex items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-600 cursor-pointer transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-500/10">
+                            <input type="radio" name="pase" value="{{ plan.id }}" data-precio="{{ plan.precio|floatformat:0 }}" class="sr-only opcion-pago">
+                            <span class="flex items-center gap-3">
+                                <span class="w-5 h-5 shrink-0 rounded-full border-2 border-slate-600 flex items-center justify-center group-has-[:checked]:border-blue-500 group-has-[:checked]:bg-blue-500">
+                                    <i class="fa-solid fa-check text-[9px] text-white opacity-0 group-has-[:checked]:opacity-100"></i>
+                                </span>
+                                <span>
+                                    <span class="font-bold text-white block text-sm">{{ plan.nombre }}</span>
+                                    <span class="text-[11px] text-slate-400">{{ plan.descripcion_mostrar }}</span>
+                                </span>
+                            </span>
+                            <span class="font-mono font-bold text-white text-sm shrink-0">${{ plan.precio|floatformat:"0g" }}</span>
                         </label>
-                        {% endfor %}
-                        {% if planes_pilates %}
-                        <label class="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/40 cursor-pointer transition">
-                            <div class="flex items-center gap-3">
-                                <input type="checkbox" id="chkPilates" name="servicios" value="{{ planes_pilates.0.id }}" data-precio="{{ planes_pilates.0.precio|floatformat:0 }}" onchange="actualizarPilates()" class="chk-pago w-4 h-4 text-blue-600 rounded bg-slate-900 border-slate-700 focus:ring-0">
-                                <div>
-                                    <span class="font-bold text-white block">🤸 Pilates</span>
-                                    <span class="text-[10px] text-slate-400">Elegí cuántos días por semana vas</span>
-                                </div>
-                            </div>
-                            <span id="precioPilates" class="font-mono font-bold text-blue-400 text-sm">Desde ${{ planes_pilates.0.precio|floatformat:"0g" }}</span>
+                    {% endfor %}
+                    <label class="group flex items-center gap-3 p-3 rounded-xl border border-dashed border-slate-800 hover:border-slate-600 cursor-pointer transition has-[:checked]:border-slate-500 has-[:checked]:bg-slate-800/40">
+                        <input type="radio" name="pase" value="" data-precio="0" checked class="sr-only opcion-pago">
+                        <span class="w-5 h-5 shrink-0 rounded-full border-2 border-slate-600 flex items-center justify-center group-has-[:checked]:border-slate-400 group-has-[:checked]:bg-slate-500">
+                            <i class="fa-solid fa-check text-[9px] text-white opacity-0 group-has-[:checked]:opacity-100"></i>
+                        </span>
+                        <span class="text-slate-400">Sin pase (solo Pilates)</span>
+                    </label>
+                </fieldset>
+
+                <!-- 2. PILATES (opcional) -->
+                {% if planes_pilates %}
+                <fieldset>
+                    <legend class="block text-slate-400 font-bold uppercase text-[10px] tracking-wider mb-2">2. Pilates (opcional) · días por semana</legend>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <label class="flex flex-col items-center justify-center gap-0.5 p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-600 cursor-pointer transition text-center has-[:checked]:border-blue-500 has-[:checked]:bg-blue-500/10">
+                            <input type="radio" name="pilates" value="" data-precio="0" checked class="sr-only opcion-pago">
+                            <span class="font-bold text-white">No</span>
+                            <span class="text-[10px] text-slate-500">sin Pilates</span>
                         </label>
-                        <div id="bloqueFrecuenciaPilates" class="hidden p-3.5 rounded-2xl bg-blue-950/30 border border-blue-500/30 space-y-2">
-                            <label for="selectFrecuenciaPilates" class="block text-blue-400 uppercase text-[10px] font-bold tracking-wider">
-                                <i class="fa-regular fa-calendar mr-1"></i> Frecuencia semanal de Pilates:
+                        {% for plan in planes_pilates %}
+                            <label class="flex flex-col items-center justify-center gap-0.5 p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-600 cursor-pointer transition text-center has-[:checked]:border-blue-500 has-[:checked]:bg-blue-500/10"
+                                   title="{{ plan.nombre }}">
+                                <input type="radio" name="pilates" value="{{ plan.id }}" data-precio="{{ plan.precio|floatformat:0 }}" class="sr-only opcion-pago">
+                                <span class="font-bold text-white">{% if forloop.counter == 1 %}1 vez{% else %}{{ forloop.counter }} veces{% endif %}</span>
+                                <span class="text-[10px] font-mono text-slate-400">${{ plan.precio|floatformat:"0g" }}</span>
                             </label>
-                            <select id="selectFrecuenciaPilates" onchange="actualizarPilates()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-blue-500">
-                                {% for plan in planes_pilates %}
-                                <option value="{{ plan.id }}" data-precio="{{ plan.precio|floatformat:0 }}">{{ plan.nombre }} — ${{ plan.precio|floatformat:"0g" }} / mes</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        {% endif %}
+                        {% endfor %}
                     </div>
-                </div>
+                </fieldset>
+                {% endif %}
+
+                <!-- TOTAL -->
                 <div class="p-3.5 rounded-xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-300">Total a abonar:</span>
-                    <span id="labelTotalPagoSocio" class="text-xl font-black text-blue-400 font-mono">$0</span>
+                    <span id="detalleTotalPagoSocio" class="text-xs text-slate-400">Elegí qué vas a pagar</span>
+                    <span id="labelTotalPagoSocio" class="text-xl font-black text-white font-mono">$0</span>
                 </div>
-                <div>
-                    <label class="block text-slate-400 font-bold uppercase text-[10px] mb-1.5 tracking-wider">Método de Pago:</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
-                            <input type="radio" name="metodo_pago" value="transferencia" checked class="text-emerald-500 focus:ring-0">
-                            <span class="font-bold text-slate-200">📱 Transferencia</span>
+
+                <!-- 3. MEDIO DE PAGO -->
+                <fieldset>
+                    <legend class="block text-slate-400 font-bold uppercase text-[10px] tracking-wider mb-2">3. Medio de pago</legend>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-600 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
+                            <input type="radio" name="metodo_pago" value="transferencia" checked class="sr-only opcion-metodo">
+                            <span class="font-bold text-slate-200"><i class="fa-solid fa-building-columns text-blue-400 mr-1"></i> Transferencia</span>
                         </label>
-                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-emerald-500/50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
-                            <input type="radio" name="metodo_pago" value="efectivo" class="text-emerald-500 focus:ring-0">
-                            <span class="font-bold text-slate-200">💵 En Recepción</span>
+                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-600 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 transition">
+                            <input type="radio" name="metodo_pago" value="efectivo" class="sr-only opcion-metodo">
+                            <span class="font-bold text-slate-200"><i class="fa-solid fa-money-bill-wave text-emerald-400 mr-1"></i> En recepción</span>
                         </label>
                     </div>
+                </fieldset>
+
+                <!-- TRANSFERENCIA: datos de la cuenta + comprobante -->
+                <div id="bloqueTransferencia" class="space-y-3">
+                    <div class="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+                        <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Transferí a esta cuenta</p>
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-slate-400">Alias</span>
+                            <button type="button" onclick="copiarDato(this, '{{ gimnasio.transferencia_alias }}')" class="font-mono font-bold text-white hover:text-blue-300 transition cursor-pointer" title="Copiar">
+                                {{ gimnasio.transferencia_alias }} <i class="fa-regular fa-copy text-slate-500 ml-1"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-slate-400">CBU / CVU</span>
+                            <button type="button" onclick="copiarDato(this, '{{ gimnasio.transferencia_cbu }}')" class="font-mono text-white hover:text-blue-300 transition cursor-pointer break-all text-right" title="Copiar">
+                                {{ gimnasio.transferencia_cbu }} <i class="fa-regular fa-copy text-slate-500 ml-1"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 text-slate-400">
+                            <span>Titular</span><span class="text-slate-200">{{ gimnasio.transferencia_titular }} · {{ gimnasio.transferencia_banco }}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="inputComprobante" class="block text-slate-400 font-bold uppercase text-[10px] tracking-wider mb-1.5">Comprobante de la transferencia *</label>
+                        <label for="inputComprobante" id="zonaComprobante" class="flex items-center gap-3 p-3.5 rounded-xl border-2 border-dashed border-slate-700 hover:border-blue-500/60 bg-slate-950/60 cursor-pointer transition">
+                            <span class="w-10 h-10 shrink-0 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center"><i id="iconoComprobante" class="fa-solid fa-cloud-arrow-up"></i></span>
+                            <span class="min-w-0">
+                                <span id="textoComprobante" class="block font-bold text-white truncate">Subí la captura o el PDF</span>
+                                <span class="text-[10px] text-slate-500">JPG, PNG, WEBP o PDF · hasta {{ max_comprobante_mb }} MB</span>
+                            </span>
+                        </label>
+                        <input type="file" id="inputComprobante" name="comprobante" accept="image/jpeg,image/png,image/webp,application/pdf" class="sr-only">
+                    </div>
+                    <div>
+                        <label for="inputReferencia" class="block text-slate-400 font-bold uppercase text-[10px] tracking-wider mb-1.5">N.º de operación (opcional)</label>
+                        <input type="text" id="inputReferencia" name="referencia" maxlength="60" placeholder="Figura en el comprobante"
+                               class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white font-mono">
+                    </div>
                 </div>
-                <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
-                    <p class="font-bold text-slate-300">📌 Datos para transferencia inmediata:</p>
-                    <p>Alias: <span class="text-white font-mono font-bold">GYMTRACK.BODYMIC.MP</span></p>
-                    <p>CBU: <span class="text-white font-mono">0000003100012345678901</span></p>
-                </div>
-                <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
-                    <button type="button" onclick="cerrarModalPagoSocio()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">Cancelar</button>
-                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition cursor-pointer">Confirmar Renovación</button>
+
+                <!-- EN RECEPCIÓN -->
+                <p id="bloqueRecepcion" class="hidden p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-[11px] text-slate-300">
+                    <i class="fa-solid fa-store text-emerald-400 mr-1"></i> Reservamos tu pago: acercate a recepción ({{ gimnasio.horario_atencion }}) y tu plan se activa en el momento en que abones.
+                </p>
+
+                <p class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-300">
+                    <i class="fa-solid fa-circle-info mr-1"></i> El pago queda <strong>pendiente</strong> hasta que recepción lo confirme. Tenés 10 días corridos para arrepentirte sin costo.
+                </p>
+
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="cerrarModalPagoSocio()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">Cancelar</button>
+                    <button type="submit" id="btnEnviarPagoSocio" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition cursor-pointer">Enviar pago</button>
                 </div>
             </form>
         </div>
     </div>
+{% endblock %}
 
-    {% include 'includes/footer.html' %}
-
-    <script src="{% static 'js/socio/mis_pagos.js' %}?v=2"></script>
-</body>
-</html>
+{% block scripts %}
+    <script src="{% static 'js/socio/mis_pagos.js' %}?v=4"></script>
+{% endblock %}

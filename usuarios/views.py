@@ -18,7 +18,8 @@ from membresias.models import Plan, MembresiaSocio
 from usuarios.models import Usuario, AsistenciaEmpleado
 from asistencias.models import Asistencia
 from socios.models import Socio
-from pagos.models import Pago
+from pagos.models import Pago, SolicitudArrepentimiento
+from pagos.cobros import ACCIONES_COBRO, contexto_cobro, registrar_cobro
 from rutinas.models import Rutina, DiaEntrenamiento, Ejercicio
 from rutinas.views import obtener_recordatorios
 
@@ -55,72 +56,8 @@ def dashboard(request):
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 1. ADMINISTRADOR
     if user.is_superuser or getattr(user, 'rol', None) == 'admin':
-        if request.method == 'POST' and request.POST.get('accion') == 'cobrar_desde_admin':
-            socio_id = request.POST.get('socio_id')
-            plan_id = request.POST.get('plan_id')
-            actividad_id = request.POST.get('actividad_id')
-            metodo = request.POST.get('metodo_pago', 'efectivo')
-
-            socio_obj = Socio.objects.filter(id=socio_id).first()
-            plan_obj = Plan.objects.filter(id=plan_id).first() if plan_id else None
-            act_obj = Actividad.objects.filter(id=actividad_id).first() if actividad_id else None
-
-            if not socio_obj:
-                messages.error(request, "Debe seleccionar un socio de la lista.")
-            elif not plan_obj and not act_obj:
-                messages.error(request, "Debe seleccionar una membresía o una actividad para cobrar.")
-            else:
-                hoy_cobro = timezone.localdate()
-                monto_total = 0
-                conceptos = []
-
-                nueva_memb = None
-                if plan_obj:
-                    monto_total += getattr(plan_obj, 'precio', 0)
-                    conceptos.append(plan_obj.nombre)
-
-                    memb_previa = MembresiaSocio.objects.filter(socio=socio_obj).order_by('-fecha_fin').first()
-                    dias_vigencia = getattr(plan_obj, 'duracion_dias', 30)
-                    if memb_previa and memb_previa.fecha_fin < hoy_cobro:
-                        dias_atraso = (hoy_cobro - memb_previa.fecha_fin).days
-                        if 1 <= dias_atraso <= 7:
-                            dias_vigencia = max(1, 30 - dias_atraso)
-
-                    nueva_memb = MembresiaSocio.renovar(socio_obj, plan_obj, hoy_cobro, dias_vigencia)
-
-                if act_obj:
-                    monto_total += getattr(act_obj, 'precio', 0)
-                    conceptos.append(act_obj.nombre)
-                    if Reserva and hasattr(Reserva, 'actividad'):
-                        Reserva.objects.get_or_create(
-                            socio=socio_obj,
-                            actividad=act_obj,
-                            defaults={'fecha': hoy_cobro, 'estado': 'confirmada'}
-                        )
-
-                pago_kwargs = {
-                    'socio': socio_obj,
-                    'monto': monto_total,
-                    'metodo_pago': metodo,
-                }
-                if nueva_memb and hasattr(Pago, 'membresia'):
-                    pago_kwargs['membresia'] = nueva_memb
-                if hasattr(Pago, 'fecha_pago'):
-                    pago_kwargs['fecha_pago'] = timezone.now()
-                elif hasattr(Pago, 'fecha'):
-                    pago_kwargs['fecha'] = hoy_cobro
-
-                Pago.objects.create(**pago_kwargs)
-
-                if hasattr(socio_obj, 'estado_cuenta'):
-                    socio_obj.estado_cuenta = 'VERDE'
-                    socio_obj.save()
-
-                nombre_socio = f"{socio_obj.usuario.first_name} {socio_obj.usuario.last_name}".strip() or socio_obj.usuario.username
-                messages.success(
-                    request,
-                    f"Cobro registrado por ${monto_total:,.0f} ({metodo.capitalize()}) a {nombre_socio} — Concepto: {', '.join(conceptos)}."
-                )
+        if request.method == 'POST' and request.POST.get('accion') in ACCIONES_COBRO:
+            registrar_cobro(request, hoy)
             return redirect('dashboard')
 
         if request.method == 'POST' and request.POST.get('accion') == 'admin_agregar_ejercicio_rutina':
@@ -205,41 +142,9 @@ def dashboard(request):
             }
         else:
             filtro_rango = {}
-        total_mes = (
-            Pago.objects.filter(**filtro_rango).aggregate(total=Sum('monto'))[
-                'total'
-            ]
-            or 0
-        )
-        if total_mes == 0:
-            total_mes = Pago.objects.aggregate(total=Sum('monto'))['total'] or 0
+        total_mes = Pago.objects.confirmados().filter(**filtro_rango).aggregate(total=Sum('monto'))['total'] or 0
         ingresos_mes_formateado = f'{int(total_mes):,}'.replace(',', '.')
 
-        socios_para_cobro = []
-        for s in Socio.objects.select_related('usuario').filter(usuario__is_active=True).order_by('usuario__last_name', 'usuario__first_name'):
-            memb_activa = MembresiaSocio.objects.filter(
-                socio=s, activa=True, fecha_fin__gte=hoy
-            ).select_related('plan').order_by('-fecha_fin').first()
-            anotado_en = []
-            for m in MembresiaSocio.objects.filter(socio=s, activa=True, fecha_fin__gte=hoy).select_related('plan'):
-                if m.plan:
-                    anotado_en.append(m.plan.nombre)
-            if Reserva:
-                try:
-                    for r in Reserva.objects.filter(socio=s, estado__in=['confirmada', 'activa', 'Confirmada', 'Activa']):
-                        act_r = getattr(r, 'actividad', None) or getattr(getattr(r, 'horario', None), 'actividad', None)
-                        if act_r and act_r.nombre not in anotado_en:
-                            anotado_en.append(act_r.nombre)
-                except Exception:
-                    pass
-            socios_para_cobro.append({
-                'id': s.id,
-                'nombre': f"{s.usuario.first_name} {s.usuario.last_name}".strip() or s.usuario.username,
-                'dni': getattr(s.usuario, 'dni', '') or s.usuario.username,
-                'al_dia': bool(memb_activa),
-                'vence': memb_activa.fecha_fin.strftime('%d/%m/%Y') if memb_activa else None,
-                'anotado_en': anotado_en,
-            })
 
         context = {
             'total_socios': Usuario.objects.filter(rol='socio').count(),
@@ -248,13 +153,13 @@ def dashboard(request):
             ).count(),
             'total_actividades': Actividad.objects.filter(activa=True).count(),
             'ingresos_mes': ingresos_mes_formateado,
+            'pagos_por_confirmar': Pago.objects.pendientes().count(),
+            'arrepentimientos_pendientes': SolicitudArrepentimiento.objects.filter(estado='pendiente').count(),
             'socios_select': Usuario.objects.filter(
                 rol='socio', is_active=True
             ).order_by('first_name'),
             'planes_select': Plan.objects.all().order_by('precio'),
-            'socios_para_cobro': socios_para_cobro,
-            'planes_disponibles': Plan.objects.all().order_by('precio'),
-            'actividades_disponibles': Actividad.objects.filter(activa=True).order_by('nombre'),
+            **contexto_cobro(hoy),
             'rutinas_basicas_admin': Rutina.objects.filter(
                 nombre__in=['Adaptación', 'Hipertrofia', 'Fuerza'], tipo='gimnasio'
             ).prefetch_related('dias__ejercicios').order_by('id'),
@@ -271,74 +176,9 @@ def dashboard(request):
         inicio_dia = timezone.make_aware(datetime.combine(hoy, time.min))
         fin_dia = timezone.make_aware(datetime.combine(hoy, time.max))
 
-        # A. REGISTRAR COBRO PRESENCIAL DE MEMBRESÍA (UNIFICADO CON ADMIN)
-        if request.method == 'POST' and request.POST.get('accion') in ('cobrar_membresia_empleado', 'registrar_pago_empleado'):
-            socio_id = request.POST.get('socio_id', '').strip()
-            dni_socio = request.POST.get('dni_socio', '').strip()
-            plan_id = request.POST.get('plan_id')
-            actividad_id = request.POST.get('actividad_id')
-            metodo = request.POST.get('metodo_pago', 'efectivo')
-
-            socio_obj = Socio.objects.filter(id=socio_id).first() if socio_id else None
-            if not socio_obj and dni_socio:
-                socio_user = Usuario.objects.filter(username=dni_socio, rol='socio', is_superuser=False).first()
-                if socio_user:
-                    socio_obj = Socio.para_usuario(socio_user)
-
-            plan_obj = Plan.objects.filter(id=plan_id).first() if plan_id else None
-            act_obj = Actividad.objects.filter(id=actividad_id).first() if actividad_id else None
-
-            if not socio_obj:
-                messages.error(request, "Debe seleccionar un socio de la lista.")
-            elif not plan_obj and not act_obj:
-                messages.error(request, "Debe seleccionar una membresía o una actividad para cobrar.")
-            else:
-                socio_obj.usuario.is_active = True
-                socio_obj.usuario.save()
-
-                monto_total = 0
-                conceptos = []
-                nueva_memb = None
-
-                if plan_obj:
-                    monto_total += getattr(plan_obj, 'precio', 0)
-                    conceptos.append(plan_obj.nombre)
-
-                    memb_previa = MembresiaSocio.objects.filter(socio=socio_obj).order_by('-fecha_fin').first()
-                    dias_vigencia = getattr(plan_obj, 'duracion_dias', 30)
-                    if memb_previa and memb_previa.fecha_fin < hoy:
-                        dias_atraso = (hoy - memb_previa.fecha_fin).days
-                        if 1 <= dias_atraso <= 7:
-                            dias_vigencia = max(1, 30 - dias_atraso)
-
-                    nueva_memb = MembresiaSocio.renovar(socio_obj, plan_obj, hoy, dias_vigencia)
-
-                if act_obj:
-                    monto_total += getattr(act_obj, 'precio', 0)
-                    conceptos.append(act_obj.nombre)
-
-                pago_data = {
-                    'socio': socio_obj,
-                    'monto': monto_total,
-                    'metodo_pago': metodo,
-                }
-                if nueva_memb and hasattr(Pago, 'membresia'):
-                    pago_data['membresia'] = nueva_memb
-                if hasattr(Pago, 'fecha_pago'):
-                    pago_data['fecha_pago'] = timezone.now()
-                elif hasattr(Pago, 'fecha'):
-                    pago_data['fecha'] = hoy
-                Pago.objects.create(**pago_data)
-
-                if hasattr(socio_obj, 'estado_cuenta'):
-                    socio_obj.estado_cuenta = 'VERDE'
-                    socio_obj.save()
-
-                nombre_socio = f"{socio_obj.usuario.first_name} {socio_obj.usuario.last_name}".strip() or socio_obj.usuario.username
-                messages.success(
-                    request,
-                    f"¡Cobro exitoso! Se registró el pago de ${monto_total:,.0f} ({metodo.capitalize()}) para {nombre_socio} — Concepto: {', '.join(conceptos)}."
-                )
+        # A. REGISTRAR COBRO PRESENCIAL (el mismo que usan el admin y la página de Pagos)
+        if request.method == 'POST' and request.POST.get('accion') in ACCIONES_COBRO:
+            registrar_cobro(request, hoy)
             return redirect('dashboard')
 
         # B. REGISTRAR ASISTENCIA DE SOCIO
@@ -641,37 +481,18 @@ def dashboard(request):
         meses_asistencias = [{'valor': k, 'etiqueta': v} for k, v in meses_vistos.items()]
 
         # G. ÚLTIMOS COBROS Y LISTADO DE SOCIOS PARA MODAL UNIFICADO DE COBRO
-        ultimos_cobros = Pago.objects.select_related('socio__usuario', 'membresia__plan').order_by('-id')[:10]
+        ultimos_cobros = Pago.objects.confirmados().select_related('socio__usuario', 'membresia__plan').order_by('-id')[:10]
+        total_cobros_hoy = Pago.objects.confirmados().filter(
+            fecha_pago__range=(inicio_dia, fin_dia)).aggregate(total=Sum('monto'))['total'] or 0
+        total_cobros_hoy = f'{int(total_cobros_hoy):,}'.replace(',', '.')
+        pagos_por_confirmar = Pago.objects.pendientes().count()
         perfil_socio_acceso = request.session.pop('ultimo_socio_acceso', None)
 
-        socios_para_cobro = []
-        for s in Socio.objects.select_related('usuario').filter(usuario__is_active=True).order_by('usuario__last_name', 'usuario__first_name'):
-            memb_activa = MembresiaSocio.objects.filter(
-                socio=s, activa=True, fecha_fin__gte=hoy
-            ).select_related('plan').order_by('-fecha_fin').first()
-            anotado_en = []
-            for m in MembresiaSocio.objects.filter(socio=s, activa=True, fecha_fin__gte=hoy).select_related('plan'):
-                if m.plan:
-                    anotado_en.append(m.plan.nombre)
-            if Reserva:
-                try:
-                    for r in Reserva.objects.filter(socio=s, estado__in=['confirmada', 'activa', 'Confirmada', 'Activa']):
-                        act_r = getattr(r, 'actividad', None) or getattr(getattr(r, 'horario', None), 'actividad', None)
-                        if act_r and act_r.nombre not in anotado_en:
-                            anotado_en.append(act_r.nombre)
-                except Exception:
-                    pass
-            socios_para_cobro.append({
-                'id': s.id,
-                'nombre': f"{s.usuario.first_name} {s.usuario.last_name}".strip() or s.usuario.username,
-                'dni': getattr(s.usuario, 'dni', '') or s.usuario.username,
-                'al_dia': bool(memb_activa),
-                'vence': memb_activa.fecha_fin.strftime('%d/%m/%Y') if memb_activa else None,
-                'anotado_en': anotado_en,
-            })
 
         context = {
             'asistencias_hoy': total_asistencias_hoy,
+            'total_cobros_hoy': total_cobros_hoy,
+            'pagos_por_confirmar': pagos_por_confirmar,
             'ultimas_asistencias': ultimas_asistencias,
             'historial_asistencias_completo': historial_asistencias_completo,
             'meses_asistencias': meses_asistencias,
@@ -680,9 +501,7 @@ def dashboard(request):
             'disciplinas_detalle': disciplinas_detalle,
             'profesores_cards': profesores_cards,
             'planes_select': Plan.objects.all().order_by('precio'),
-            'socios_para_cobro': socios_para_cobro,
-            'planes_disponibles': Plan.objects.all().order_by('precio'),
-            'actividades_disponibles': Actividad.objects.filter(activa=True).order_by('nombre'),
+            **contexto_cobro(hoy),
             'socios_usuarios_lista': Usuario.objects.filter(rol='socio', is_active=True).order_by('first_name', 'last_name'),
             'rutinas_basicas_empleado': Rutina.objects.filter(
                 nombre__in=['Adaptación', 'Hipertrofia', 'Fuerza'], tipo='gimnasio'
@@ -1387,6 +1206,10 @@ def mis_reservas_socio(request):
     }
     return render(request, 'socio/mis_reservas.html', context)
 
+EXTENSIONES_COMPROBANTE = ('jpg', 'jpeg', 'png', 'webp', 'pdf')
+MAX_COMPROBANTE_MB = 5
+
+
 def _planes_para_socio():
     """Planes que el socio puede pagar solo: el familiar se cobra en recepción y los combinados no son planes reales."""
     return Plan.objects.exclude(nombre__icontains='familiar').exclude(nombre__contains=' + ')
@@ -1416,29 +1239,48 @@ def mis_pagos_socio(request):
     )
     cuota_al_dia = bool(membresia_actual) and getattr(socio_obj, 'estado_cuenta', 'VERDE') not in ['ROJO', 'VENCIDO']
     if request.method == 'POST' and request.POST.get('accion') == 'pagar_cuota_socio':
-        servicios_seleccionados = request.POST.getlist('servicios')
+        # Un pase mensual (Clases o Musculación) y, opcional, una frecuencia de Pilates
         metodo = request.POST.get('metodo_pago', 'transferencia')
-        if metodo not in dict(Pago.METODOS):
+        if metodo not in ('transferencia', 'efectivo'):
             metodo = 'transferencia'
-        ids = [s for s in servicios_seleccionados if s.isdigit()]
+        ids = [i for i in (request.POST.get('pase', ''), request.POST.get('pilates', '')) if i.isdigit()]
         planes = list(_planes_para_socio().filter(id__in=ids).order_by('precio'))
+        comprobante = request.FILES.get('comprobante')
+        referencia = request.POST.get('referencia', '').strip()[:60]
 
+        error = None
         if not planes:
-            messages.error(request, 'Debes seleccionar al menos una clase o disciplina para abonar.')
-        else:
-            renovadas = []
-            with transaction.atomic():
-                for plan in planes:
-                    membresia = MembresiaSocio.renovar(socio_obj, plan, hoy)
-                    Pago.objects.create(socio=socio_obj, membresia=membresia, monto=plan.precio, metodo_pago=metodo)
-                    renovadas.append(membresia)
+            error = 'Elegí un pase mensual o una frecuencia de Pilates para pagar.'
+        elif metodo == 'transferencia' and not comprobante:
+            error = 'Para pagar por transferencia tenés que adjuntar el comprobante.'
+        elif comprobante and comprobante.name.rsplit('.', 1)[-1].lower() not in EXTENSIONES_COMPROBANTE:
+            error = 'El comprobante tiene que ser una imagen (JPG, PNG, WEBP) o un PDF.'
+        elif comprobante and comprobante.size > MAX_COMPROBANTE_MB * 1024 * 1024:
+            error = f'El comprobante no puede pesar más de {MAX_COMPROBANTE_MB} MB.'
 
-            total_a_pagar = sum(p.precio for p in planes)
-            detalle = ', '.join(f"{m.plan.nombre} (hasta el {m.fecha_fin.strftime('%d/%m/%Y')})" for m in renovadas)
-            messages.success(
-                request,
-                f"¡Pago registrado con éxito por ${total_a_pagar:,.0f} ({metodo.capitalize()})! Concepto: {detalle}."
-            )
+        if error:
+            messages.error(request, error)
+        else:
+            # El pago queda pendiente: la membresía se activa cuando recepción confirma que recibió el dinero
+            with transaction.atomic():
+                archivo_guardado = None
+                for plan in planes:
+                    pago = Pago(socio=socio_obj, plan=plan, monto=plan.precio, metodo_pago=metodo,
+                                estado=Pago.PENDIENTE, referencia=referencia if metodo == 'transferencia' else '')
+                    if metodo == 'transferencia':
+                        if archivo_guardado:
+                            pago.comprobante.name = archivo_guardado   # una sola transferencia para todo
+                        else:
+                            pago.comprobante = comprobante
+                    pago.save()
+                    archivo_guardado = archivo_guardado or pago.comprobante.name
+
+            total_a_pagar = f"{sum(p.precio for p in planes):,.0f}".replace(',', '.')
+            if metodo == 'transferencia':
+                detalle = 'Recepción va a verificar tu comprobante y, cuando lo confirme, tu plan queda activo.'
+            else:
+                detalle = 'Acercate a recepción a pagar: tu plan se activa en el momento en que abones.'
+            messages.info(request, f"Registramos tu pago de ${total_a_pagar} ({', '.join(p.nombre for p in planes)}). {detalle}")
         return redirect('mis_pagos')
     historial_pagos = Pago.objects.filter(socio=socio_obj).select_related('membresia__plan').order_by('-fecha_pago')
 
@@ -1450,7 +1292,32 @@ def mis_pagos_socio(request):
         socio=socio_obj, activa=True, fecha_fin__gte=hoy
     ).select_related('plan').order_by('-fecha_fin')
 
+    # Estado de cuenta: al día, por vencer (7 días o menos) o vencida
+    vigentes = list(planes_activos)
+    for m in vigentes:
+        m.dias_restantes = (m.fecha_fin - hoy).days
+        duracion = max((m.fecha_fin - m.fecha_inicio).days, 1)
+        m.progreso = min(100, max(0, round((hoy - m.fecha_inicio).days * 100 / duracion)))
+    ultima_vencida = None if vigentes else (
+        MembresiaSocio.objects.filter(socio=socio_obj).select_related('plan').order_by('-fecha_fin').first()
+    )
+    proximo_vencimiento = min((m.dias_restantes for m in vigentes), default=None)
+    if not vigentes:
+        estado = 'vencida'
+    elif proximo_vencimiento <= 7:
+        estado = 'por_vencer'
+    else:
+        estado = 'al_dia'
+    estado_cuenta = {
+        'estado': estado,
+        'membresias': vigentes,
+        'ultima_vencida': ultima_vencida,
+        'dias_vencida': (hoy - ultima_vencida.fecha_fin).days if ultima_vencida else None,
+        'pendientes': list(Pago.objects.pendientes().filter(socio=socio_obj).select_related('plan').order_by('-fecha_pago')),
+    }
+
     context = {
+        'estado_cuenta': estado_cuenta,
         'socio': socio_obj,
         'membresia_actual': membresia_actual,
         'nombres_planes_activos': ', '.join(dict.fromkeys(m.plan.nombre for m in planes_activos)),
@@ -1458,6 +1325,7 @@ def mis_pagos_socio(request):
         'historial_pagos': historial_pagos,
         'planes_sueltos': [p for p in planes if 'pilates' not in p.nombre.lower()],
         'planes_pilates': [p for p in planes if 'pilates' in p.nombre.lower()],
+        'max_comprobante_mb': MAX_COMPROBANTE_MB,
     }
     return render(request, 'socio/mis_pagos.html', context)
 

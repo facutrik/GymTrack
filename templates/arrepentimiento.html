@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% comment %}
+    Botón de Arrepentimiento (Res. 424/2020 de la Secretaría de Comercio Interior).
+    Es público: no pide registrarse ni iniciar sesión, y al enviar muestra el código de la solicitud.
+{% endcomment %}
+
+{% block title %}Botón de Arrepentimiento{% endblock %}
+
+{% block content %}
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+
+        <div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Botón de Arrepentimiento</h1>
+            <p class="text-slate-400 text-sm mt-1">Revocá la contratación de un plan hecha a distancia, sin costo y sin tener que explicar el motivo.</p>
+        </div>
+
+        {% if solicitud %}
+            <!-- SOLICITUD RECIBIDA -->
+            <div class="bg-slate-900/60 border border-emerald-500/40 rounded-2xl p-6 space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 shrink-0 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-white">Recibimos tu solicitud</h2>
+                        <p class="text-xs text-slate-400">Guardá este código: es el comprobante de tu pedido.</p>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center">
+                    <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Código de solicitud</p>
+                    <p class="text-2xl font-black font-mono text-emerald-400 mt-1 select-all">{{ solicitud.codigo }}</p>
+                    <p class="text-[11px] text-slate-500 mt-1">{{ solicitud.fecha_solicitud|date:"d/m/Y H:i" }} hs</p>
+                </div>
+                <ul class="text-xs text-slate-300 space-y-1.5">
+                    <li><i class="fa-solid fa-user text-slate-500 w-4"></i> {{ solicitud.nombre }} · DNI {{ solicitud.dni }}</li>
+                    <li><i class="fa-solid fa-envelope text-slate-500 w-4"></i>
+                        {% if mail_enviado %}Te mandamos una copia con el código a <strong class="text-white">{{ solicitud.email }}</strong>{% else %}Te vamos a responder a <strong class="text-white">{{ solicitud.email }}</strong>{% endif %}
+                    </li>
+                    {% if solicitud.pago %}
+                        <li><i class="fa-solid fa-receipt text-slate-500 w-4"></i> Pago #REC-{{ solicitud.pago.id }}: {{ solicitud.pago.concepto }} (${{ solicitud.pago.monto|floatformat:"0g" }})</li>
+                    {% elif solicitud.numero_recibo %}
+                        <li class="text-amber-300"><i class="fa-solid fa-circle-info w-4"></i> No encontramos el recibo "{{ solicitud.numero_recibo }}" con ese DNI. Igual registramos tu pedido y lo revisamos.</li>
+                    {% endif %}
+                </ul>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Si la solicitud corresponde, damos de baja el plan y te reintegramos el importe por el mismo medio de pago que usaste.
+                    Ante cualquier duda escribinos a {{ gimnasio.email }} indicando el código.
+                </p>
+                <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'inicio' %}{% endif %}"
+                   class="inline-flex px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold rounded-xl transition">
+                    Volver
+                </a>
+            </div>
+        {% else %}
+            <!-- INFORMACIÓN DEL DERECHO -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 text-xs text-slate-300 leading-relaxed space-y-2">
+                <p>Si contrataste o renovaste un plan <strong class="text-white">a distancia</strong> (desde la web), tenés derecho a revocar la contratación dentro de los
+                    <strong class="text-white">{{ dias }} días corridos</strong> desde que la hiciste, sin costo y sin necesidad de explicar por qué
+                    (art. 34 de la Ley 24.240 de Defensa del Consumidor y art. 1110 del Código Civil y Comercial).</p>
+                <p>No hace falta tener cuenta ni iniciar sesión. Al enviar el formulario recibís en pantalla un código que identifica tu solicitud.</p>
+            </div>
+
+            {% if errores %}
+                <div class="p-4 rounded-xl text-xs font-semibold border bg-rose-500/10 border-rose-500/30 text-rose-300 space-y-1">
+                    {% for e in errores %}<p><i class="fa-solid fa-circle-exclamation mr-1"></i> {{ e }}</p>{% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- FORMULARIO -->
+            <form method="POST" action="{% url 'arrepentimiento' %}" class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4 text-xs">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="arrNombre" class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre y apellido *</label>
+                        <input id="arrNombre" type="text" name="nombre" required value="{{ datos.nombre }}" autocomplete="name"
+                               class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                    </div>
+                    <div>
+                        <label for="arrDni" class="block text-slate-400 uppercase text-[10px] font-bold mb-1">DNI *</label>
+                        <input id="arrDni" type="text" name="dni" required inputmode="numeric" pattern="\d{6,9}" value="{{ datos.dni }}" placeholder="Solo números"
+                               class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white font-mono">
+                    </div>
+                    <div>
+                        <label for="arrEmail" class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Email *</label>
+                        <input id="arrEmail" type="email" name="email" required value="{{ datos.email }}" autocomplete="email"
+                               class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                    </div>
+                    <div>
+                        <label for="arrTel" class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Teléfono</label>
+                        <input id="arrTel" type="text" name="telefono" value="{{ datos.telefono }}" autocomplete="tel"
+                               class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                    </div>
+                </div>
+                <div>
+                    <label for="arrRecibo" class="block text-slate-400 uppercase text-[10px] font-bold mb-1">N.º de recibo (opcional)</label>
+                    <input id="arrRecibo" type="text" name="numero_recibo" value="{{ datos.numero_recibo }}" placeholder="Ej: REC-123"
+                           class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white font-mono">
+                    <p class="text-[10px] text-slate-500 mt-1">Lo encontrás en "Mis pagos". Si no lo tenés, dejalo vacío: lo buscamos con tu DNI.</p>
+                </div>
+                <div>
+                    <label for="arrMotivo" class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Comentario (opcional)</label>
+                    <textarea id="arrMotivo" name="motivo" rows="3" placeholder="No es obligatorio explicar el motivo."
+                              class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">{{ datos.motivo }}</textarea>
+                </div>
+                <div class="flex justify-end pt-2 border-t border-slate-800">
+                    <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition cursor-pointer flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-left"></i> Enviar solicitud de arrepentimiento
+                    </button>
+                </div>
+            </form>
+        {% endif %}
+    </main>
+{% endblock %}
