@@ -1,79 +1,25 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymTrack - Mi Rutina</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Squada+One&family=Staatliches&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; 
-        }
-        .font-brand {
-            font-family: 'Barlow Condensed', sans-serif; 
-        }
-        .set-row.completed {
-            background-color: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); 
-        }
-        .set-row.completed input {
-            color: #6ee7b7; 
-        }
-        .marca-GymTrack {
-            font-family: "Squada One", sans-serif;
-        }
-    </style>
-</head>
-<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-    <!-- NAVBAR -->
-    <nav class="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 text-white shadow-md">        
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3.5">
-                    <img src="{% static 'img/logo-gymtrack.svg' %}"
-                        alt="Logo GymTrack"
-                        class="h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(59,76,202,0.45)]">
-                    <div class="flex items-baseline gap-2.5">
-                        <span class="font-brand italic font-extrabold text-3xl sm:text-4xl tracking-wide">
-                            <span class="marca-GymTrack text-[#3f51d6] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">GYM</span><span class="marca-GymTrack text-white">track</span>
-                        </span>
-                        <span class="text-xs font-light text-slate-500">×</span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                            Bodynamic
-                        </span>
-                    </div>
-                </div>
+{% block title %}Mi Rutina{% endblock %}
 
-                <!-- Botón Volver al Panel -->
-                <div class="flex items-center gap-4">
-                    <a href="{% url 'dashboard' %}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left text-[10px]"></i> Volver al Panel
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
+{% block head %}
+<style>
+    .set-row.completed {
+    background-color: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35);
+    }
+    .set-row.completed input {
+    color: #6ee7b7;
+    }
+</style>
+{% endblock %}
 
+{% block content %}
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
-
-        {% if messages %}
-            <div class="w-full space-y-2">
-                {% for message in messages %}
-                    <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-950/60 border border-emerald-500/40 text-emerald-300{% elif message.tags == 'warning' or message.tags == 'info' %}bg-amber-950/60 border border-amber-500/40 text-amber-300{% else %}bg-rose-950/60 border border-rose-500/40 text-rose-300{% endif %}">
-                        <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+        <div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Mi Rutina</h1>
+            <p class="text-slate-400 text-sm mt-1">Tu plan de entrenamiento con registro de series, cargas y descansos.</p>
+        </div>
 
         <!-- BARRA DE TRACKER -->
         <div id="contenedorMiRutina" class="space-y-6"
@@ -541,14 +487,17 @@
                                         <span class="text-[10px] text-slate-400 font-mono">{{ ej.repeticiones }}</span>
                                     </div>
                                     <div class="flex items-center gap-1 shrink-0">
-                                        <button type="button" onclick="abrirModalEditarEjercicio('{{ ej.id }}', '{{ ej.nombre|escapejs }}', '{{ ej.repeticiones|escapejs }}')" class="text-slate-500 hover:text-blue-400 text-xs p-1 transition cursor-pointer" title="Editar">
+                                        <button type="button" onclick="abrirModalEditarEjercicio('{{ ej.id }}', '{{ ej.nombre|escapejs }}', '{{ ej.repeticiones|escapejs }}')" class="btn-accion btn-accion--editar btn-accion--icono" title="Editar" aria-label="Editar">
                                             <i class="fa-regular fa-pen-to-square"></i>
                                         </button>
-                                        <form method="POST" action="{% url 'mi_rutina' %}" class="inline" data-confirmar="¿Deseás eliminar {{ ej.nombre }} de la rutina?" data-titulo="Eliminar ejercicio" data-boton="Sí, eliminar" data-tono="rojo">
+                                        <form method="POST" action="{% url 'mi_rutina' %}" class="inline"
+                                              data-confirmar="¿Querés quitar {{ ej.nombre }} de tu rutina?"
+                                              data-confirmar-titulo="Eliminar ejercicio"
+                                              data-confirmar-boton="Sí, eliminar">
                                             {% csrf_token %}
                                             <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
                                             <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
-                                            <button type="submit" class="text-slate-500 hover:text-rose-400 text-xs p-1 transition cursor-pointer" title="Eliminar">
+                                            <button type="submit" class="btn-accion btn-accion--peligro btn-accion--icono" title="Eliminar" aria-label="Eliminar">
                                                 <i class="fa-solid fa-trash-can"></i>
                                             </button>
                                         </form>
@@ -588,7 +537,7 @@
 
     <!-- MODAL EDITAR EJERCICIO -->
     <div id="modalEditarEjercicio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="font-bold text-white text-base">Editar Ejercicio</h3>
                 <button type="button" onclick="cerrarModalEditarEjercicio()" class="text-slate-400 hover:text-white transition cursor-pointer">
@@ -618,7 +567,7 @@
     <!-- MODAL DE AVISOS -->
     <div id="modalAvisoRutina" role="alertdialog" aria-modal="true" aria-labelledby="avisoRutinaTitulo" aria-describedby="avisoRutinaMensaje"
         class="fixed inset-0 z-[60] hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl text-center">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl text-center">
             <div id="avisoRutinaIcono" class="w-14 h-14 mx-auto rounded-2xl border flex items-center justify-center text-2xl">
                 <i class="fa-solid"></i>
             </div>
@@ -632,10 +581,8 @@
             </button>
         </div>
     </div>
+{% endblock %}
 
-    {% include 'includes/footer.html' %}
-
+{% block scripts %}
     <script src="{% static 'js/socio/mi_rutina.js' %}"></script>
-    {% include 'includes/modal_confirmar.html' %}
-</body>
-</html>
+{% endblock %}

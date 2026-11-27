@@ -1,0 +1,481 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% comment %}
+    Padrón de socios: la misma página para el módulo admin y el módulo empleado (socios/views.py → _padron_socios).
+{% endcomment %}
+
+{% block title %}Padrón de Socios{% endblock %}
+
+{% block content %}
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+
+
+
+        <!-- ENCABEZADO -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">Padrón de Socios</h1>
+                <p class="text-slate-400 text-sm mt-1">Alta con cobro inicial, edición de datos, búsqueda por DNI y control de bajas.</p>
+            </div>
+            <button type="button" onclick="mostrarModalAltaSocio()"
+                    class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 w-fit cursor-pointer">
+                <i class="fa-solid fa-user-plus"></i> Registrar Nuevo Socio
+            </button>
+        </div>
+
+        <!-- BUSCADOR Y FILTROS -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <form method="GET" action="{% url url_padron %}" class="flex-1 flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 text-xs">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" name="q" value="{{ query }}" placeholder="Buscar por DNI, nombre, apellido o email..."
+                           class="w-full pl-9 pr-4 py-2.5 bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl text-xs text-white placeholder-slate-500">
+                </div>
+                <select name="estado" onchange="this.form.submit()"
+                        class="bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-xs text-slate-300">
+                    <option value="todos" {% if filtro_estado == 'todos' %}selected{% endif %}>Todos los socios</option>
+                    <option value="activos" {% if filtro_estado == 'activos' %}selected{% endif %}>Solo activos</option>
+                    <option value="inactivos" {% if filtro_estado == 'inactivos' %}selected{% endif %}>Dados de baja</option>
+                </select>
+                <button type="submit" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition cursor-pointer">
+                    Buscar
+                </button>
+                {% if query or filtro_estado != 'todos' %}
+                    <a href="{% url url_padron %}" class="px-4 py-2.5 bg-slate-950 hover:bg-slate-800 text-slate-400 border border-slate-800 font-semibold text-xs rounded-xl transition text-center">
+                        Limpiar
+                    </a>
+                {% endif %}
+            </form>
+            <div class="text-xs text-slate-400 flex items-center gap-2 shrink-0">
+                <span>Resultados:</span>
+                <span class="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold">{{ total_socios }}</span>
+            </div>
+        </div>
+
+        <!-- TABLA DE SOCIOS -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="py-3.5 px-4 font-semibold">Socio</th>
+                            <th class="py-3.5 px-4 font-semibold">DNI / Usuario</th>
+                            <th class="py-3.5 px-4 font-semibold">Contacto</th>
+                            <th class="py-3.5 px-4 font-semibold">Cuota</th>
+                            <th class="py-3.5 px-4 font-semibold">Condición</th>
+                            <th class="py-3.5 px-4 font-semibold text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                        {% for item in socios %}
+                            {% with s=item.usuario %}
+                            <tr class="hover:bg-slate-800/30 transition {% if not s.is_active %}opacity-60{% endif %}">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 shrink-0 rounded-full {% if s.is_active %}bg-gradient-to-tr from-blue-600 to-indigo-500{% else %}bg-slate-700{% endif %} flex items-center justify-center text-xs font-bold text-white shadow">
+                                            {{ s.first_name|default:s.username|slice:":1"|upper }}
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-white">{{ s.get_full_name|default:s.username }}</p>
+                                            <p class="text-[10px] text-slate-500">Alta: {{ s.date_joined|date:"d/m/Y" }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 font-mono font-semibold text-slate-200">{{ s.username }}</td>
+                                <td class="py-3 px-4 text-[11px]">
+                                    <p class="text-slate-300">{{ s.email|default:"Sin email" }}</p>
+                                    {% if s.telefono %}<p class="text-slate-500">{{ s.telefono }}</p>{% endif %}
+                                </td>
+                                <td class="py-3 px-4">
+                                    {% if item.estado_cuota == 'VERDE' %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Al día
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-500/10 border border-rose-500/20 text-rose-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Vencida
+                                        </span>
+                                    {% endif %}
+                                    {% if item.ultimo_vencimiento %}
+                                        <p class="text-[10px] text-slate-500 mt-1">Vence: {{ item.ultimo_vencimiento|date:"d/m/Y" }}</p>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4">
+                                    {% if s.is_active %}
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">Activo</span>
+                                    {% else %}
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">Dado de baja</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{% url url_padron %}?{% if filtros_qs %}{{ filtros_qs }}&amp;{% endif %}perfil={{ s.id }}"
+                                           class="btn-accion btn-accion--ver">
+                                            <i class="fa-solid fa-id-card"></i> Ver perfil
+                                        </a>
+                                        <button type="button"
+                                                data-id="{{ s.id }}"
+                                                data-nombre="{{ s.first_name }}"
+                                                data-apellido="{{ s.last_name }}"
+                                                data-email="{{ s.email }}"
+                                                data-telefono="{{ s.telefono|default:'' }}"
+                                                onclick="abrirModalEditarSocio(this)"
+                                                class="btn-accion btn-accion--editar">
+                                            <i class="fa-solid fa-pen-to-square"></i> Editar
+                                        </button>
+                                        <form method="POST" action="{% url url_padron %}"
+                                              {% if s.is_active %}
+                                              data-confirmar="¿Confirmás dar de baja a {{ s.get_full_name|default:s.username }}? No va a poder ingresar al sistema hasta que lo reactives."
+                                              data-confirmar-titulo="Dar de baja socio"
+                                              data-confirmar-boton="Sí, dar de baja"
+                                              data-confirmar-tipo="peligro"
+                                              {% else %}
+                                              data-confirmar="¿Deseás reactivar a {{ s.get_full_name|default:s.username }}?"
+                                              data-confirmar-titulo="Reactivar socio"
+                                              data-confirmar-boton="Sí, reactivar"
+                                              data-confirmar-tipo="exito"
+                                              {% endif %}>
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="toggle_baja">
+                                            <input type="hidden" name="socio_id" value="{{ s.id }}">
+                                            {% if s.is_active %}
+                                                <button type="submit" class="btn-accion btn-accion--peligro">
+                                                    <i class="fa-solid fa-user-slash"></i> Dar de baja
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="btn-accion btn-accion--exito">
+                                                    <i class="fa-solid fa-user-check"></i> Reactivar
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endwith %}
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="py-8 text-center text-slate-500 text-xs">
+                                    <i class="fa-solid fa-users-slash text-2xl mb-2 block text-slate-600"></i>
+                                    No se encontraron socios con ese DNI o filtro.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL: REGISTRAR NUEVO SOCIO -->
+    <div id="modalAltaSocio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
+            <div class="flex items-center justify-between gap-4 border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Registrar Nuevo Socio</h3>
+                        <p class="text-xs text-slate-400">El DNI va a ser su usuario y su contraseña inicial.</p>
+                    </div>
+                </div>
+                <button type="button" onclick="ocultarModal('modalAltaSocio')" class="text-slate-400 hover:text-white transition cursor-pointer" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{% url url_padron %}" class="space-y-3.5 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="alta">
+                <input type="hidden" name="plan_id" id="inputPlanIdAlta">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">DNI *</label>
+                        <input type="text" name="dni" required placeholder="Ej: 40123456" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Teléfono</label>
+                        <input type="text" name="telefono" placeholder="341..." class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre *</label>
+                        <input type="text" name="nombre" required placeholder="Ej: Juan" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Apellido *</label>
+                        <input type="text" name="apellido" required placeholder="Ej: Pérez" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Email</label>
+                    <input type="email" name="email" placeholder="correo@ejemplo.com" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                </div>
+
+                <!-- MEMBRESÍA Y COBRO INICIAL (OPCIONAL) -->
+                <div class="pt-3 border-t border-slate-800 space-y-3">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Membresía y cobro inicial (opcional)</p>
+
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Plan a contratar</label>
+                        <select id="selectCategoriaPaseAlta" onchange="actualizarOpcionesPaseAlta()"
+                                class="w-full bg-slate-950 border border-emerald-500/50 focus:border-emerald-400 focus:outline-none rounded-xl px-3.5 py-2.5 text-white font-semibold">
+                            <option value="">-- Sin cobro por ahora --</option>
+                            <option value="clases">Pase Clases — $45.000 (30 días)</option>
+                            <option value="musculacion">Pase Musculación — $60.000 (30 días)</option>
+                            <option value="familiar">Plan Familiar — $50.000 c/u (30 días)</option>
+                            <option value="pilates">Pilates (elegir días por semana)</option>
+                        </select>
+                    </div>
+
+                    <div id="bloqueDiasPilatesAlta" class="hidden p-3 rounded-xl bg-slate-950 border border-blue-500/40 space-y-1.5">
+                        <label class="block text-blue-400 uppercase text-[10px] font-bold">
+                            <i class="fa-solid fa-calendar-week mr-1"></i> Frecuencia semanal de Pilates
+                        </label>
+                        <select id="selectDiasPilatesAlta" onchange="sincronizarPlanRealAlta()"
+                                class="w-full bg-slate-900 border border-slate-700 focus:border-blue-500 focus:outline-none rounded-xl px-3 py-2 text-white font-semibold">
+                            <option value="pilates_1">1 vez por semana — $35.000 / mes</option>
+                            <option value="pilates_2">2 veces por semana — $42.000 / mes</option>
+                            <option value="pilates_3">3 veces por semana — $50.000 / mes</option>
+                        </select>
+                    </div>
+
+                    <div id="tarjetaInfoPaseAlta" class="hidden p-3 rounded-xl bg-slate-950/90 border border-slate-800 space-y-1.5">
+                        <span id="tituloInfoPaseAlta" class="font-bold text-emerald-400 text-xs block"></span>
+                        <div id="detalleInfoPaseAlta" class="text-[11px] text-slate-300 leading-relaxed"></div>
+                        <p class="text-[10px] text-slate-500 pt-1 border-t border-slate-800/80">
+                            <i class="fa-regular fa-clock mr-1"></i> Horario del gimnasio: Lun a Vie 07:00 a 22:00 hs • Sáb 09:00 a 13:00 hs
+                        </p>
+                    </div>
+
+                    <!-- Planes reales de la base de datos (los usa el JS para mandar el plan_id correcto) -->
+                    <div id="catalogoPlanesAltaBD" class="hidden">
+                        {% for plan in planes_disponibles %}
+                            <span data-id="{{ plan.id }}" data-nombre="{{ plan.nombre|lower }}"></span>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Anotar en actividad (opcional)</label>
+                        <select name="actividad_id" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-xs text-white">
+                            <option value="">-- Ninguna / Incluida en el pase --</option>
+                            {% for act in actividades_disponibles %}
+                                <option value="{{ act.id }}">{{ act.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Método de pago</label>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <label class="flex items-center justify-center gap-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
+                                <input type="radio" name="metodo_pago" value="efectivo" checked class="text-emerald-500">
+                                <span class="font-bold text-slate-200"><i class="fa-solid fa-money-bill-wave text-emerald-400 mr-1"></i> Efectivo</span>
+                            </label>
+                            <label class="flex items-center justify-center gap-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10">
+                                <input type="radio" name="metodo_pago" value="transferencia" class="text-emerald-500">
+                                <span class="font-bold text-slate-200"><i class="fa-solid fa-building-columns text-blue-400 mr-1"></i> Transferencia</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="ocultarModal('modalAltaSocio')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition cursor-pointer">
+                        Guardar Socio
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PERFIL DEL SOCIO (se abre con ?perfil=<id>) -->
+    {% if perfil_abierto %}
+    {% with s=perfil_abierto.usuario m=perfil_abierto.membresia %}
+    <div id="modalPerfilSocio" data-url-cerrar="{% url url_padron %}{% if filtros_qs %}?{{ filtros_qs }}{% endif %}"
+         class="fixed inset-0 z-50 flex bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl max-h-[92vh] overflow-y-auto">
+            <!-- Encabezado -->
+            <div class="flex items-start justify-between gap-4 border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 shrink-0 rounded-2xl {% if s.is_active %}bg-gradient-to-tr from-blue-600 to-indigo-500{% else %}bg-slate-700{% endif %} flex items-center justify-center text-xl font-black text-white shadow-lg">
+                        {{ s.first_name|default:s.username|slice:":1"|upper }}{{ s.last_name|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-extrabold text-white">{{ s.get_full_name|default:s.username }}</h3>
+                        <p class="text-xs text-slate-400 font-mono">DNI {{ s.username }}</p>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            {% if perfil_abierto.al_dia %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Cuota al día
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-500/10 border border-rose-500/20 text-rose-400">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Cuota vencida
+                                </span>
+                            {% endif %}
+                            {% if s.is_active %}
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">Activo</span>
+                            {% else %}
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">Dado de baja</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <button type="button" onclick="cerrarPerfilSocio()" class="text-slate-400 hover:text-white transition cursor-pointer" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Datos de contacto y cuenta -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <p class="text-[10px] uppercase font-bold text-slate-500">Email</p>
+                    <p class="text-slate-200 mt-1 break-all">{{ s.email|default:"Sin email" }}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <p class="text-[10px] uppercase font-bold text-slate-500">Teléfono</p>
+                    <p class="text-slate-200 mt-1">{{ s.telefono|default:"Sin teléfono" }}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <p class="text-[10px] uppercase font-bold text-slate-500">Socio desde</p>
+                    <p class="text-slate-200 mt-1">{{ s.date_joined|date:"d/m/Y" }}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <p class="text-[10px] uppercase font-bold text-slate-500">Último ingreso al sistema</p>
+                    <p class="text-slate-200 mt-1">{{ s.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</p>
+                </div>
+            </div>
+
+            <!-- Membresía y clases -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+                    <p class="text-[10px] uppercase font-bold text-slate-500">Membresía</p>
+                    {% if m %}
+                        <p class="font-bold text-white">{{ m.plan.nombre }}</p>
+                        <p class="text-slate-400">Del {{ m.fecha_inicio|date:"d/m/Y" }} al {{ m.fecha_fin|date:"d/m/Y" }}</p>
+                        {% if perfil_abierto.dias_restantes is not None %}
+                            <p class="text-emerald-400 font-semibold">Quedan {{ perfil_abierto.dias_restantes }} día{{ perfil_abierto.dias_restantes|pluralize }}</p>
+                        {% else %}
+                            <p class="text-rose-400 font-semibold">Vencida</p>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-slate-400">Nunca contrató un plan.</p>
+                    {% endif %}
+                </div>
+                <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+                    <p class="text-[10px] uppercase font-bold text-slate-500">Clases en las que está anotado</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        {% for clase in perfil_abierto.clases %}
+                            <span class="text-[10px] font-bold text-blue-300 bg-blue-500/10 border border-blue-500/30 px-2 py-0.5 rounded-md">{{ clase }}</span>
+                        {% empty %}
+                            <span class="text-slate-500 italic">No está anotado en ninguna clase.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagos y asistencias -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+                    <p class="text-[10px] uppercase font-bold text-slate-500">Últimos pagos</p>
+                    {% for p in perfil_abierto.pagos %}
+                        <div class="flex items-center justify-between gap-2 border-b border-slate-800/70 last:border-0 pb-1.5 last:pb-0">
+                            <div>
+                                <p class="text-slate-200">{{ p.concepto }}{% if p.estado != 'confirmado' %} <span class="text-[10px] text-amber-400">({{ p.get_estado_display }})</span>{% endif %}</p>
+                                <p class="text-[10px] text-slate-500">{{ p.fecha_pago|date:"d/m/Y" }} · {{ p.get_metodo_pago_display }}</p>
+                            </div>
+                            <span class="font-bold text-emerald-400 font-mono">${{ p.monto|floatformat:"0g" }}</span>
+                        </div>
+                    {% empty %}
+                        <p class="text-slate-500 italic">Sin pagos registrados.</p>
+                    {% endfor %}
+                </div>
+                <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <p class="text-[10px] uppercase font-bold text-slate-500">Últimas asistencias</p>
+                        <span class="text-[10px] font-bold text-blue-400">{{ perfil_abierto.asistencias_mes }} este mes</span>
+                    </div>
+                    {% for a in perfil_abierto.asistencias %}
+                        <p class="text-slate-300 border-b border-slate-800/70 last:border-0 pb-1.5 last:pb-0">
+                            <i class="fa-regular fa-calendar-check text-slate-500 mr-1"></i> {{ a.fecha_hora|date:"d/m/Y" }} <span class="text-slate-500">{{ a.fecha_hora|time:"H:i" }} hs</span>
+                        </p>
+                    {% empty %}
+                        <p class="text-slate-500 italic">Todavía no registró asistencias.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-end gap-3 pt-3 border-t border-slate-800">
+                <button type="button" onclick="cerrarPerfilSocio()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition cursor-pointer">
+                    Cerrar
+                </button>
+                <button type="button"
+                        data-id="{{ s.id }}" data-nombre="{{ s.first_name }}" data-apellido="{{ s.last_name }}"
+                        data-email="{{ s.email }}" data-telefono="{{ s.telefono|default:'' }}"
+                        onclick="ocultarModal('modalPerfilSocio'); abrirModalEditarSocio(this)"
+                        class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/20 transition cursor-pointer">
+                    <i class="fa-solid fa-pen-to-square"></i> Editar datos
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+    {% endif %}
+
+    <!-- MODAL: EDITAR SOCIO -->
+    <div id="modalEditarSocio" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between gap-4 border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-white">Editar Datos del Socio</h3>
+                </div>
+                <button type="button" onclick="ocultarModal('modalEditarSocio')" class="text-slate-400 hover:text-white transition cursor-pointer" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form method="POST" action="{% url url_padron %}" class="space-y-3.5 text-xs">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="editar">
+                <input type="hidden" name="socio_id" id="editSocioId">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Nombre *</label>
+                        <input type="text" name="nombre" id="editNombre" required class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Apellido *</label>
+                        <input type="text" name="apellido" id="editApellido" required class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Email</label>
+                    <input type="email" name="email" id="editEmail" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] font-bold mb-1">Teléfono</label>
+                    <input type="text" name="telefono" id="editTelefono" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 focus:outline-none rounded-xl px-3.5 py-2.5 text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="ocultarModal('modalEditarSocio')" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition cursor-pointer">Cancelar</button>
+                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition cursor-pointer">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'js/compartido/padron_socios.js' %}"></script>
+{% endblock %}

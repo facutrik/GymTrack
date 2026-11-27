@@ -1,61 +1,9 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymTrack - Reservas y Disciplinas (Recepción)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Squada+One&family=Staatliches&display=swap" rel="stylesheet">
-    <style>
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; 
-        }
-        .font-brand {
-            font-family: 'Barlow Condensed', sans-serif; 
-        }
-        .marca-GymTrack {
-            font-family: "Squada One", sans-serif;
-        }
-    </style>
-</head>
-<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-white">
 
-    <!-- NAVBAR -->
-    <nav class="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 text-white shadow-md">        
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3.5">
-                    <img src="{% static 'img/logo-gymtrack.svg' %}"
-                        alt="Logo GymTrack"
-                        class="h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(59,76,202,0.45)]">
-                    <div class="flex items-baseline gap-2.5">
-                        <span class="font-brand italic font-extrabold text-3xl sm:text-4xl tracking-wide">
-                            <span class="marca-GymTrack text-[#3f51d6] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">GYM</span><span class="marca-GymTrack text-white">track</span>
-                        </span>
-                        <span class="text-xs font-light text-slate-500">×</span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                            Bodynamic
-                        </span>
-                    </div>
-                </div>
+{% block title %}Reservas y Disciplinas (Recepción){% endblock %}
 
-                <!-- Botón Volver al Panel -->
-                <div class="flex items-center gap-4">
-                    <a href="{% url 'dashboard' %}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left text-[10px]"></i> Volver al Panel
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
+{% block content %}
     <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-10">
 
@@ -63,8 +11,8 @@
         <div class="space-y-5">
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h1 class="text-2xl font-black text-white tracking-tight">Disciplinas, Horarios y Reservas 📅</h1>
-                    <p class="text-xs text-slate-400 mt-1">Qué se dicta, cuándo, con qué profesor y quiénes están anotados.</p>
+                    <h1 class="text-3xl font-extrabold text-white tracking-tight">Disciplinas, Horarios y Reservas</h1>
+                    <p class="text-slate-400 text-sm mt-1">Qué se dicta, cuándo, con qué profesor y quiénes están anotados.</p>
                 </div>
                 <div class="relative w-full md:w-72">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500 text-xs"></i>
@@ -176,7 +124,7 @@
                                 <span class="font-bold {% if item.libres %}text-emerald-400{% else %}text-rose-400{% endif %}">{% if item.libres %}Quedan {{ item.libres }}{% else %}Completo{% endif %}</span>
                             </div>
                             <div class="h-2 bg-slate-950 border border-slate-800 rounded-full overflow-hidden">
-                                <div class="h-full {% if item.libres %}bg-emerald-500{% else %}bg-rose-500{% endif %}" style="width: {{ item.porcentaje }}%"></div>
+                                <div class="h-full {% if item.libres %}bg-emerald-500{% else %}bg-rose-500{% endif %} barra-cupo" data-porcentaje="{{ item.porcentaje }}"></div>
                             </div>
                         </div>
                         {% endif %}
@@ -209,10 +157,8 @@
         </section>
 
     </main>
+{% endblock %}
 
-    {% include 'includes/footer.html' %}
-
-<script src="{% static 'js/empleado/reservas.js' %}?v=2"></script>
-
-</body>
-</html>
+{% block scripts %}
+<script src="{% static 'js/empleado/reservas.js' %}?v=3"></script>
+{% endblock %}

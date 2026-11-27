@@ -1,73 +1,14 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymTrack - Gestión de Membresías</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Squada+One&family=Staatliches&display=swap" rel="stylesheet">
 
-    <style>
-    body { 
-        font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b1120; 
-    }
-    .marca-GymTrack {
-        font-family: "Squada One", sans-serif;
-    }
-    </style>
-</head>
-<body class="text-slate-100 min-h-screen flex flex-col antialiased">
+{% block title %}Gestión de Membresías{% endblock %}
 
-    <!-- NAVBAR ADMIN -->
-    <nav class="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 text-white shadow-md">        
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3.5">
-                    <img src="{% static 'img/logo-gymtrack.svg' %}"
-                        alt="Logo GymTrack"
-                        class="h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(59,76,202,0.45)]">
-                    <div class="flex items-baseline gap-2.5">
-                        <span class="font-brand italic font-extrabold text-3xl sm:text-4xl tracking-wide">
-                            <span class="marca-GymTrack text-[#3f51d6] drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">GYM</span><span class="marca-GymTrack text-white">track</span>
-                        </span>
-                        <span class="text-xs font-light text-slate-500">×</span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                            Bodynamic
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Botón Volver al Panel -->
-                <div class="flex items-center gap-4">
-                    <a href="{% url 'dashboard' %}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left text-[10px]"></i> Volver al Panel
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-
-    {% if messages %}
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-            {% for message in messages %}
-                <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300">
-                    <i class="fa-solid fa-circle-check"></i> {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
+{% block content %}
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
 
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <h1 class="text-3xl font-extrabold text-white tracking-tight">Membresías & Aranceles 💳</h1>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">Membresías & Aranceles</h1>
                 <p class="text-slate-400 text-sm mt-1">Configuración de pases mensuales, promociones familiares y precios por frecuencia.</p>
             </div>
             <button onclick="abrirModalCrearPlan()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer">
@@ -82,7 +23,7 @@
                         <div class="flex items-start justify-between gap-3">
                             <h3 class="font-bold text-base text-white">{{ p.nombre }}</h3>
                             <span class="shrink-0 text-xs font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
-                                ${{ p.precio }}
+                                ${{ p.precio|floatformat:"0g" }}
                             </span>
                         </div>
                         <p class="text-xs text-slate-400 mt-2 leading-relaxed">{{ p.descripcion_mostrar|default:"Acceso según las normas del plan." }}</p>
@@ -93,16 +34,19 @@
                         
                         <div class="flex items-center gap-2">
                             <!-- Botón Editar -->
-                            <button type="button" onclick="abrirModalEditarPlan('{{ p.id }}', '{{ p.nombre|escapejs }}', '{{ p.precio|floatformat:0 }}', '{{ p.duracion_dias|default:30 }}', '{{ p.descripcion_mostrar|escapejs }}')" class="p-2 text-slate-400 hover:text-blue-400 transition cursor-pointer" title="Editar">
-                                <i class="fa-regular fa-pen-to-square"></i>
+                            <button type="button" onclick="abrirModalEditarPlan('{{ p.id }}', '{{ p.nombre|escapejs }}', '{{ p.precio|floatformat:0 }}', '{{ p.duracion_dias|default:30 }}', '{{ p.descripcion_mostrar|escapejs }}')" class="btn-accion btn-accion--editar">
+                                <i class="fa-solid fa-pen-to-square"></i> Editar
                             </button>
 
                             <!-- Botón Eliminar -->
-                            <form method="POST" class="inline" data-confirmar="¿Seguro que deseás eliminar el plan {{ p.nombre }}?" data-titulo="Eliminar plan" data-boton="Sí, eliminar" data-tono="rojo">
+                            <form method="POST" class="inline"
+                                  data-confirmar="¿Seguro que deseás eliminar el plan {{ p.nombre }}? Esta acción no se puede deshacer."
+                                  data-confirmar-titulo="Eliminar plan"
+                                  data-confirmar-boton="Sí, eliminar">
                                 {% csrf_token %}
                                 <input type="hidden" name="accion" value="eliminar">
                                 <input type="hidden" name="plan_id" value="{{ p.id }}">
-                                <button type="submit" class="p-2 text-slate-400 hover:text-rose-400 transition cursor-pointer" title="Eliminar">
+                                <button type="submit" class="btn-accion btn-accion--peligro btn-accion--icono" title="Eliminar" aria-label="Eliminar">
                                     <i class="fa-regular fa-trash-can"></i>
                                 </button>
                             </form>
@@ -115,7 +59,7 @@
 
     <!-- MODAL CREAR / EDITAR PLAN -->
     <div id="modalPlan" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 id="modalPlanTitulo" class="font-bold text-white text-base">Crear Plan de Membresía</h3>
                 <button type="button" onclick="cerrarModalPlan()" class="text-slate-400 hover:text-white transition cursor-pointer">
@@ -160,10 +104,8 @@
             </form>
         </div>
     </div>
+{% endblock %}
 
-{% include 'includes/footer.html' %}
+{% block scripts %}
 <script src="{% static 'js/admin/membresias.js' %}"></script>
-
-    {% include 'includes/modal_confirmar.html' %}
-</body>
-</html>
+{% endblock %}

@@ -30,11 +30,6 @@ function switchTab(tabId) {
     }
 }
 
-function toggleModalNovedades() {
-    const modal = document.getElementById('modal-novedades');
-    if (modal) modal.classList.toggle('hidden');
-}
-
 document.addEventListener('DOMContentLoaded', function () {
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
@@ -55,8 +50,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
-            const modalNov = document.getElementById('modal-novedades');
-            if (modalNov && !modalNov.classList.contains('hidden')) modalNov.classList.add('hidden');
             if (typeof cerrarModalEditarEjercicio === 'function') cerrarModalEditarEjercicio();
             if (typeof cerrarModalPagoSocio === 'function') cerrarModalPagoSocio();
         }

@@ -10,6 +10,27 @@ class Actividad(models.Model):
     descripcion = models.TextField(blank=True, null=True)
     requiere_reserva = models.BooleanField(default=False)
     activa = models.BooleanField(default=True)
+    # Ícono de Font Awesome según el nombre de la disciplina (el primero que coincida)
+    ICONOS = (
+        ('musculaci', 'fa-dumbbell'),
+        ('spinning', 'fa-person-biking'),
+        ('pilates', 'fa-spa'),
+        ('zumba', 'fa-music'),
+        ('cardio', 'fa-heart-pulse'),
+        ('abdominal', 'fa-person-running'),
+        ('funcional', 'fa-bolt'),
+        ('judo', 'fa-hand-fist'),
+        ('taekw', 'fa-hand-fist'),
+        ('box', 'fa-hand-fist'),
+        ('yoga', 'fa-spa'),
+        ('natac', 'fa-person-swimming'),
+    )
+
+    @property
+    def icono(self):
+        nombre = self.nombre.lower()
+        return next((icono for clave, icono in self.ICONOS if clave in nombre), 'fa-dumbbell')
+
     @property
     def sin_turno(self):
         """La sala de musculación es de acceso libre: no se reserva ni tiene cupo."""

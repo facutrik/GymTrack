@@ -4,3 +4,8 @@ __pycache__/
 venv/
 db.sqlite3
 .vscode/
+# Configuración secreta (contraseñas): nunca subirla
+.env
+staticfiles/
+media/
+.playwright-mcp/
