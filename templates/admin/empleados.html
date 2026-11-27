@@ -126,26 +126,26 @@
                                 </td>
                                 <td class="py-3.5 px-4 text-right space-x-1.5">
                                     <!-- Botón Editar -->
-                                    <button type="button" onclick="abrirModalEditarEmpleado('{{ item.usuario.id }}', '{{ item.usuario.first_name|escapejs }}', '{{ item.usuario.last_name|escapejs }}', '{{ item.usuario.username|escapejs }}', '{{ item.usuario.email|escapejs }}', '{{ item.usuario.rol }}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 font-semibold rounded-lg border border-slate-700 transition" title="Editar">
+                                    <button type="button" onclick="abrirModalEditarEmpleado('{{ item.usuario.id }}', '{{ item.usuario.first_name|escapejs }}', '{{ item.usuario.last_name|escapejs }}', '{{ item.usuario.username|escapejs }}', '{{ item.usuario.email|escapejs }}', '{{ item.usuario.rol }}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white hover:text-amber-400 font-semibold rounded-lg border border-slate-700 transition cursor-pointer" title="Editar">
                                         <i class="fa-regular fa-pen-to-square"></i>
                                     </button>
 
                                     <!-- Botón Historial -->
-                                    <button type="button" onclick="document.getElementById('modal-historial-{{ item.usuario.id }}').classList.remove('hidden')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-blue-400 font-semibold rounded-lg border border-slate-700 transition">
+                                    <button type="button" onclick="document.getElementById('modal-historial-{{ item.usuario.id }}').classList.remove('hidden')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white hover:text-blue-400 font-semibold rounded-lg border border-slate-700 transition cursor-pointer">
                                         <i class="fa-solid fa-clock-rotate-left mr-1"></i> Historial
                                     </button>
 
                                     <!-- Alternar Baja -->
-                                    <form method="POST" class="inline">
+                                    <form method="POST" class="inline" data-confirmar="{% if item.usuario.is_active %}¿Deseás dar de baja a {{ item.usuario.get_full_name|default:item.usuario.username }}?{% else %}¿Deseás reactivar a {{ item.usuario.get_full_name|default:item.usuario.username }}?{% endif %}" data-titulo="{% if item.usuario.is_active %}Confirmar baja{% else %}Confirmar reactivación{% endif %}" data-boton="{% if item.usuario.is_active %}Sí, dar de baja{% else %}Sí, reactivar{% endif %}" data-tono="{% if item.usuario.is_active %}rojo{% else %}verde{% endif %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="accion" value="toggle_baja">
                                         <input type="hidden" name="empleado_id" value="{{ item.usuario.id }}">
                                         {% if item.usuario.is_active %}
-                                            <button type="submit" class="px-3 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-semibold rounded-lg border border-rose-500/30 transition">
+                                            <button type="submit" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white hover:text-rose-400 font-semibold rounded-lg border border-slate-700 transition cursor-pointer">
                                                 Baja
                                             </button>
                                         {% else %}
-                                            <button type="submit" class="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-semibold rounded-lg border border-emerald-500/30 transition">
+                                            <button type="submit" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white hover:text-emerald-400 font-semibold rounded-lg border border-slate-700 transition cursor-pointer">
                                                 Reactivar
                                             </button>
                                         {% endif %}
@@ -340,5 +340,6 @@
 {% include 'includes/footer.html' %}
 <script src="{% static 'js/admin/empleados.js' %}"></script>
 
+    {% include 'includes/modal_confirmar.html' %}
 </body>
 </html>

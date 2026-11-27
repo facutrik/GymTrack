@@ -42,7 +42,7 @@ def admin_socios(request):
 # TOGGLE BAJA / ALTA
         if accion == 'toggle_baja':
             socio_id = request.POST.get('socio_id')
-            socio_user = get_object_or_404(Usuario, id=socio_id, rol='socio')
+            socio_user = get_object_or_404(Usuario, id=socio_id, rol='socio', is_superuser=False)
             socio_user.is_active = not socio_user.is_active
             socio_user.save()
             estado = "activo" if socio_user.is_active else "dado de baja"
@@ -136,7 +136,7 @@ def admin_socios(request):
 # 2. BÚSQUEDA Y FILTRADO
     query = request.GET.get('q', '').strip()
     filtro_estado = request.GET.get('estado', 'todos')
-    socios_qs = Usuario.objects.filter(rol='socio').order_by('-date_joined')
+    socios_qs = Usuario.objects.filter(rol='socio', is_superuser=False).order_by('-date_joined')
     if query:
         socios_qs = socios_qs.filter(
             Q(username__icontains=query) |
@@ -303,7 +303,7 @@ def padron_socios_empleado(request):
 # EDITAR SOCIO
         elif accion == 'editar':
             socio_id = request.POST.get('socio_id')
-            socio_user = get_object_or_404(Usuario, id=socio_id, rol='socio')
+            socio_user = get_object_or_404(Usuario, id=socio_id, rol='socio', is_superuser=False)
             socio_user.first_name = request.POST.get('nombre', '').strip()
             socio_user.last_name = request.POST.get('apellido', '').strip()
             socio_user.email = request.POST.get('email', '').strip()
@@ -322,7 +322,7 @@ def padron_socios_empleado(request):
 # DAR DE BAJA / REACTIVAR
         elif accion == 'toggle_baja':
             socio_id = request.POST.get('socio_id')
-            socio_user = get_object_or_404(Usuario, id=socio_id, rol='socio')
+            socio_user = get_object_or_404(Usuario, id=socio_id, rol='socio', is_superuser=False)
             socio_user.is_active = not socio_user.is_active
             socio_user.save()
             estado = "activo" if socio_user.is_active else "dado de baja"
@@ -330,7 +330,7 @@ def padron_socios_empleado(request):
             return redirect('padron_socios_empleado')
 
     query = request.GET.get('q', '').strip()
-    socios = Usuario.objects.filter(rol='socio').order_by('-date_joined')
+    socios = Usuario.objects.filter(rol='socio', is_superuser=False).order_by('-date_joined')
     if query:
         socios = socios.filter(
             Q(username__icontains=query) |

@@ -410,7 +410,7 @@
                                                         class="text-slate-400 hover:text-blue-400 p-1 cursor-pointer" title="Editar">
                                                     <i class="fa-regular fa-pen-to-square"></i>
                                                 </button>
-                                                <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                                <form method="POST" action="{% url 'dashboard' %}" class="inline" data-confirmar="¿Deseás eliminar {{ ej.nombre }} de la rutina?" data-titulo="Eliminar ejercicio" data-boton="Sí, eliminar" data-tono="rojo">
                                                     {% csrf_token %}
                                                     <input type="hidden" name="accion" value="empleado_eliminar_ejercicio_rutina">
                                                     <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
@@ -454,7 +454,7 @@
                                                         class="text-slate-400 hover:text-blue-400 p-1 cursor-pointer" title="Editar">
                                                     <i class="fa-regular fa-pen-to-square"></i>
                                                 </button>
-                                                <form method="POST" action="{% url 'dashboard' %}" class="inline">
+                                                <form method="POST" action="{% url 'dashboard' %}" class="inline" data-confirmar="¿Deseás eliminar {{ ej.nombre }} de la rutina?" data-titulo="Eliminar ejercicio" data-boton="Sí, eliminar" data-tono="rojo">
                                                     {% csrf_token %}
                                                     <input type="hidden" name="accion" value="empleado_eliminar_ejercicio_rutina">
                                                     <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
@@ -897,5 +897,6 @@
 <script src="{% static 'js/empleado/asistencia.js' %}"></script>
 <script src="{% static 'js/empleado/dashboard.js' %}"></script>
 
+    {% include 'includes/modal_confirmar.html' %}
 </body>
 </html>

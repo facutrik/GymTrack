@@ -141,7 +141,7 @@
                                             class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-blue-400 font-semibold rounded-lg transition cursor-pointer">
                                         <i class="fa-solid fa-pen-to-square"></i> Editar
                                     </button>
-                                    <form method="POST" class="inline">
+                                    <form method="POST" class="inline" data-confirmar="{% if s.is_active %}¿Deseás dar de baja a {{ s.get_full_name|default:s.username }}?{% else %}¿Deseás reactivar a {{ s.get_full_name|default:s.username }}?{% endif %}" data-titulo="{% if s.is_active %}Confirmar baja{% else %}Confirmar reactivación{% endif %}" data-boton="{% if s.is_active %}Sí, dar de baja{% else %}Sí, reactivar{% endif %}" data-tono="{% if s.is_active %}rojo{% else %}verde{% endif %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="accion" value="toggle_baja">
                                         <input type="hidden" name="socio_id" value="{{ s.id }}">
@@ -356,6 +356,7 @@
 })();
 </script>
 
+    {% include 'includes/modal_confirmar.html' %}
 </body>
 </html>
 

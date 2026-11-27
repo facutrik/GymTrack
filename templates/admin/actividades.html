@@ -127,7 +127,7 @@
                             </button>
 
                             <!-- Toggle Pausar / Reactivar -->
-                            <form method="POST" class="inline">
+                            <form method="POST" class="inline" data-confirmar="{% if item.objeto.activa %}¿Deseás pausar {{ item.objeto.nombre }}?{% else %}¿Deseás reactivar {{ item.objeto.nombre }}?{% endif %}" data-titulo="{% if item.objeto.activa %}Confirmar pausa{% else %}Confirmar reactivación{% endif %}" data-boton="{% if item.objeto.activa %}Sí, pausar{% else %}Sí, reactivar{% endif %}" data-tono="{% if item.objeto.activa %}amarillo{% else %}verde{% endif %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="accion" value="toggle_baja">
                                 <input type="hidden" name="actividad_id" value="{{ item.objeto.id }}">
@@ -144,7 +144,7 @@
                         </div>
 
                         <!-- Eliminar Definitivamente -->
-                        <form method="POST" onsubmit="return confirm('¿Seguro que deseás eliminar definitivamente esta actividad?');" class="inline">
+                        <form method="POST" class="inline" data-confirmar="¿Seguro que deseás eliminar definitivamente {{ item.objeto.nombre }}? También se borran sus inscripciones." data-titulo="Eliminar actividad" data-boton="Sí, eliminar" data-tono="rojo">
                             {% csrf_token %}
                             <input type="hidden" name="accion" value="eliminar">
                             <input type="hidden" name="actividad_id" value="{{ item.objeto.id }}">
@@ -236,5 +236,6 @@
     </div>
 
     <script src="{% static 'js/admin/actividades.js' %}?v=2"></script>
+    {% include 'includes/modal_confirmar.html' %}
 </body>
 </html>

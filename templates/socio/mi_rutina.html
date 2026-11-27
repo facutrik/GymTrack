@@ -544,7 +544,7 @@
                                         <button type="button" onclick="abrirModalEditarEjercicio('{{ ej.id }}', '{{ ej.nombre|escapejs }}', '{{ ej.repeticiones|escapejs }}')" class="text-slate-500 hover:text-blue-400 text-xs p-1 transition cursor-pointer" title="Editar">
                                             <i class="fa-regular fa-pen-to-square"></i>
                                         </button>
-                                        <form method="POST" action="{% url 'mi_rutina' %}" class="inline">
+                                        <form method="POST" action="{% url 'mi_rutina' %}" class="inline" data-confirmar="¿Deseás eliminar {{ ej.nombre }} de la rutina?" data-titulo="Eliminar ejercicio" data-boton="Sí, eliminar" data-tono="rojo">
                                             {% csrf_token %}
                                             <input type="hidden" name="accion" value="eliminar_ejercicio_custom">
                                             <input type="hidden" name="ejercicio_id" value="{{ ej.id }}">
@@ -636,5 +636,6 @@
     {% include 'includes/footer.html' %}
 
     <script src="{% static 'js/socio/mi_rutina.js' %}"></script>
+    {% include 'includes/modal_confirmar.html' %}
 </body>
 </html>

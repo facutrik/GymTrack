@@ -182,18 +182,18 @@
 
                                 <!-- Acciones (Baja Manual o Reactivación) -->
                                 <td class="py-3 px-4 text-right">
-                                    <form method="POST" action="{% url 'admin_socios' %}" class="inline">
+                                    <form method="POST" action="{% url 'admin_socios' %}" class="inline" data-confirmar="{% if item.usuario.is_active %}¿Deseás dar de baja a {{ item.usuario.get_full_name|default:item.usuario.username }}?{% else %}¿Deseás reactivar a {{ item.usuario.get_full_name|default:item.usuario.username }}?{% endif %}" data-titulo="{% if item.usuario.is_active %}Confirmar baja{% else %}Confirmar reactivación{% endif %}" data-boton="{% if item.usuario.is_active %}Sí, dar de baja{% else %}Sí, reactivar{% endif %}" data-tono="{% if item.usuario.is_active %}rojo{% else %}verde{% endif %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="accion" value="toggle_baja">
                                         <input type="hidden" name="socio_id" value="{{ item.usuario.id }}">
                                         
                                         {% if item.usuario.is_active %}
-                                            <button type="submit" onclick="return confirm('¿Confirmas dar de baja a este socio?')" 
+                                            <button type="submit" 
                                                     class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-red-400 hover:bg-red-500/10 border border-red-500/20 transition" title="Dar de baja">
                                                 <i class="fa-solid fa-user-slash"></i> Dar de Baja
                                             </button>
                                         {% else %}
-                                            <button type="submit" onclick="return confirm('¿Deseas reactivar a este socio?')" 
+                                            <button type="submit" 
                                                     class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition" title="Reactivar">
                                                 <i class="fa-solid fa-user-check"></i> Reactivar
                                             </button>
@@ -288,5 +288,6 @@
     </div>
 
 <script src="{% static 'js/admin/socios.js' %}"></script>
+    {% include 'includes/modal_confirmar.html' %}
 </body>
 </html>

@@ -98,7 +98,7 @@
                             </button>
 
                             <!-- Botón Eliminar -->
-                            <form method="POST" onsubmit="return confirm('¿Seguro que deseás eliminar este plan de membresía?');" class="inline">
+                            <form method="POST" class="inline" data-confirmar="¿Seguro que deseás eliminar el plan {{ p.nombre }}?" data-titulo="Eliminar plan" data-boton="Sí, eliminar" data-tono="rojo">
                                 {% csrf_token %}
                                 <input type="hidden" name="accion" value="eliminar">
                                 <input type="hidden" name="plan_id" value="{{ p.id }}">
@@ -164,5 +164,6 @@
 {% include 'includes/footer.html' %}
 <script src="{% static 'js/admin/membresias.js' %}"></script>
 
+    {% include 'includes/modal_confirmar.html' %}
 </body>
 </html>

@@ -40,7 +40,7 @@ function seleccionarSocioCobroUnificado(el, socioId) {
 function validarSocioSeleccionadoUnificado() {
     const val = document.getElementById('cobroUnificadoSocioId')?.value;
     if (!val) {
-        alert('Por favor seleccioná un socio de la lista antes de confirmar el cobro.');
+        mostrarAviso('Falta elegir el socio', 'Seleccioná un socio de la lista antes de confirmar el cobro.');
         return false;
     }
     return true;
